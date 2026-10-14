@@ -1,0 +1,61 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Xcode user-specific state
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# Xcode build output
+build/
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+# (Package.resolved is committed so dependency versions stay pinned)
+.build/
+.swiftpm/
+Packages/
+
+# CocoaPods / Carthage (if added later)
+Pods/
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code coverage / test results
+*.gcno
+*.gcda
+*.xcresult
+
+# Secrets & local config
+.env
+.env.*
+*.p12
+*.mobileprovision
+*.cer
+*.p8
+Secrets.xcconfig
+*.local.xcconfig
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Claude Code local settings
+.claude/settings.local.json
