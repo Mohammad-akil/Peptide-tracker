@@ -109,6 +109,7 @@ struct SettingsView: View {
 
                 GroupedSection {
                     ValueRow(title: "Privacy") { showsPrivacy = true }
+                    ValueRow(title: "Terms of Use") { openURL(AppLinks.termsOfUse) }
                     ValueRow(title: "Version", value: appVersion, showsDivider: false)
                 }
 
@@ -197,6 +198,9 @@ private struct PrivacySheet: View {
                     Text("Your medicines, doses and refills are saved only on this iPhone. There’s no account, and nothing is sent to us or anyone else.")
                     Text("Reminders are scheduled on the device. Exporting a medicine list creates a PDF that goes only where you choose to share it.")
                     Text("Deleting the app deletes everything it saved.")
+                    Link("Read the full Privacy Policy", destination: AppLinks.privacyPolicy)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(AppTheme.ColorToken.accent)
                 }
                 .font(.system(size: 17))
                 .lineSpacing(3)

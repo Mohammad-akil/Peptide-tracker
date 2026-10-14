@@ -100,8 +100,8 @@ struct PaywallView: View {
 
                 HStack(spacing: 18) {
                     Button("Restore") { Task { await purchases.restore(); if purchases.isPro { dismiss() } } }
-                    Button("Terms") { openURL(URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) }
-                    Button("Privacy") { openURL(URL(string: "https://www.apple.com/legal/privacy/")!) }
+                    Button("Terms") { openURL(AppLinks.termsOfUse) }
+                    Button("Privacy") { openURL(AppLinks.privacyPolicy) }
                 }
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(AppTheme.ColorToken.accent)
