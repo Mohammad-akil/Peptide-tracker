@@ -186,47 +186,6 @@ struct UrgencyChip: View {
     }
 }
 
-// MARK: - Segmented control
-
-/// The pill-shaped two-or-more option switch ("List | Timeline", "2W | 1M").
-struct PillSegmentedControl<Option: Hashable>: View {
-    let options: [Option]
-    @Binding var selection: Option
-    var height: CGFloat = 36
-    var label: (Option) -> AnyView
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(options, id: \.self) { option in
-                let isSelected = option == selection
-                Button {
-                    HapticFeedback.selection()
-                    withAnimation(.snappy(duration: 0.25)) { selection = option }
-                } label: {
-                    label(option)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.secondaryText)
-                        .padding(.horizontal, 12)
-                        .frame(height: height)
-                        .frame(maxWidth: .infinity)
-                        .background {
-                            if isSelected {
-                                Capsule()
-                                    .fill(AppTheme.ColorToken.cardBackground)
-                                    .shadow(color: Color(hex: 0x28185A, opacity: 0.14), radius: 4, y: 2)
-                            }
-                        }
-                        .contentShape(.capsule)
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-            }
-        }
-        .padding(3)
-        .background(AppTheme.ColorToken.controlFill, in: .capsule)
-    }
-}
-
 // MARK: - Stepper
 
 /// The "− | +" capsule stepper from the Add form.
