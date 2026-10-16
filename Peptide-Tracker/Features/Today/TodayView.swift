@@ -19,6 +19,11 @@ struct TodayView: View {
     @Environment(\.scenePhase) private var scenePhase
     /// iOS-level permission, which can be switched off outside the app.
     @State private var systemNotificationsDenied = false
+    @State private var viewportHeight: CGFloat = 0
+    /// The day whose doses show below the strip; today unless picked.
+    @State private var selectedDay = Date.now.startOfDay
+    /// Which way the last day change went, so the list slides that way.
+    @State private var dayMovesForward = true
 
     var body: some View {
         TimelineView(.everyMinute) { context in
@@ -31,10 +36,12 @@ struct TodayView: View {
                     .padding(.bottom, 10)
 
                     if store.medicines.isEmpty {
+                        Spacer(minLength: 0)
                         TodayEmptyState(
                             onAdd: { router.requestAddMedicine(count: store.medicines.count, purchases: purchases) },
                             onLearnMore: { router.selectedTab = .medicines }
                         )
+                        Spacer(minLength: 0)
                     } else {
                         if systemNotificationsDenied || !store.settings.notificationsEnabled {
                             NotificationsOffBanner(isDenied: systemNotificationsDenied)
@@ -49,25 +56,29 @@ struct TodayView: View {
                         } else {
                             dosesHeader(now: now)
                                 .padding(.top, 6)
-                            let doses = store.doses(on: now)
-                            switch mode {
-                            case .list:
-                                DoseListView(doses: doses, day: now.startOfDay, now: now)
-                            case .timeline:
-                                DoseTimelineView(doses: doses, day: now.startOfDay, now: now)
-                            }
+                            DayStrip(selection: $selectedDay, today: now.startOfDay)
+                                // Edge to edge, past the page's side padding.
+                                .padding(.horizontal, -AppTheme.Spacing.medium)
+                            dayDoses(now: now)
                         }
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.medium)
                 .padding(.top, 8)
                 .padding(.bottom, AppTheme.Spacing.tabBarClearance)
+                .fillsViewport(store.medicines.isEmpty, height: viewportHeight)
                 .animation(.snappy, value: mode)
             }
+            .measuresViewport($viewportHeight)
             .scrollIndicators(.hidden)
             .scrollEdgeEffectStyle(.soft, for: .top)
-            .onChange(of: now.startOfDay) { _, _ in
+            .onChange(of: now.startOfDay) { oldDay, newDay in
                 store.runDailyCountdown(now: now)
+                // Still looking at "today" when midnight passes: follow it.
+                if selectedDay == oldDay { selectedDay = newDay }
+            }
+            .onChange(of: selectedDay) { oldDay, newDay in
+                dayMovesForward = newDay > oldDay
             }
         }
         .task(id: scenePhase) {
@@ -79,9 +90,24 @@ struct TodayView: View {
     private func dosesHeader(now: Date) -> some View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
-                Text("Doses")
-                    .font(.system(size: 20, weight: .bold))
-                    .kerning(-0.3)
+                HStack(spacing: 8) {
+                    Text(dayTitle(now: now))
+                        .font(.system(size: 20, weight: .bold))
+                        .kerning(-0.3)
+                        .contentTransition(.opacity)
+                    if selectedDay != now.startOfDay {
+                        Button("Today") {
+                            HapticFeedback.selection()
+                            withAnimation(.snappy) { selectedDay = now.startOfDay }
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.accent)
+                        .padding(.horizontal, 10)
+                        .frame(height: 26)
+                        .background(AppTheme.ColorToken.accentSoft, in: .capsule)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                }
                 Text(dosesSubtitle(now: now))
                     .font(.system(size: 14))
                     .lineLimit(1)
@@ -98,11 +124,69 @@ struct TodayView: View {
         .padding(.horizontal, 4)
     }
 
-    /// "3 of 9 taken · next at 20:00"
+    /// The selected day's doses: list or timeline, sliding in from the side
+    /// you moved to. Swiping sideways changes the day too.
+    @ViewBuilder
+    private func dayDoses(now: Date) -> some View {
+        let doses = store.doses(on: selectedDay)
+        Group {
+            if doses.isEmpty {
+                Text("No doses on \(selectedDay.weekdayDayMonth).")
+                    .font(.system(size: 15))
+                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                    .frame(maxWidth: .infinity, minHeight: 80)
+                    .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
+            } else {
+                switch mode {
+                case .list:
+                    DoseListView(doses: doses, day: selectedDay, now: now)
+                case .timeline:
+                    DoseTimelineView(doses: doses, day: selectedDay, now: now)
+                }
+            }
+        }
+        .id(selectedDay)
+        .transition(.asymmetric(
+            insertion: .move(edge: dayMovesForward ? .trailing : .leading).combined(with: .opacity),
+            removal: .opacity
+        ))
+        .animation(.snappy(duration: 0.35), value: selectedDay)
+        .contentShape(.rect)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 30).onEnded { value in
+                // Only clearly sideways swipes; vertical ones scroll the page.
+                guard abs(value.translation.width) > abs(value.translation.height) * 1.5 else { return }
+                let step = value.translation.width < 0 ? 1 : -1
+                let target = selectedDay.adding(days: step)
+                let offset = Calendar.current.days(from: now.startOfDay, to: target)
+                guard DayStrip.range.contains(offset) else { return }
+                HapticFeedback.selection()
+                selectedDay = target
+            }
+        )
+    }
+
+    /// "Today", "Yesterday", "Tomorrow", or "Mon 12 Oct".
+    private func dayTitle(now: Date) -> String {
+        switch Calendar.current.days(from: now.startOfDay, to: selectedDay) {
+        case 0: "Today"
+        case -1: "Yesterday"
+        case 1: "Tomorrow"
+        default: selectedDay.weekdayDayMonth
+        }
+    }
+
+    /// "3 of 9 taken · next at 20:00", or for other days "9 of 9 taken" /
+    /// "9 doses planned".
     private func dosesSubtitle(now: Date) -> String {
-        let doses = store.doses(on: now)
+        let isToday = selectedDay == now.startOfDay
+        let doses = store.doses(on: isToday ? now : selectedDay)
         let taken = doses.filter(\.isTaken).count
+        if selectedDay > now.startOfDay {
+            return doses.count == 1 ? "1 dose planned" : "\(doses.count) doses planned"
+        }
         let summary = "\(taken) of \(doses.count) taken"
+        guard isToday else { return summary }
         guard let next = doses.first(where: { !$0.isTaken && $0.scheduledAt >= now }) else {
             return taken == doses.count ? "All \(doses.count) taken today" : summary
         }
@@ -328,7 +412,6 @@ private struct TodayEmptyState: View {
                 .foregroundStyle(AppTheme.ColorToken.accent)
                 .frame(height: 44)
         }
-        .padding(.top, 12)
     }
 }
 

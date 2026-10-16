@@ -25,7 +25,7 @@ struct DoseListView: View {
 
     private func rows(_ doses: [ScheduledDose]) -> some View {
         ForEach(Array(doses.enumerated()), id: \.element.id) { index, dose in
-            DoseRow(dose: dose, showsDivider: index < doses.count - 1) {
+            DoseRow(dose: dose, canToggle: day <= now.startOfDay, showsDivider: index < doses.count - 1) {
                 withAnimation(.snappy) { store.toggle(dose, now: now) }
             } onOpen: {
                 router.push(.medicine(dose.medicine.id))
@@ -34,8 +34,10 @@ struct DoseListView: View {
         }
     }
 
-    /// "this morning" when everything taken so far was before noon.
+    /// "this morning" when everything taken so far was before noon; the
+    /// date when looking at another day.
     private func takenWhen(_ taken: [ScheduledDose]) -> String {
+        guard Calendar.current.isDate(day, inSameDayAs: now) else { return day.weekdayDayMonth }
         let latest = taken.compactMap(\.takenAt).max() ?? now
         return Calendar.current.component(.hour, from: latest) < 12 ? "this morning" : "today"
     }
