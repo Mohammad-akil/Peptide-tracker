@@ -19,6 +19,11 @@ struct MainTabView: View {
             ForEach(AppRouter.Tab.allCases, id: \.self) { tab in
                 Tab(value: Item.tab(tab)) {
                     content(for: tab)
+                        .modifier(TabEntrance(isSelected: router.selectedTab == tab))
+                        // The lavender ground under every tab, so white cards
+                        // stand out from the page (the system default is white).
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(AppTheme.ColorToken.background.ignoresSafeArea())
                 } label: {
                     Label {
                         Text(tab.title)
@@ -68,6 +73,29 @@ struct MainTabView: View {
         case .refills: RefillsView()
         case .settings: SettingsView()
         }
+    }
+}
+
+/// The system bar can't animate its icons, so the screen does the moving:
+/// a newly picked tab's content fades in and settles up into place.
+private struct TabEntrance: ViewModifier {
+    let isSelected: Bool
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isShown = true
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isShown ? 1 : 0)
+            .offset(y: isShown ? 0 : 14)
+            .onChange(of: isSelected) { _, isSelected in
+                guard isSelected, !reduceMotion else { return }
+                isShown = false
+                // Next turn of the run loop, so the hidden state renders first.
+                Task { @MainActor in
+                    withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) { isShown = true }
+                }
+            }
     }
 }
 

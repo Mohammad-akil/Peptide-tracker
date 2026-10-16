@@ -110,6 +110,24 @@ struct EmptyStateView<Actions: View>: View {
     }
 }
 
+extension View {
+    /// For a tab's scrolling content: while `isEmpty`, it's at least as tall
+    /// as the visible area (`viewportHeight`, from `measuresViewport`), so an
+    /// empty state between `Spacer`s sits in the middle of the screen.
+    func fillsViewport(_ isEmpty: Bool, height viewportHeight: CGFloat) -> some View {
+        frame(minHeight: isEmpty ? viewportHeight : nil, alignment: .top)
+    }
+
+    /// Reports a scroll view's visible height, inside the bars and tab bar.
+    func measuresViewport(_ height: Binding<CGFloat>) -> some View {
+        onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.containerSize.height - geometry.contentInsets.top - geometry.contentInsets.bottom
+        } action: { _, newHeight in
+            height.wrappedValue = newHeight
+        }
+    }
+}
+
 extension EmptyStateView where Actions == EmptyView {
     init(illustration: Illustration, title: String, message: String) {
         self.init(illustration: illustration, title: title, message: message) { EmptyView() }

@@ -15,6 +15,7 @@ struct MedicinesView: View {
     @AppStorage("medicines.sort") private var sort: Sort = .daysLeft
     @State private var pendingDelete: Medicine?
     @State private var query = ""
+    @State private var viewportHeight: CGFloat = 0
 
     var body: some View {
         let now = Date.now
@@ -23,14 +24,18 @@ struct MedicinesView: View {
                 ScreenHeader(title: "Medicines") { sortMenu }
 
                 if store.medicines.isEmpty {
+                    Spacer(minLength: 0)
                     EmptyCabinetView { addMedicine() }
+                    Spacer(minLength: 0)
                 } else if store.medicines.count == 1, let only = store.medicines.first {
                     firstMedicine(only, now: now)
                     HowItWorksCard()
                 } else {
                     SearchField(text: $query)
                     if matches.isEmpty {
+                        Spacer(minLength: 0)
                         noResults
+                        Spacer(minLength: 0)
                     } else {
                         cabinet(now: now)
                     }
@@ -39,11 +44,18 @@ struct MedicinesView: View {
             .padding(.horizontal, AppTheme.Spacing.medium)
             .padding(.top, 8)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
+            .fillsViewport(showsEmptyState, height: viewportHeight)
             .animation(.snappy, value: store.medicines.map(\.id))
         }
+        .measuresViewport($viewportHeight)
         .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .top)
         .deleteMedicineAlert($pendingDelete)
+    }
+
+    /// No medicines, or a search with no matches.
+    private var showsEmptyState: Bool {
+        store.medicines.isEmpty || (store.medicines.count > 1 && matches.isEmpty)
     }
 
     private var sortMenu: some View {
@@ -90,7 +102,6 @@ struct MedicinesView: View {
             }
             .buttonStyle(.primary(height: 52))
         }
-        .padding(.top, -12)
     }
 
     // MARK: Many

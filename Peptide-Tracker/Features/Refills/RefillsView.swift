@@ -8,6 +8,8 @@ struct RefillsView: View {
 
     private static let horizonDays = 21
 
+    @State private var viewportHeight: CGFloat = 0
+
     var body: some View {
         let now = Date.now
         ScrollView {
@@ -24,12 +26,14 @@ struct RefillsView: View {
                 }
 
                 if store.refills.isEmpty {
+                    Spacer(minLength: 0)
                     EmptyStateView(
                         illustration: .noRefillsYet,
                         title: "No refills yet",
                         message: "When you mark a medicine as refilled, it shows up here with the date and amount."
                     )
                     if !store.medicines.isEmpty { comingUp(now: now) }
+                    Spacer(minLength: 0)
                 } else {
                     comingUp(now: now)
                     history
@@ -38,7 +42,9 @@ struct RefillsView: View {
             .padding(.horizontal, AppTheme.Spacing.medium)
             .padding(.top, 8)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
+            .fillsViewport(store.refills.isEmpty, height: viewportHeight)
         }
+        .measuresViewport($viewportHeight)
         .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .top)
     }
