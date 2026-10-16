@@ -76,16 +76,19 @@ struct AddMedicineFlow: View {
     // MARK: Frame
 
     private var topBar: some View {
-        HStack(spacing: 0) {
-            Button(action: leadingAction) {
-                Icon(step == .name ? .x : .chev, size: step == .name ? 18 : 22)
+        HStack(spacing: 10) {
+            // Back from step 2 on; closing lives on the right.
+            Button(action: back) {
+                Icon(.chev, size: 22)
                     .foregroundStyle(AppTheme.ColorToken.primaryText)
                     .frame(width: 44, height: 44)
                     .contentShape(.circle)
             }
             .buttonStyle(.plain)
             .glassEffect(.regular.interactive(), in: .circle)
-            .accessibilityLabel(step == .name ? "Cancel" : "Back")
+            .accessibilityLabel("Back")
+            .opacity(step == .name ? 0 : 1)
+            .disabled(step == .name)
 
             HStack(spacing: 5) {
                 ForEach(Step.allCases, id: \.self) { item in
@@ -94,7 +97,7 @@ struct AddMedicineFlow: View {
                         .frame(height: 5)
                 }
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, 4)
             .animation(.snappy, value: step)
             .accessibilityElement()
             .accessibilityLabel("Step \(step.rawValue + 1) of \(Step.allCases.count)")
@@ -103,13 +106,20 @@ struct AddMedicineFlow: View {
                 Button("Skip", action: skip)
                     .font(.system(size: 17))
                     .foregroundStyle(AppTheme.ColorToken.accent)
-                    .padding(.horizontal, 4)
                     .frame(height: 44)
-            } else {
-                Color.clear.frame(width: 40, height: 44)
+                    .transition(.opacity)
             }
+
+            // The system close button: glass circle, xmark, "Close" for VoiceOver.
+            Button(role: .close) { dismiss() } label: {
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
+            .controlSize(.large)
         }
         .padding(.horizontal, 16)
+        .animation(.snappy, value: step.isOptional)
     }
 
     private var bottomBar: some View {
@@ -218,40 +228,11 @@ struct AddMedicineFlow: View {
     }
 
     private func typeTile(_ type: MedicineType) -> some View {
-        let isSelected = draft.type == type
-        return Button {
+        TypeTile(type: type, isSelected: draft.type == type) {
             HapticFeedback.selection()
             draft.type = type
             if type == .other { isTyping = true }
-        } label: {
-            VStack(spacing: 8) {
-                // The type's own colour, white glyph — like the list icons.
-                Image(systemName: type.symbol)
-                    .font(.system(size: 19, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 42, height: 42)
-                    .background(
-                        LinearGradient(colors: [type.tint.mix(with: .white, by: 0.18), type.tint], startPoint: .top, endPoint: .bottom),
-                        in: .rect(cornerRadius: 42 * 0.31, style: .continuous)
-                    )
-                    .scaleEffect(isSelected ? 1.06 : 1)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
-                Text(type.title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 100)
-            .background(
-                isSelected ? AppTheme.ColorToken.accentSoft : AppTheme.ColorToken.cardBackground,
-                in: .rect(cornerRadius: 20, style: .continuous)
-            )
-            .selectionBorder(isSelected, cornerRadius: 20)
-            .contentShape(.rect)
         }
-        .buttonStyle(.pressable)
-        .accessibilityLabel(type.title)
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
     // MARK: 4 Reason
@@ -510,30 +491,10 @@ struct AddMedicineFlow: View {
             DisclosureMark(isOpen: isOpen)
         }
         if isOpen {
-            HStack {
-                ForEach(MedicineColor.allCases) { color in
-                    let isSelected = draft.color == color
-                    Button {
-                        HapticFeedback.selection()
-                        withAnimation(.snappy) { draft.color = color }
-                    } label: {
-                        MedicineIconView(type: draft.type, color: color, size: 40, isVibrant: true)
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 40 * 0.31 + 3, style: .continuous)
-                                    .strokeBorder(color.vibrant, lineWidth: 2)
-                                    .padding(-4)
-                                    .opacity(isSelected ? 1 : 0)
-                            }
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Colour \(color.rawValue)")
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                    if color != MedicineColor.allCases.last { Spacer(minLength: 0) }
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .transition(.opacity)
+            ColourChoices(type: draft.type, color: $draft.color)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .transition(.opacity)
         }
     }
 
@@ -558,11 +519,6 @@ struct AddMedicineFlow: View {
         isTyping = false
         step = next
         if next == .brand { isTyping = true }
-    }
-
-    /// Cancel on the first step, Back after that.
-    private func leadingAction() {
-        if step == .name { dismiss() } else { back() }
     }
 
     private func back() {
@@ -618,165 +574,6 @@ private struct InputCard<Content: View>: View {
             .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
             .contentShape(.rect)
             .glassEffect(.regular.interactive(), in: .capsule)
-    }
-}
-
-/// Tappable suggestions that fill a text answer ("Blood pressure").
-private struct SuggestionChips: View {
-    let options: [String]
-    @Binding var selection: String
-
-    var body: some View {
-        FlowLayout(spacing: 8) {
-            ForEach(options, id: \.self) { option in
-                let isSelected = selection == option
-                Button {
-                    HapticFeedback.selection()
-                    selection = isSelected ? "" : option
-                } label: {
-                    Text(option)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(isSelected ? .white : AppTheme.ColorToken.primaryText)
-                        .padding(.horizontal, 16)
-                        .frame(height: 38)
-                        // Glass capsules, the picked one filled with accent glass.
-                        .glassEffect(
-                            isSelected ? .regular.tint(AppTheme.ColorToken.accent).interactive() : .regular.interactive(),
-                            in: .capsule
-                        )
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-            }
-        }
-    }
-}
-
-/// A row as in iOS Settings: a small coloured tile with a white glyph, the
-/// title, and whatever sits on the right (a value, a switch, a preview).
-private struct SettingsRow<Trailing: View>: View {
-    let symbol: String
-    let tint: Color
-    let title: String
-    let showsDivider: Bool
-    let action: () -> Void
-    @ViewBuilder var trailing: Trailing
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Button(action: action) {
-                HStack(spacing: 14) {
-                    SettingsTile(symbol: symbol, tint: tint)
-                    Text(title)
-                        .font(.system(size: 17))
-                        .foregroundStyle(AppTheme.ColorToken.primaryText)
-                    Spacer(minLength: 8)
-                }
-                .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            trailing
-        }
-        .padding(.horizontal, 16)
-        .frame(minHeight: 52)
-        .rowDivider(showsDivider, inset: 58)
-    }
-}
-
-/// A Settings-style row whose control sits on the right (a stepper, a time
-/// picker): the coloured tile, the title, the control.
-private struct ControlRow<Control: View>: View {
-    let symbol: String
-    let tint: Color
-    let title: String
-    @ViewBuilder var control: Control
-
-    var body: some View {
-        HStack(spacing: 14) {
-            SettingsTile(symbol: symbol, tint: tint)
-            Text(title)
-                .font(.system(size: 17))
-                .foregroundStyle(AppTheme.ColorToken.primaryText)
-                .lineLimit(1)
-            Spacer(minLength: 8)
-            control
-        }
-        .padding(.horizontal, 16)
-        .frame(minHeight: 52)
-        .rowDivider(true, inset: 58)
-    }
-}
-
-/// The small coloured square with a white glyph that leads a Settings row.
-private struct SettingsTile: View {
-    let symbol: String
-    let tint: Color
-
-    var body: some View {
-        Image(systemName: symbol)
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(width: 30, height: 30)
-            .background(tint, in: .rect(cornerRadius: 8, style: .continuous))
-            .accessibilityHidden(true)
-    }
-}
-
-/// The chevron on a row that opens in place, turned down while open.
-private struct DisclosureMark: View {
-    let isOpen: Bool
-
-    var body: some View {
-        Chevron()
-            .rotationEffect(.degrees(isOpen ? 90 : 0))
-            .animation(.snappy, value: isOpen)
-    }
-}
-
-/// Lays chips out in rows, wrapping to the next row when one is full.
-private struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let rows = rows(for: subviews, width: proposal.width ?? .infinity)
-        let height = rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0))
-        let width = rows.map(\.width).max() ?? 0
-        return CGSize(width: proposal.width ?? width, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var y = bounds.minY
-        for row in rows(for: subviews, width: bounds.width) {
-            var x = bounds.minX
-            for index in row.indices {
-                let size = subviews[index].sizeThatFits(.unspecified)
-                subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-                x += size.width + spacing
-            }
-            y += row.height + spacing
-        }
-    }
-
-    private struct Row {
-        var indices: [Int] = []
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-    }
-
-    private func rows(for subviews: Subviews, width: CGFloat) -> [Row] {
-        var rows = [Row()]
-        for index in subviews.indices {
-            let size = subviews[index].sizeThatFits(.unspecified)
-            if !rows[rows.count - 1].indices.isEmpty, rows[rows.count - 1].width + spacing + size.width > width {
-                rows.append(Row())
-            }
-            var row = rows[rows.count - 1]
-            row.width += (row.indices.isEmpty ? 0 : spacing) + size.width
-            row.height = max(row.height, size.height)
-            row.indices.append(index)
-            rows[rows.count - 1] = row
-        }
-        return rows
     }
 }
 

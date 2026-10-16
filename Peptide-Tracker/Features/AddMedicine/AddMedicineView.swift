@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Add Medicine (and Edit) sheet: colour, type, name and strength, supply,
-/// and reminder — with a live "you'll run out on…" preview underneath. The
+/// The Edit Medicine sheet, every field on one page in Settings-style
+/// sections: the icon and its colour, type, the medicine's details, supply
+/// and the refill reminder, with a live "you'll run out on…" preview. The
 /// type sets the unit in every label, hint and the preview.
 struct AddMedicineView: View {
     @Environment(MedicineStore.self) private var store
@@ -22,20 +23,32 @@ struct AddMedicineView: View {
         self.onSaved = onSaved
     }
 
+    @State private var showsColours = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    appearanceRow
+                VStack(alignment: .leading, spacing: 24) {
+                    header
                     typeSection
                     medicineSection
                     supplySection
                     reminderSection
-                    RunOutPreview(draft: draft, showsErrors: showsErrors || draft.stock > 0)
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(title: "Your reminder")
+                        if draft.remindersOn {
+                            RunOutPreview(draft: draft, showsErrors: showsErrors || draft.stock > 0)
+                        } else {
+                            OnboardingNote(icon: .bell, text: Text("Refill reminders are off for this medicine."))
+                        }
+                    }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 4)
+                .padding(.top, 8)
                 .padding(.bottom, 24)
+                .animation(.snappy, value: draft.type)
+                .animation(.snappy, value: draft.remindersOn)
+                .animation(.snappy, value: showsColours)
             }
             .scrollDismissesKeyboard(.interactively)
             .background(AppTheme.ColorToken.background)
@@ -69,127 +82,86 @@ struct AddMedicineView: View {
 
     // MARK: Sections
 
-    private var appearanceRow: some View {
-        HStack(spacing: 16) {
-            MedicineIconView(type: draft.type, color: draft.color, size: 60)
-                .animation(.snappy, value: draft.color)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Colour")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                HStack {
-                    ForEach(MedicineColor.allCases) { color in
-                        let isSelected = draft.color == color
-                        Button {
-                            HapticFeedback.selection()
-                            draft.color = color
-                        } label: {
-                            Circle()
-                                .fill(color.color)
-                                .frame(width: 30, height: 30)
-                                .padding(isSelected ? 3 : 0)
-                                .overlay {
-                                    if isSelected { Circle().strokeBorder(color.color, lineWidth: 2) }
-                                }
-                                .frame(width: 38, height: 38)
-                                .contentShape(.circle)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Colour \(color.rawValue)")
-                        .accessibilityAddTraits(isSelected ? .isSelected : [])
-                        if color != MedicineColor.allCases.last { Spacer(minLength: 0) }
-                    }
+    /// The medicine's icon as it'll look, with Icon colour opening the
+    /// colour choices in place.
+    private var header: some View {
+        GroupedSection {
+            HStack(spacing: 14) {
+                MedicineIconView(type: draft.type, color: draft.color, size: 52, isVibrant: true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(draft.trimmedName.isEmpty ? "New medicine" : draft.trimmedName)
+                        .font(.system(size: 19, weight: .semibold))
+                        .lineLimit(1)
+                    Text(draft.build().typeTitle)
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
                 }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .rowDivider(true, inset: 16)
+
+            SettingsRow(symbol: "paintpalette.fill", tint: Color(hex: 0xBF5AF2), title: "Icon colour", showsDivider: showsColours) {
+                HapticFeedback.selection()
+                showsColours.toggle()
+            } trailing: {
+                MedicineIconView(type: draft.type, color: draft.color, size: 28, isVibrant: true)
+                DisclosureMark(isOpen: showsColours)
+            }
+            if showsColours {
+                ColourChoices(type: draft.type, color: $draft.color)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .transition(.opacity)
             }
         }
-        .padding(.horizontal, 4)
     }
 
     private var typeSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             SectionLabel(title: "Type")
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                 ForEach(MedicineType.allCases) { type in
-                    let isSelected = draft.type == type
-                    Button {
+                    TypeTile(type: type, isSelected: draft.type == type) {
                         HapticFeedback.selection()
-                        withAnimation(.snappy) { draft.type = type }
-                    } label: {
-                        VStack(spacing: 4) {
-                            Image(systemName: type.symbol)
-                                .font(.system(size: 20, weight: .semibold))
-                                .frame(height: 24)
-                            Text(type.title).font(.system(size: 13, weight: .semibold))
-                        }
-                        .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 64)
-                        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: AppTheme.Radius.field, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: AppTheme.Radius.field, style: .continuous)
-                                .strokeBorder(isSelected ? AppTheme.ColorToken.accent : .clear, lineWidth: 2)
-                        }
-                        .shadow(color: isSelected ? AppTheme.ColorToken.accent.opacity(0.12) : .clear, radius: 4, y: 2)
+                        draft.type = type
+                        if type == .other { focusedField = .typeName }
                     }
-                    .buttonStyle(.pressable)
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
             }
             if draft.type == .other {
-                FormRow(title: "Type name", showsDivider: false) {
-                    TextField("e.g. Patch", text: $draft.customTypeName)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .typeName)
+                GroupedSection {
+                    ControlRow(symbol: "cross.case.fill", tint: Color(hex: 0x8E8E93), title: "Type name", showsDivider: false) {
+                        field("e.g. Patch", text: $draft.customTypeName, focus: .typeName)
+                    }
                 }
-                .font(.system(size: 16))
-                .card(horizontal: 16, vertical: 0)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
     }
 
     private var medicineSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            SectionLabel(title: "Medicine")
-            VStack(spacing: 0) {
-                FormRow(title: "Name") {
-                    TextField("Required", text: $draft.name)
-                        .multilineTextAlignment(.trailing)
+            GroupedSection(title: "Medicine") {
+                ControlRow(symbol: "pills.fill", tint: Color(hex: 0x0A84FF), title: "Name") {
+                    field("Required", text: $draft.name, focus: .name, next: .brand)
                         .textInputAutocapitalization(.words)
-                        .focused($focusedField, equals: .name)
-                        .submitLabel(.next)
-                        .onSubmit { focusedField = .brand }
                 }
-                FormRow(title: "Brand") {
-                    TextField("Optional", text: $draft.brandName)
-                        .multilineTextAlignment(.trailing)
+                ControlRow(symbol: "tag.fill", tint: Color(hex: 0x5E5CE6), title: "Brand") {
+                    field("Optional", text: $draft.brandName, focus: .brand, next: .strength)
                         .textInputAutocapitalization(.words)
-                        .focused($focusedField, equals: .brand)
-                        .submitLabel(.next)
-                        .onSubmit { focusedField = .strength }
                 }
-                FormRow(title: "Strength") {
-                    TextField("Optional", text: $draft.strength)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .strength)
-                        .submitLabel(.next)
-                        .onSubmit { focusedField = .reason }
+                ControlRow(symbol: "scalemass.fill", tint: Color(hex: 0x30B0C7), title: "Strength") {
+                    field("Optional", text: $draft.strength, focus: .strength, next: .reason)
                 }
-                FormRow(title: "Taking it for") {
-                    TextField("Optional", text: $draft.reason)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .reason)
-                        .submitLabel(.next)
-                        .onSubmit { focusedField = .instructions }
+                ControlRow(symbol: "heart.fill", tint: Color(hex: 0xFF375F), title: "Taking it for") {
+                    field("Optional", text: $draft.reason, focus: .reason, next: .instructions)
                 }
-                FormRow(title: "Instructions", showsDivider: false) {
-                    TextField("e.g. With food", text: $draft.instructions)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .instructions)
-                        .submitLabel(.done)
+                ControlRow(symbol: "list.clipboard.fill", tint: Color(hex: 0xFF9F0A), title: "Instructions", showsDivider: false) {
+                    field("e.g. With food", text: $draft.instructions, focus: .instructions)
                 }
             }
-            .font(.system(size: 16))
-            .card(horizontal: 16, vertical: 0)
             if showsErrors, let error = draft.nameError {
                 ErrorText(error)
             }
@@ -198,35 +170,33 @@ struct AddMedicineView: View {
 
     private var supplySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            SectionLabel(title: "Supply")
-            VStack(spacing: 0) {
-                FormRow(title: draft.type.stockLabel) {
+            GroupedSection(title: "Supply", footer: draft.type.supplyHint) {
+                ControlRow(symbol: "shippingbox.fill", tint: Color(hex: 0x30D158), title: draft.type.stockLabel) {
                     CountStepper(value: $draft.stock, range: 0...9999, accessibilityName: draft.type.stockLabel.lowercased(), isTypeable: true)
                 }
-                FormRow(title: draft.type.perDayLabel, showsDivider: false) {
+                ControlRow(symbol: "clock.arrow.circlepath", tint: Color(hex: 0xBF5AF2), title: draft.type.perDayLabel, showsDivider: false) {
                     CountStepper(value: $draft.perDay, range: 0...50, accessibilityName: draft.type.perDayLabel.lowercased())
                 }
             }
-            .card(horizontal: 16, vertical: 0)
             if (showsErrors || draft.stock > 0), let error = draft.perDayError {
                 ErrorText(error)
-            } else if let hint = draft.type.supplyHint {
-                Text(hint)
-                    .font(.system(size: 13))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                    .padding(.horizontal, 6)
             }
         }
     }
 
+    /// The same rows as the add flow's Refill reminders.
     private var reminderSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SectionLabel(title: "Reminder")
-            VStack(spacing: 0) {
-                FormRow(title: "Days before") {
+        GroupedSection(title: "Reminder") {
+            ControlRow(symbol: "bell.fill", tint: Color(hex: 0xFF453A), title: "Refill reminders", showsDivider: draft.remindersOn) {
+                Toggle("Refill reminders", isOn: $draft.remindersOn)
+                    .labelsHidden()
+                    .tint(AppTheme.ColorToken.accent)
+            }
+            if draft.remindersOn {
+                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: "Days before") {
                     CountStepper(value: $draft.reminderDaysBefore, range: 0...30, accessibilityName: "days before")
                 }
-                FormRow(title: "Time", showsDivider: false) {
+                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: "Time", showsDivider: false) {
                     DatePicker(
                         "Time",
                         selection: Binding(
@@ -239,8 +209,18 @@ struct AddMedicineView: View {
                     .environment(\.locale, Locale(identifier: "en_GB"))
                 }
             }
-            .card(horizontal: 16, vertical: 0)
         }
+    }
+
+    /// A right-aligned text field for a row, moving on to `next` on return.
+    private func field(_ placeholder: String, text: Binding<String>, focus: Field, next: Field? = nil) -> some View {
+        TextField(placeholder, text: text)
+            .font(.system(size: 17))
+            .multilineTextAlignment(.trailing)
+            .foregroundStyle(AppTheme.ColorToken.secondaryText)
+            .focused($focusedField, equals: focus)
+            .submitLabel(next == nil ? .done : .next)
+            .onSubmit { focusedField = next }
     }
 
     // MARK: Save
