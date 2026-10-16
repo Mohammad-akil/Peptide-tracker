@@ -33,13 +33,13 @@ struct RefillsSection: View {
         let horizon = now.startOfDay.adding(days: Self.horizonDays)
         let upcoming = store.medicinesByUrgency.filter { $0.runOutDate(now: now) <= horizon }
 
-        GroupedSection(title: "Coming up", trailing: "Next 3 weeks") {
+        GroupedSection(title: "Coming up", trailing: upcoming.isEmpty ? nil : "\(upcoming.count)") {
             if upcoming.isEmpty {
                 Text("Nothing runs out in the next three weeks.")
-                    .font(.system(size: 15))
+                    .font(.system(size: 17))
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
                     .padding(.horizontal, 16)
-                    .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 60, alignment: .leading)
             }
             ForEach(Array(upcoming.enumerated()), id: \.element.id) { index, medicine in
                 Button { router.push(.medicine(medicine.id)) } label: {
@@ -59,105 +59,106 @@ struct RefillsSection: View {
         }
         let months = groups.keys.sorted(by: >)
 
-        ForEach(Array(months.enumerated()), id: \.element) { index, month in
+        ForEach(months, id: \.self) { month in
             let refills = (groups[month] ?? []).sorted { $0.date > $1.date }
-            GroupedSection(title: index == 0 ? "History" : nil, trailing: month.monthName) {
+            GroupedSection(title: month.monthName, trailing: "\(refills.count)") {
                 RefillRows(refills: refills)
             }
         }
     }
 }
 
-/// "OCT 4 · Amlodipine · Order now ›"
+/// Coming up, in the same shape as every list row: the medicine's icon, its
+/// name, when it runs out, and a chevron.
 private struct UpcomingRefillRow: View {
     let medicine: Medicine
     let now: Date
     let showsDivider: Bool
 
     var body: some View {
-        let runOut = medicine.runOutDate(now: now)
-        let tone = badgeTone
-
-        HStack(spacing: 12) {
-            VStack(spacing: 0) {
-                Text(runOut.monthAbbrev)
-                    .font(.system(size: 11, weight: .bold))
-                    .textCase(.uppercase)
-                Text(runOut.formatted(.dateTime.day()))
-                    .font(.system(size: 19, weight: .bold))
-            }
-            .foregroundStyle(tone.ink)
-            .frame(width: 46, height: 48)
-            .background(tone.wash, in: .rect(cornerRadius: 13, style: .continuous))
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(medicine.name)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(AppTheme.ColorToken.primaryText)
-                Text(subtitle)
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            }
+        HStack(spacing: 14) {
+            MedicineIconView(medicine: medicine, size: 36, isVibrant: true)
+            Text(medicine.name)
+                .font(.system(size: 17))
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .lineLimit(1)
             Spacer(minLength: 8)
+            Text(value)
+                .font(.system(size: 17))
+                .monospacedDigit()
+                .foregroundStyle(valueColor)
             Chevron()
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .frame(minHeight: 52)
+        .frame(minHeight: 60)
         .contentShape(.rect)
-        .rowDivider(showsDivider, inset: 74)
+        .rowDivider(showsDivider, inset: 66)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(medicine.name), \(accessibilityValue)")
     }
 
-    private var badgeTone: (ink: Color, wash: Color) {
-        switch medicine.urgency {
-        case .out, .critical, .low: (medicine.urgency.ink, medicine.urgency.wash)
-        case .healthy: (AppTheme.ColorToken.primaryText, AppTheme.ColorToken.controlFill)
-        }
-    }
+    private var runOut: Date { medicine.runOutDate(now: now) }
 
-    /// What to do about it; the badge already says when it runs out.
-    private var subtitle: String {
+    /// "20 Oct", "On order", "Ran out"
+    private var value: String {
         if medicine.isOrdered { return "On order" }
         if medicine.urgency == .out { return "Ran out" }
-        let reminder = medicine.reminderDate(now: now)
-        if medicine.urgency <= .critical || reminder <= now { return "Order now" }
-        if medicine.remindersPaused { return "Reminders paused" }
-        return "Reminder \(reminder.weekdayDayMonth)"
+        return runOut.dayMonth
+    }
+
+    private var valueColor: Color {
+        if medicine.isOrdered { return AppTheme.ColorToken.accent }
+        return medicine.urgency.isRunningLow ? medicine.urgency.ink : AppTheme.ColorToken.secondaryText
+    }
+
+    private var accessibilityValue: String {
+        if medicine.isOrdered { return "on order" }
+        if medicine.urgency == .out { return "ran out" }
+        return "runs out \(runOut.weekdayDayMonth)"
     }
 }
 
-/// Refill rows: icon, name, date, "+60 pills".
+/// Refill history, Medicines-list style: the medicine's icon, its name,
+/// how much was added and when, and a chevron to the medicine.
 struct RefillRows: View {
     @Environment(MedicineStore.self) private var store
+    @Environment(AppRouter.self) private var router
     let refills: [RefillEvent]
 
     var body: some View {
         ForEach(Array(refills.enumerated()), id: \.element.id) { index, refill in
             let medicine = store.medicine(id: refill.medicineID)
-            HStack(spacing: 12) {
-                if let medicine {
-                    MedicineIconView(medicine: medicine, size: 36)
-                } else {
-                    MedicineIconView(type: .capsule, color: .slate, size: 36)
+            Button {
+                if let medicine { router.push(.medicine(medicine.id)) }
+            } label: {
+                HStack(spacing: 14) {
+                    if let medicine {
+                        MedicineIconView(medicine: medicine, size: 36, isVibrant: true)
+                    } else {
+                        MedicineIconView(type: .capsule, color: .slate, size: 36, isVibrant: true)
+                    }
+                    Text(refill.medicineName)
+                        .font(.system(size: 17))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                        .lineLimit(1)
+                    Spacer(minLength: 8)
+                    // The amount added reads as a gain, in green; the date
+                    // stays quiet beside it.
+                    (Text("+\(refill.amount)").foregroundStyle(Urgency.healthy.ink)
+                        + Text(" · \(refill.date.dayMonth)").foregroundStyle(AppTheme.ColorToken.secondaryText))
+                        .font(.system(size: 17))
+                        .monospacedDigit()
+                    if medicine != nil { Chevron() }
                 }
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(refill.medicineName).font(.system(size: 17))
-                    Text(refill.date.weekdayDayMonth)
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                }
-                Spacer(minLength: 8)
-                Text("+\(medicine?.unit.format(refill.amount) ?? "\(refill.amount)")")
-                    .font(.system(size: 15, weight: .semibold))
-                    .monospacedDigit()
+                .padding(.horizontal, 16)
+                .frame(minHeight: 60)
+                .contentShape(.rect)
+                .rowDivider(index < refills.count - 1, inset: 66)
             }
-            .foregroundStyle(AppTheme.ColorToken.primaryText)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .frame(minHeight: 52)
-            .rowDivider(index < refills.count - 1, inset: 64)
+            .buttonStyle(RowPressStyle())
+            .disabled(medicine == nil)
             .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(refill.medicineName), added \(medicine?.unit.format(refill.amount) ?? "\(refill.amount)") on \(refill.date.weekdayDayMonth)")
         }
     }
 }

@@ -22,6 +22,9 @@ struct MedicinesView: View {
     @AppStorage("medicines.sort") private var sort: Sort = .daysLeft
     @AppStorage("medicines.pane") private var pane: Pane = .medicines
     @AppStorage("medicines.isListView") private var isListView = true
+    /// Ties each medicine's row and card together, so switching layout
+    /// morphs one into the other (as in Formly).
+    @Namespace private var layout
     @State private var pendingDelete: Medicine?
     @State private var query = ""
     @State private var viewportHeight: CGFloat = 0
@@ -76,9 +79,7 @@ struct MedicinesView: View {
         } controls: {
             if !store.medicines.isEmpty {
                 VStack(spacing: 12) {
-                    PillSegmentedControl(options: Pane.allCases, selection: $pane, height: 38) { option in
-                        AnyView(Text(option.title))
-                    }
+                    SectionPicker(selection: $pane.animation(.snappy)) { $0.title }
                     if pane == .medicines && store.medicines.count > 1 {
                         SearchField(text: $query)
                             .transition(.opacity.combined(with: .move(edge: .top)))
@@ -194,7 +195,9 @@ struct MedicinesView: View {
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())], spacing: 12) {
                         ForEach(medicines) { medicine in
                             Button { router.push(.medicine(medicine.id)) } label: {
-                                MedicineTile(medicine: medicine)
+                                MedicineTile(medicine: medicine, layout: layout)
+                                    .matchedGeometry(id: "medicine-\(medicine.id)", in: layout)
+                                    .transition(.opacity)
                             }
                             .buttonStyle(.pressable)
                             .contentShape(.contextMenuPreview, .rect(cornerRadius: 22, style: .continuous))
@@ -207,13 +210,15 @@ struct MedicinesView: View {
             }
         }
         .id(isListView)
-        .transition(.opacity.combined(with: .scale(scale: 0.98)))
+        .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
     }
 
     private func rows(_ medicines: [Medicine], now: Date) -> some View {
         ForEach(Array(medicines.enumerated()), id: \.element.id) { index, medicine in
             Button { router.push(.medicine(medicine.id)) } label: {
-                MedicineRow(medicine: medicine, now: now, showsDivider: index < medicines.count - 1, isVibrant: true)
+                MedicineRow(medicine: medicine, now: now, showsDivider: index < medicines.count - 1, isVibrant: true, layout: layout)
+                    .matchedGeometry(id: "medicine-\(medicine.id)", in: layout)
+                    .transition(.opacity)
             }
             .buttonStyle(RowPressStyle())
             .contextMenu {
@@ -267,14 +272,19 @@ struct MedicineRow: View {
     var showsDivider = true
     /// Bright tile with a white glyph, as in the Medicines list.
     var isVibrant = false
+    /// Shared with the grid card so the icon and name glide between layouts.
+    var layout: Namespace.ID?
 
     var body: some View {
         HStack(spacing: 14) {
             MedicineIconView(medicine: medicine, size: 36, isVibrant: isVibrant)
+                .matchedGeometry(id: "icon-\(medicine.id)", in: layout, properties: [.frame, .position])
             Text(medicine.name)
                 .font(.system(size: 17))
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
                 .lineLimit(1)
+                .contentTransition(.interpolate)
+                .matchedGeometry(id: "name-\(medicine.id)", in: layout, properties: .position)
             Spacer(minLength: 8)
             Text(value)
                 .font(.system(size: 17))
@@ -305,16 +315,21 @@ struct MedicineRow: View {
 /// A medicine as a grid card: the bright icon, its name and days left.
 struct MedicineTile: View {
     let medicine: Medicine
+    /// Shared with the list row so the icon and name glide between layouts.
+    var layout: Namespace.ID?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             MedicineIconView(medicine: medicine, size: 44, isVibrant: true)
+                .matchedGeometry(id: "icon-\(medicine.id)", in: layout, properties: [.frame, .position])
             Spacer(minLength: 14)
             Text(medicine.name)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
+                .contentTransition(.interpolate)
+                .matchedGeometry(id: "name-\(medicine.id)", in: layout, properties: .position)
             Text(value)
                 .font(.system(size: 14, weight: medicine.urgency.isRunningLow ? .semibold : .regular))
                 .monospacedDigit()
@@ -338,6 +353,19 @@ struct MedicineTile: View {
     private var valueColor: Color {
         if medicine.isOrdered { return AppTheme.ColorToken.accent }
         return medicine.urgency.isRunningLow ? medicine.urgency.ink : AppTheme.ColorToken.secondaryText
+    }
+}
+
+private extension View {
+    /// `matchedGeometryEffect` when there's a namespace to match in (the
+    /// Medicines list); a no-op elsewhere, like the Welcome illustration.
+    @ViewBuilder
+    func matchedGeometry(id: String, in namespace: Namespace.ID?, properties: MatchedGeometryProperties = .frame) -> some View {
+        if let namespace {
+            matchedGeometryEffect(id: id, in: namespace, properties: properties)
+        } else {
+            self
+        }
     }
 }
 
@@ -449,7 +477,7 @@ private struct DeleteMedicineAlert: ViewModifier {
         .background(AppTheme.ColorToken.background)
 }
 
-/// The rounded search field above the cabinet.
+/// The Liquid Glass search field in the Medicines panel.
 private struct SearchField: View {
     @Binding var text: String
     @FocusState private var isFocused: Bool
@@ -481,6 +509,6 @@ private struct SearchField: View {
         }
         .padding(.horizontal, 14)
         .frame(height: 44)
-        .background(AppTheme.ColorToken.controlFill, in: .capsule)
+        .glassEffect(.regular.interactive(), in: .capsule)
     }
 }
