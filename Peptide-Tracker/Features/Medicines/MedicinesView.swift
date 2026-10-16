@@ -1,18 +1,26 @@
 import SwiftUI
 
-/// The Medicines tab — the cabinet, split into what needs a refill soon and
-/// what's stocked. Each row's ring shows how much of a full pack is left;
-/// days left sit on the right in the urgency colour. Long-press a row for
-/// quick actions.
+/// The Medicines tab, with two sides switched at the top. Medicines: the cabinet, split into
+/// what needs a refill soon and what's stocked — each row's ring shows how
+/// much of a full pack is left, days left sit on the right in the urgency
+/// colour, and a long-press opens quick actions. Stock: what runs out
+/// next and every refill logged.
 struct MedicinesView: View {
     enum Sort: String {
         case daysLeft, name
+    }
+
+    enum Pane: String, CaseIterable {
+        case medicines, stock
+
+        var title: String { self == .medicines ? "Medicines" : "Stock" }
     }
 
     @Environment(MedicineStore.self) private var store
     @Environment(AppRouter.self) private var router
     @Environment(PurchaseStore.self) private var purchases
     @AppStorage("medicines.sort") private var sort: Sort = .daysLeft
+    @AppStorage("medicines.pane") private var pane: Pane = .medicines
     @State private var pendingDelete: Medicine?
     @State private var query = ""
     @State private var viewportHeight: CGFloat = 0
@@ -21,9 +29,19 @@ struct MedicinesView: View {
         let now = Date.now
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                ScreenHeader(title: "Medicines") { sortMenu }
+                ScreenHeader(title: "Medicines") {
+                    if showsStock { shareButton(now: now) } else { sortMenu }
+                }
 
-                if store.medicines.isEmpty {
+                if !store.medicines.isEmpty {
+                    PillSegmentedControl(options: Pane.allCases, selection: $pane) { option in
+                        AnyView(Text(option.title))
+                    }
+                }
+
+                if showsStock {
+                    RefillsSection(now: now)
+                } else if store.medicines.isEmpty {
                     Spacer(minLength: 0)
                     EmptyCabinetView { addMedicine() }
                     Spacer(minLength: 0)
@@ -46,6 +64,7 @@ struct MedicinesView: View {
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
             .fillsViewport(showsEmptyState, height: viewportHeight)
             .animation(.snappy, value: store.medicines.map(\.id))
+            .animation(.snappy, value: pane)
         }
         .measuresViewport($viewportHeight)
         .scrollIndicators(.hidden)
@@ -53,9 +72,23 @@ struct MedicinesView: View {
         .deleteMedicineAlert($pendingDelete)
     }
 
-    /// No medicines, or a search with no matches.
+    /// The Stock side, once there's a medicine to keep stocked.
+    private var showsStock: Bool { pane == .stock && !store.medicines.isEmpty }
+
+    /// No medicines, no refills yet, or a search with no matches.
     private var showsEmptyState: Bool {
-        store.medicines.isEmpty || (store.medicines.count > 1 && matches.isEmpty)
+        if showsStock { return store.refills.isEmpty }
+        return store.medicines.isEmpty || (store.medicines.count > 1 && matches.isEmpty)
+    }
+
+    private func shareButton(now: Date) -> some View {
+        ShareLink(item: RefillListExport.text(store: store, now: now)) {
+            Icon(.share, size: 20)
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .frame(width: 44, height: 44)
+        }
+        .glassEffect(.regular.interactive(), in: .circle)
+        .accessibilityLabel("Share refill list")
     }
 
     private var sortMenu: some View {

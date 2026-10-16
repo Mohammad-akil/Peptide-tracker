@@ -70,7 +70,6 @@ struct MainTabView: View {
         switch tab {
         case .today: TodayView()
         case .medicines: MedicinesView()
-        case .refills: RefillsView()
         case .settings: SettingsView()
         }
     }

@@ -1,52 +1,29 @@
 import SwiftUI
 
-/// The Refills tab: what runs out in the next three weeks first, then every
-/// refill logged, grouped by month.
-struct RefillsView: View {
+/// The Stock side of the Medicines tab: what runs out in the next three
+/// weeks first, then every refill logged, grouped by month. Laid out in the
+/// tab's own stack, so it has no header or scroll view of its own.
+struct RefillsSection: View {
     @Environment(MedicineStore.self) private var store
     @Environment(AppRouter.self) private var router
+    let now: Date
 
     private static let horizonDays = 21
 
-    @State private var viewportHeight: CGFloat = 0
-
     var body: some View {
-        let now = Date.now
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                ScreenHeader(title: "Refills") {
-                    ShareLink(item: RefillListExport.text(store: store, now: now)) {
-                        Icon(.share, size: 20)
-                            .foregroundStyle(AppTheme.ColorToken.primaryText)
-                            .frame(width: 44, height: 44)
-                    }
-                    .glassEffect(.regular.interactive(), in: .circle)
-                    .accessibilityLabel("Share refill list")
-                    .disabled(store.medicines.isEmpty)
-                }
-
-                if store.refills.isEmpty {
-                    Spacer(minLength: 0)
-                    EmptyStateView(
-                        illustration: .noRefillsYet,
-                        title: "No refills yet",
-                        message: "When you mark a medicine as refilled, it shows up here with the date and amount."
-                    )
-                    if !store.medicines.isEmpty { comingUp(now: now) }
-                    Spacer(minLength: 0)
-                } else {
-                    comingUp(now: now)
-                    history
-                }
-            }
-            .padding(.horizontal, AppTheme.Spacing.medium)
-            .padding(.top, 8)
-            .padding(.bottom, AppTheme.Spacing.tabBarClearance)
-            .fillsViewport(store.refills.isEmpty, height: viewportHeight)
+        if store.refills.isEmpty {
+            Spacer(minLength: 0)
+            EmptyStateView(
+                illustration: .noRefillsYet,
+                title: "No refills yet",
+                message: "When you mark a medicine as refilled, it shows up here with the date and amount."
+            )
+            if !store.medicines.isEmpty { comingUp(now: now) }
+            Spacer(minLength: 0)
+        } else {
+            comingUp(now: now)
+            history
         }
-        .measuresViewport($viewportHeight)
-        .scrollIndicators(.hidden)
-        .scrollEdgeEffectStyle(.soft, for: .top)
     }
 
     // MARK: Coming up
@@ -200,7 +177,10 @@ enum RefillListExport {
 }
 
 #Preview {
-    RefillsView()
+    ScrollView {
+        VStack(alignment: .leading, spacing: 22) { RefillsSection(now: .now) }
+            .padding(.horizontal, 16)
+    }
         .environment(MedicineStore.preview())
         .environment(AppRouter())
         .background(AppTheme.ColorToken.background)

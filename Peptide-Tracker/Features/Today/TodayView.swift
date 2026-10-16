@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Home: the week up top, then the picked day's doses grouped by time.
 /// Only what needs doing gets a line above the doses — notifications being
-/// off, or a medicine to refill. What runs out next lives under Refills.
+/// off, or a medicine to refill. What runs out next lives under
+/// Medicines → Stock.
 struct TodayView: View {
     @Environment(MedicineStore.self) private var store
     @Environment(AppRouter.self) private var router

@@ -8,13 +8,12 @@ import SwiftUI
 @Observable
 final class AppRouter {
     enum Tab: Hashable, CaseIterable {
-        case today, medicines, refills, settings
+        case today, medicines, settings
 
         var title: String {
             switch self {
             case .today: "Today"
             case .medicines: "Medicines"
-            case .refills: "Refills"
             case .settings: "Settings"
             }
         }
