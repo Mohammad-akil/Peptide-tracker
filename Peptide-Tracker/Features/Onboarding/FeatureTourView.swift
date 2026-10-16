@@ -33,13 +33,17 @@ struct FeatureTourView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TabView(selection: $page) {
+            // Pages crossfade instead of sliding; swiping still turns them.
+            ZStack {
                 ForEach(pages.indices, id: \.self) { index in
-                    pageView(pages[index], isCurrent: index == page)
-                        .tag(index)
+                    if index == page {
+                        pageView(pages[index], isCurrent: true)
+                            .transition(.opacity)
+                    }
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+            .contentShape(.rect)
+            .gesture(swipe)
             .ignoresSafeArea(edges: .top)
             .overlay(alignment: .topTrailing) {
                 Button("Skip", action: onContinue)
@@ -62,10 +66,25 @@ struct FeatureTourView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
-        .animation(.snappy, value: page)
+        .animation(.easeInOut(duration: 0.45), value: page)
     }
 
     private var isLastPage: Bool { page == pages.count - 1 }
+
+    private var swipe: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { value in
+                let distance = value.translation.width
+                guard abs(distance) > abs(value.translation.height) else { return }
+                if distance < 0, !isLastPage {
+                    HapticFeedback.selection()
+                    page += 1
+                } else if distance > 0, page > 0 {
+                    HapticFeedback.selection()
+                    page -= 1
+                }
+            }
+    }
 
     private func pageView(_ feature: FeaturePage, isCurrent: Bool) -> some View {
         VStack(spacing: 0) {
