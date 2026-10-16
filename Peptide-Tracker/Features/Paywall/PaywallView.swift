@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Pro: $3.99 a month or $39.99 once. One screen — what you get, the two
+/// Pro: $3.99 a month (with a free trial for new subscribers) or $39.99 once. One screen — what you get, the two
 /// plans, one button. Shown after setup and from Settings.
 struct PaywallView: View {
     @Environment(PurchaseStore.self) private var purchases
@@ -21,80 +21,83 @@ struct PaywallView: View {
     var body: some View {
         @Bindable var purchases = purchases
 
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 0) {
-                    IllustrationView(.neverRunOut, width: 220)
-                        .padding(.top, 12)
+        ScrollView {
+            VStack(spacing: 0) {
+                IllustrationView(.neverRunOut, width: 220)
+                    .padding(.top, 12)
 
-                    Text("\(Bundle.main.appName) Pro")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(AppTheme.ColorToken.accent)
-                        .padding(.top, 4)
-                    Text("Never run out again.")
-                        .font(.system(size: 32, weight: .heavy))
-                        .kerning(-0.8)
+                Text("\(Bundle.main.appName) Pro")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .padding(.top, 4)
+                Text("Never run out again.")
+                    .font(.system(size: 32, weight: .heavy))
+                    .kerning(-0.8)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
+                    .accessibilityAddTraits(.isHeader)
+
+                if let reason {
+                    Text(reason)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.accentInk)
                         .multilineTextAlignment(.center)
-                        .padding(.top, 4)
-                        .accessibilityAddTraits(.isHeader)
-
-                    if let reason {
-                        Text(reason)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(AppTheme.ColorToken.accentInk)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .frame(maxWidth: .infinity)
-                            .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 16, style: .continuous))
-                            .padding(.top, 14)
-                    }
-
-                    VStack(alignment: .leading, spacing: 14) {
-                        ForEach(features, id: \.1) { icon, title, detail in
-                            HStack(spacing: 12) {
-                                Icon(icon, size: 18)
-                                    .foregroundStyle(AppTheme.ColorToken.accent)
-                                    .frame(width: 34, height: 34)
-                                    .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 10, style: .continuous))
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(title).font(.system(size: 16, weight: .semibold))
-                                    Text(detail)
-                                        .font(.system(size: 14))
-                                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                            }
-                            .accessibilityElement(children: .combine)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 24)
-
-                    VStack(spacing: 10) {
-                        planCard(.lifetime, detail: "Pay once, yours forever", badge: "Best value")
-                        planCard(.monthly, detail: "Cancel anytime", badge: nil)
-                    }
-                    .padding(.top, 24)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                        .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 16, style: .continuous))
+                        .padding(.top, 14)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 12)
-            }
-            .scrollIndicators(.hidden)
 
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(features, id: \.1) { icon, title, detail in
+                        HStack(spacing: 12) {
+                            FilledIcon(icon, size: 24)
+                                .foregroundStyle(AppTheme.ColorToken.accent)
+                                .frame(width: 30)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(title).font(.system(size: 16, weight: .semibold))
+                                Text(detail)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 24)
+
+                VStack(spacing: 10) {
+                    planCard(.lifetime, detail: "Pay once, yours forever", badge: "Best value")
+                    planCard(
+                        .monthly,
+                        detail: trialDays.map { "\($0) days free, then cancel anytime" } ?? "Cancel anytime",
+                        badge: trialDays.map { "\($0)-day free trial" }
+                    )
+                }
+                .padding(.top, 24)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
+        }
+        .scrollIndicators(.hidden)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 4) {
                 Button(action: buy) {
                     if purchases.isPurchasing {
                         ProgressView().tint(.white)
                     } else {
-                        Text(plan == .lifetime ? "Unlock for \(purchases.price(for: .lifetime))" : "Subscribe for \(purchases.price(for: .monthly))/month")
+                        Text(buttonTitle)
                     }
                 }
-                .buttonStyle(.primary(height: 56))
+                .buttonStyle(.glassPrimary)
                 .disabled(purchases.isPurchasing)
 
-                Text(plan == .lifetime ? "One-time purchase. No subscription." : "Renews monthly until cancelled in Settings.")
+                Text(terms)
                     .font(.system(size: 13))
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
                     .padding(.top, 4)
 
@@ -108,7 +111,21 @@ struct PaywallView: View {
                 .frame(height: 40)
             }
             .padding(.horizontal, 20)
-            .padding(.top, 10)
+            .padding(.top, 36)
+            .background {
+                // Solid behind the buttons, fading to clear above them, so
+                // the list softly disappears under the button.
+                LinearGradient(
+                    stops: [
+                        .init(color: AppTheme.ColorToken.background.opacity(0), location: 0),
+                        .init(color: AppTheme.ColorToken.background, location: 0.3),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
+            }
         }
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
         .overlay(alignment: .topTrailing) {
@@ -129,6 +146,29 @@ struct PaywallView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(purchases.errorMessage ?? "")
+        }
+    }
+
+    private var trialDays: Int? { purchases.monthlyTrialDays }
+
+    private var buttonTitle: String {
+        switch plan {
+        case .lifetime: "Unlock forever"
+        // "Free" only when the App Store will really give them the trial.
+        case .monthly: trialDays != nil ? "Continue for free" : "Subscribe for \(purchases.price(for: .monthly))/month"
+        }
+    }
+
+    /// What they'll pay and when, said plainly next to the button.
+    private var terms: String {
+        switch plan {
+        case .lifetime: "One-time purchase. No subscription."
+        case .monthly:
+            if let trialDays {
+                "Free for \(trialDays) days, then \(purchases.price(for: .monthly))/month. Cancel anytime in Settings."
+            } else {
+                "Renews monthly until cancelled in Settings."
+            }
         }
     }
 
@@ -173,13 +213,7 @@ struct PaywallView: View {
                 isSelected ? AppTheme.ColorToken.accentSoft : AppTheme.ColorToken.cardBackground,
                 in: .rect(cornerRadius: 20, style: .continuous)
             )
-            .overlay {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(
-                        isSelected ? AppTheme.ColorToken.accent : Color(hex: 0x28185A, opacity: 0.08),
-                        lineWidth: isSelected ? 2 : 0.5
-                    )
-            }
+            .selectionBorder(isSelected, cornerRadius: 20)
             .contentShape(.rect)
         }
         .buttonStyle(.pressable)

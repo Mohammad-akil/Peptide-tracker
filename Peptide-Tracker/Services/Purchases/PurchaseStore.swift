@@ -23,6 +23,9 @@ final class PurchaseStore {
     static let freeMedicineLimit = 2
 
     private(set) var products: [Plan: Product] = [:]
+    /// Days of the monthly plan's free trial, when this Apple Account can
+    /// still take it. `nil` means no trial to offer, so none is promised.
+    private(set) var monthlyTrialDays: Int?
     private(set) var isPro = false
     private(set) var activePlan: Plan?
     private(set) var isPurchasing = false
@@ -56,6 +59,25 @@ final class PurchaseStore {
         products = Dictionary(uniqueKeysWithValues: loaded.compactMap { product in
             Plan(rawValue: product.id).map { ($0, product) }
         })
+        await refreshTrial()
+    }
+
+    /// Apple only allows one introductory offer per subscription group, so
+    /// ask StoreKit rather than assuming everyone gets the trial.
+    func refreshTrial() async {
+        guard let subscription = products[.monthly]?.subscription,
+              let offer = subscription.introductoryOffer,
+              offer.paymentMode == .freeTrial,
+              await subscription.isEligibleForIntroOffer else {
+            monthlyTrialDays = nil
+            return
+        }
+        let period = offer.period
+        switch period.unit {
+        case .day: monthlyTrialDays = period.value * offer.periodCount
+        case .week: monthlyTrialDays = period.value * 7 * offer.periodCount
+        default: monthlyTrialDays = nil
+        }
     }
 
     /// Returns whether the plan is now unlocked.
@@ -105,5 +127,7 @@ final class PurchaseStore {
         }
         activePlan = plan
         isPro = plan != nil
+        // Having subscribed before can use up the trial.
+        await refreshTrial()
     }
 }

@@ -59,7 +59,12 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "6739000001",
-          "introductoryOffer" : null,
+          "introductoryOffer" : {
+            "internalID" : "6739000011",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
           "localizations" : [
             {
               "description" : "Pro, billed monthly.",
