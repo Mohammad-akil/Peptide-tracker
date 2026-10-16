@@ -1,40 +1,27 @@
 import SwiftUI
 
-/// The Today tab answers one question first: do I need to do anything? A
-/// refill card shows only when a medicine needs one; otherwise "You're all
-/// set" with what runs out next. Below that, today's doses as a list or a
-/// timeline.
+/// Home: the week up top, then the picked day's doses grouped by time.
+/// Only what needs doing gets a line above the doses — notifications being
+/// off, or a medicine to refill. What runs out next lives under Refills.
 struct TodayView: View {
-    enum Mode: String, CaseIterable {
-        case list, timeline
-
-        var title: String { self == .list ? "List" : "Timeline" }
-        var icon: AppIcon { self == .list ? .list : .timeline }
-    }
-
     @Environment(MedicineStore.self) private var store
     @Environment(AppRouter.self) private var router
-    @AppStorage("today.mode") private var mode: Mode = .list
     @Environment(PurchaseStore.self) private var purchases
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
     /// iOS-level permission, which can be switched off outside the app.
     @State private var systemNotificationsDenied = false
     @State private var viewportHeight: CGFloat = 0
-    /// The day whose doses show below the strip; today unless picked.
+    /// The day whose doses show; today unless another is picked.
     @State private var selectedDay = Date.now.startOfDay
-    /// Which way the last day change went, so the list slides that way.
+    /// Which way the last day change went, so the doses slide that way.
     @State private var dayMovesForward = true
 
     var body: some View {
         TimelineView(.everyMinute) { context in
             let now = context.date
             ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.cardGap) {
-                    ScreenHeader(title: "Today", subtitle: now.longWeekdayDayMonth) {
-                        RemindersMenu(now: now)
-                    }
-                    .padding(.bottom, 10)
-
+                VStack(alignment: .leading, spacing: 20) {
                     if store.medicines.isEmpty {
                         Spacer(minLength: 0)
                         TodayEmptyState(
@@ -43,35 +30,25 @@ struct TodayView: View {
                         )
                         Spacer(minLength: 0)
                     } else {
-                        if systemNotificationsDenied || !store.settings.notificationsEnabled {
-                            NotificationsOffBanner(isDenied: systemNotificationsDenied)
-                        }
-                        RefillStatusSection(now: now)
-                        if !store.settings.tracksDoses {
-                            Text("Doses")
-                                .font(.system(size: 20, weight: .bold))
-                                .padding(.horizontal, 4)
-                                .padding(.top, 6)
-                            DosesOffCard { router.selectedTab = .settings }
-                        } else {
-                            dosesHeader(now: now)
-                                .padding(.top, 6)
-                            DayStrip(selection: $selectedDay, today: now.startOfDay)
-                                // Edge to edge, past the page's side padding.
-                                .padding(.horizontal, -AppTheme.Spacing.medium)
+                        alerts(now: now)
+                        if store.settings.tracksDoses {
                             dayDoses(now: now)
+                        } else {
+                            CompactNote(symbol: "checklist", tint: AppTheme.ColorToken.accent, title: "Dose tracking is off", action: "Turn on") {
+                                router.selectedTab = .settings
+                            }
                         }
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.medium)
-                .padding(.top, 8)
+                .padding(.top, 20)
                 .padding(.bottom, AppTheme.Spacing.tabBarClearance)
                 .fillsViewport(store.medicines.isEmpty, height: viewportHeight)
-                .animation(.snappy, value: mode)
             }
             .measuresViewport($viewportHeight)
             .scrollIndicators(.hidden)
-            .scrollEdgeEffectStyle(.soft, for: .top)
+            // Pinned: the week stays put while the doses slide under it.
+            .safeAreaInset(edge: .top, spacing: 0) { topPanel(now: now) }
             .onChange(of: now.startOfDay) { oldDay, newDay in
                 store.runDailyCountdown(now: now)
                 // Still looking at "today" when midnight passes: follow it.
@@ -87,62 +64,79 @@ struct TodayView: View {
         }
     }
 
-    private func dosesHeader(now: Date) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 1) {
-                HStack(spacing: 8) {
-                    Text(dayTitle(now: now))
-                        .font(.system(size: 20, weight: .bold))
-                        .kerning(-0.3)
-                        .contentTransition(.opacity)
-                    if selectedDay != now.startOfDay {
-                        Button("Today") {
-                            HapticFeedback.selection()
-                            withAnimation(.snappy) { selectedDay = now.startOfDay }
-                        }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(AppTheme.ColorToken.accent)
-                        .padding(.horizontal, 10)
-                        .frame(height: 26)
-                        .background(AppTheme.ColorToken.accentSoft, in: .capsule)
-                        .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                Text(dosesSubtitle(now: now))
-                    .font(.system(size: 14))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                    .contentTransition(.numericText())
+    // MARK: Top
+
+    /// White panel under the status bar: the month, the reminders bell and
+    /// the week.
+    private func topPanel(now: Date) -> some View {
+        VStack(spacing: 18) {
+            HStack {
+                Text(selectedDay.monthName)
+                    .font(.system(size: 30, weight: .heavy))
+                    .kerning(-0.6)
+                    .contentTransition(.opacity)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 0)
+                RemindersMenu(now: now)
             }
-            Spacer(minLength: 0)
-            PillSegmentedControl(options: Mode.allCases, selection: $mode) { option in
-                AnyView(Label { Text(option.title) } icon: { Icon(option.icon, size: 16) }.labelStyle(.titleAndIcon))
+            .padding(.horizontal, 20)
+
+            if !store.medicines.isEmpty && store.settings.tracksDoses {
+                WeekStrip(selection: $selectedDay, today: now.startOfDay)
             }
-            .fixedSize()
         }
-        .padding(.horizontal, 4)
+        .padding(.top, 8)
+        .padding(.bottom, 18)
+        .frame(maxWidth: .infinity)
+        .background(alignment: .bottom) {
+            UnevenRoundedRectangle(bottomLeadingRadius: 28, bottomTrailingRadius: 28, style: .continuous)
+                .fill(AppTheme.ColorToken.cardBackground)
+                .shadow(color: Color(hex: 0x28185A, opacity: 0.08), radius: 12, y: 6)
+                // Runs up under the status bar.
+                .ignoresSafeArea(edges: .top)
+        }
+        .animation(.snappy, value: selectedDay.monthName)
     }
 
-    /// The selected day's doses: list or timeline, sliding in from the side
-    /// you moved to. Swiping sideways changes the day too.
+    // MARK: Needs doing
+
+    @ViewBuilder
+    private func alerts(now: Date) -> some View {
+        let needing = store.medicinesNeedingRefill(now: now)
+        let notificationsOff = systemNotificationsDenied || !store.settings.notificationsEnabled
+        if notificationsOff || !needing.isEmpty {
+            VStack(spacing: 10) {
+                if notificationsOff {
+                    CompactNote(symbol: "bell.slash.fill", tint: Urgency.low.tint, title: "Reminders are off", action: "Turn on", onAction: turnOn)
+                }
+                ForEach(needing) { medicine in
+                    RefillAlert(medicine: medicine)
+                }
+            }
+            .animation(.snappy, value: needing.map(\.id))
+        }
+    }
+
+    // MARK: Doses
+
+    /// The picked day's doses, sliding in from the side you moved to.
+    /// Swiping sideways changes the day too.
     @ViewBuilder
     private func dayDoses(now: Date) -> some View {
         let doses = store.doses(on: selectedDay)
         Group {
             if doses.isEmpty {
-                Text("No doses on \(selectedDay.weekdayDayMonth).")
-                    .font(.system(size: 15))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                    .frame(maxWidth: .infinity, minHeight: 80)
-                    .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
-            } else {
-                switch mode {
-                case .list:
-                    DoseListView(doses: doses, day: selectedDay, now: now)
-                case .timeline:
-                    DoseTimelineView(doses: doses, day: selectedDay, now: now)
+                VStack(spacing: 8) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.tertiaryText)
+                    Text("No doses this day")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
                 }
+                .frame(maxWidth: .infinity, minHeight: 140)
+            } else {
+                DoseSchedule(doses: doses, day: selectedDay, now: now)
             }
         }
         .id(selectedDay)
@@ -156,158 +150,48 @@ struct TodayView: View {
             DragGesture(minimumDistance: 30).onEnded { value in
                 // Only clearly sideways swipes; vertical ones scroll the page.
                 guard abs(value.translation.width) > abs(value.translation.height) * 1.5 else { return }
-                let step = value.translation.width < 0 ? 1 : -1
-                let target = selectedDay.adding(days: step)
-                let offset = Calendar.current.days(from: now.startOfDay, to: target)
-                guard DayStrip.range.contains(offset) else { return }
+                let target = selectedDay.adding(days: value.translation.width < 0 ? 1 : -1)
+                let weeks = Calendar.current.days(from: now.startOfDay, to: target) / 7
+                guard WeekStrip.weekRange.contains(weeks) else { return }
                 HapticFeedback.selection()
-                selectedDay = target
+                withAnimation(.snappy) { selectedDay = target }
             }
         )
     }
 
-    /// "Today", "Yesterday", "Tomorrow", or "Mon 12 Oct".
-    private func dayTitle(now: Date) -> String {
-        switch Calendar.current.days(from: now.startOfDay, to: selectedDay) {
-        case 0: "Today"
-        case -1: "Yesterday"
-        case 1: "Tomorrow"
-        default: selectedDay.weekdayDayMonth
+    private func turnOn() {
+        Task {
+            switch await store.scheduler.authorizationStatus() {
+            case .notDetermined:
+                store.settings.notificationsEnabled = await store.scheduler.requestAuthorization()
+            case .denied:
+                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+            default:
+                store.settings.notificationsEnabled = true
+            }
         }
-    }
-
-    /// "3 of 9 taken · next at 20:00", or for other days "9 of 9 taken" /
-    /// "9 doses planned".
-    private func dosesSubtitle(now: Date) -> String {
-        let isToday = selectedDay == now.startOfDay
-        let doses = store.doses(on: isToday ? now : selectedDay)
-        let taken = doses.filter(\.isTaken).count
-        if selectedDay > now.startOfDay {
-            return doses.count == 1 ? "1 dose planned" : "\(doses.count) doses planned"
-        }
-        let summary = "\(taken) of \(doses.count) taken"
-        guard isToday else { return summary }
-        guard let next = doses.first(where: { !$0.isTaken && $0.scheduledAt >= now }) else {
-            return taken == doses.count ? "All \(doses.count) taken today" : summary
-        }
-        return "\(summary) · next at \(next.time.label)"
     }
 }
 
-// MARK: - Refill status
+// MARK: - Rows
 
-/// "Amlodipine needs a refill." with Ordered / Refilled, or "You're all
-/// set." with the next few run-out dates.
-private struct RefillStatusSection: View {
-    @Environment(MedicineStore.self) private var store
-    @Environment(AppRouter.self) private var router
-    let now: Date
-
-    var body: some View {
-        let needing = store.medicinesNeedingRefill(now: now)
-
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.cardGap) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(headline(needing))
-                    .font(.system(size: 22, weight: .bold))
-                    .kerning(-0.3)
-                Text(subtitle(needing))
-                    .font(.system(size: 15))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            }
-            .padding(.horizontal, 4)
-            .accessibilityElement(children: .combine)
-
-            if needing.isEmpty {
-                upcomingCard
-            } else {
-                ForEach(needing) { medicine in
-                    RefillCard(medicine: medicine, now: now)
-                }
-            }
-        }
-        .animation(.snappy, value: needing.map(\.id))
-    }
-
-    private func headline(_ needing: [Medicine]) -> String {
-        let waiting = needing.filter { !$0.isOrdered }
-        switch waiting.count {
-        case 0 where !needing.isEmpty:
-            return needing.count == 1 ? "\(needing[0].name) is on order." : "Your refills are on order."
-        case 0: return "You’re all set."
-        case 1: return "\(waiting[0].name) needs a refill."
-        default: return "\(waiting.count) medicines need a refill."
-        }
-    }
-
-    private func subtitle(_ needing: [Medicine]) -> String {
-        if needing.isEmpty {
-            guard let next = store.nextReminder(now: now) else { return "Nothing runs out soon." }
-            return "Next reminder \(next.date.weekdayDayMonth) for \(next.medicine.name)."
-        }
-        let others = store.medicines.filter { medicine in !needing.contains { $0.id == medicine.id } }
-        guard let soonest = others.map(\.daysLeft).min() else { return "Tap Refilled when you’ve picked it up." }
-        return soonest >= 7
-            ? "Everything else lasts at least a week."
-            : "Everything else lasts at least \(soonest) \(soonest == 1 ? "day" : "days")."
-    }
-
-    /// The three medicines that run out soonest.
-    private var upcomingCard: some View {
-        let upcoming = Array(store.medicinesByUrgency.prefix(3))
-        return VStack(spacing: 0) {
-            ForEach(Array(upcoming.enumerated()), id: \.element.id) { index, medicine in
-                Button { router.push(.medicine(medicine.id)) } label: {
-                    HStack(spacing: 12) {
-                        StockRingIcon(medicine: medicine, size: 40)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(medicine.name)
-                                .font(.system(size: 17))
-                                .foregroundStyle(AppTheme.ColorToken.primaryText)
-                            Text("Runs out \(medicine.runOutDate(now: now).weekdayDayMonth)")
-                                .font(.system(size: 14))
-                                .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                        }
-                        Spacer(minLength: 8)
-                        Text(medicine.daysLeftLabel)
-                            .font(.system(size: 15, weight: .bold))
-                            .monospacedDigit()
-                            .foregroundStyle(medicine.urgency.ink)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .frame(minHeight: 52)
-                    .contentShape(.rect)
-                    .rowDivider(index < upcoming.count - 1, inset: 68)
-                }
-                .buttonStyle(RowPressStyle())
-            }
-        }
-        .groupedCard()
-    }
-}
-
-/// One medicine that needs a refill: what's left and when it runs out, with
-/// Ordered beside Refilled. Once ordered, only Refilled is left to do.
-struct RefillCard: View {
-    @Environment(MedicineStore.self) private var store
+/// A medicine that needs refilling, in one line: stock ring, name, how long
+/// it lasts, and Refill. Ordering lives on the medicine's page.
+private struct RefillAlert: View {
     @Environment(AppRouter.self) private var router
     let medicine: Medicine
-    let now: Date
 
     var body: some View {
-        VStack(spacing: 14) {
+        HStack(spacing: 12) {
             Button { router.push(.medicine(medicine.id)) } label: {
                 HStack(spacing: 12) {
-                    StockRingIcon(medicine: medicine)
-                    VStack(alignment: .leading, spacing: 1) {
-                        (Text(medicine.name).fontWeight(.semibold)
-                         + Text(medicine.strength.isEmpty ? "" : " \(medicine.strength)")
-                            .foregroundStyle(AppTheme.ColorToken.secondaryText))
-                            .font(.system(size: 17))
+                    StockRingIcon(medicine: medicine, size: 40)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(medicine.name)
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(AppTheme.ColorToken.primaryText)
-                        Text(statusLine)
-                            .font(.system(size: 15, weight: .semibold))
+                        Text(status)
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(medicine.isOrdered ? AppTheme.ColorToken.accentInk : medicine.urgency.ink)
                     }
                     Spacer(minLength: 0)
@@ -316,32 +200,51 @@ struct RefillCard: View {
             }
             .buttonStyle(.plain)
 
-            HStack(spacing: 10) {
-                if !medicine.isOrdered && medicine.urgency != .out {
-                    Button("Ordered") {
-                        HapticFeedback.selection()
-                        withAnimation(.snappy) { store.markOrdered(medicine.id) }
-                        router.showToast("Ordered. Reminders paused until pickup")
-                    }
-                    .buttonStyle(.secondary)
-                }
-                Button { router.sheet = .refill(medicine.id) } label: {
-                    Label { Text("Refilled") } icon: { Icon(.up, size: 19) }
-                }
-                .buttonStyle(.primary(height: 48))
-            }
+            Button("Refill") { router.sheet = .refill(medicine.id) }
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .frame(height: 36)
+                .background(AppTheme.ColorToken.accent, in: .capsule)
         }
-        .padding(14)
-        .groupedCard()
+        .padding(12)
+        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
     }
 
-    private var statusLine: String {
-        let left = "\(medicine.unit.format(medicine.stock)) left"
-        if let orderedAt = medicine.orderedAt {
-            return "Ordered \(orderedAt.weekdayDayMonth) · \(left)"
+    private var status: String {
+        if medicine.isOrdered { return "On order" }
+        if medicine.urgency == .out { return "Run out" }
+        return "\(medicine.daysLeftLabel) left"
+    }
+}
+
+/// A one-line notice with a single action ("Reminders are off · Turn on").
+private struct CompactNote: View {
+    let symbol: String
+    let tint: Color
+    let title: String
+    let action: String
+    let onAction: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 40, height: 40)
+                .background(tint.opacity(0.13), in: .circle)
+            Text(title)
+                .font(.system(size: 16, weight: .semibold))
+            Spacer(minLength: 0)
+            Button(action, action: onAction)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(AppTheme.ColorToken.accent)
+                .padding(.horizontal, 14)
+                .frame(height: 36)
+                .background(AppTheme.ColorToken.accentSoft, in: .capsule)
         }
-        if medicine.urgency == .out { return "Run out · \(left)" }
-        return "\(left) · runs out \(medicine.runOutDate(now: now).weekdayDayMonth)"
+        .padding(12)
+        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
     }
 }
 
@@ -392,7 +295,7 @@ private struct RemindersMenu: View {
     }
 }
 
-// MARK: - Empty and edge states
+// MARK: - Empty state
 
 /// No medicines yet: what Today will do, and the way in.
 private struct TodayEmptyState: View {
@@ -415,78 +318,10 @@ private struct TodayEmptyState: View {
     }
 }
 
-/// Dose tracking is off: the count runs from the schedule, so there's
-/// nothing to tick.
-private struct DosesOffCard: View {
-    let onTurnOn: () -> Void
-
-    var body: some View {
-        HStack(spacing: 14) {
-            IllustrationView(.noDosesToday, width: 112)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Dose reminders are off")
-                    .font(.system(size: 16, weight: .semibold))
-                Text("We count down from your schedule. Turn them on to tick off doses.")
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button("Turn on in Settings", action: onTurnOn)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(AppTheme.ColorToken.accent)
-                    .frame(height: 36)
-            }
-            Spacer(minLength: 0)
-        }
-        .card(horizontal: 14, vertical: 12, radius: 22)
-    }
-}
-
-/// Reminders can't arrive: shown above everything until notifications are
-/// back on.
-private struct NotificationsOffBanner: View {
-    @Environment(MedicineStore.self) private var store
-    @Environment(\.openURL) private var openURL
-    let isDenied: Bool
-
-    var body: some View {
-        HStack(spacing: 12) {
-            IllustrationView(.notificationsOff, width: 80)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Reminders can’t reach you")
-                    .font(.system(size: 15, weight: .bold))
-                Text("Notifications are off for this app.")
-                    .font(.system(size: 13))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            }
-            Spacer(minLength: 0)
-            Button("Turn on", action: turnOn)
-                .buttonStyle(PrimaryButtonStyle(height: 40, fullWidth: false))
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 22))
-        .overlay {
-            RoundedRectangle(cornerRadius: 22).strokeBorder(Urgency.low.tint, lineWidth: 1.5)
-        }
-    }
-
-    private func turnOn() {
-        Task {
-            switch await store.scheduler.authorizationStatus() {
-            case .notDetermined:
-                store.settings.notificationsEnabled = await store.scheduler.requestAuthorization()
-            case .denied:
-                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
-            default:
-                store.settings.notificationsEnabled = true
-            }
-        }
-    }
-}
-
 #Preview {
     TodayView()
         .environment(MedicineStore.preview())
         .environment(AppRouter())
+        .environment(PurchaseStore())
         .background(AppTheme.ColorToken.background)
 }
