@@ -67,34 +67,14 @@ struct TodayView: View {
 
     // MARK: Top
 
-    /// White panel under the status bar: the month, the reminders bell and
-    /// the week.
+    /// Pinned panel: the month, the reminders bell and the week.
     private func topPanel(now: Date) -> some View {
-        VStack(spacing: 18) {
-            HStack {
-                Text(selectedDay.monthName)
-                    .font(.system(size: 30, weight: .heavy))
-                    .kerning(-0.6)
-                    .contentTransition(.opacity)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: 0)
-                RemindersMenu(now: now)
-            }
-            .padding(.horizontal, 20)
-
+        TopPanel(title: selectedDay.monthName) {
+            RemindersMenu(now: now)
+        } controls: {
             if !store.medicines.isEmpty && store.settings.tracksDoses {
                 WeekStrip(selection: $selectedDay, today: now.startOfDay)
             }
-        }
-        .padding(.top, 8)
-        .padding(.bottom, 18)
-        .frame(maxWidth: .infinity)
-        .background(alignment: .bottom) {
-            UnevenRoundedRectangle(bottomLeadingRadius: 28, bottomTrailingRadius: 28, style: .continuous)
-                .fill(AppTheme.ColorToken.cardBackground)
-                .shadow(color: Color(hex: 0x28185A, opacity: 0.08), radius: 12, y: 6)
-                // Runs up under the status bar.
-                .ignoresSafeArea(edges: .top)
         }
         .animation(.snappy, value: selectedDay.monthName)
     }

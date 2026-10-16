@@ -110,12 +110,30 @@ struct MedicineIconView: View {
     let type: MedicineType
     let color: MedicineColor
     var size: CGFloat = 42
+    /// A solid bright tile with a white glyph, instead of the soft tint.
+    var isVibrant = false
 
     var body: some View {
-        glyph
-            .frame(width: size, height: size)
-            .background(color.color.opacity(0.13), in: .rect(cornerRadius: size * 0.31, style: .continuous))
-            .accessibilityHidden(true)
+        if isVibrant {
+            Image(systemName: type.symbol)
+                .font(.system(size: size * 0.44, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: size, height: size)
+                .background(
+                    LinearGradient(
+                        colors: [color.vibrant.mix(with: .white, by: 0.18), color.vibrant],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    in: .rect(cornerRadius: size * 0.31, style: .continuous)
+                )
+                .accessibilityHidden(true)
+        } else {
+            glyph
+                .frame(width: size, height: size)
+                .background(color.color.opacity(0.13), in: .rect(cornerRadius: size * 0.31, style: .continuous))
+                .accessibilityHidden(true)
+        }
     }
 
     /// The asset pack's drawn glyph where there is one; the type's symbol in
@@ -136,8 +154,8 @@ struct MedicineIconView: View {
 }
 
 extension MedicineIconView {
-    init(medicine: Medicine, size: CGFloat = 42) {
-        self.init(type: medicine.type, color: medicine.color, size: size)
+    init(medicine: Medicine, size: CGFloat = 42, isVibrant: Bool = false) {
+        self.init(type: medicine.type, color: medicine.color, size: size, isVibrant: isVibrant)
     }
 }
 

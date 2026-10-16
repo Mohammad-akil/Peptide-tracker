@@ -68,7 +68,7 @@ struct RefillsSection: View {
     }
 }
 
-/// "Oct 4 · Amlodipine · Runs out · order now ›"
+/// "OCT 4 · Amlodipine · Order now ›"
 private struct UpcomingRefillRow: View {
     let medicine: Medicine
     let now: Date
@@ -116,13 +116,14 @@ private struct UpcomingRefillRow: View {
         }
     }
 
+    /// What to do about it; the badge already says when it runs out.
     private var subtitle: String {
-        let verb = medicine.urgency == .out ? "Ran out" : "Runs out"
-        if medicine.isOrdered { return "\(verb) · ordered" }
+        if medicine.isOrdered { return "On order" }
+        if medicine.urgency == .out { return "Ran out" }
         let reminder = medicine.reminderDate(now: now)
-        if medicine.urgency <= .critical || reminder <= now { return "\(verb) · order now" }
-        if medicine.remindersPaused { return "\(verb) · reminders paused" }
-        return "\(verb) · reminder \(reminder.weekdayDayMonth)"
+        if medicine.urgency <= .critical || reminder <= now { return "Order now" }
+        if medicine.remindersPaused { return "Reminders paused" }
+        return "Reminder \(reminder.weekdayDayMonth)"
     }
 }
 

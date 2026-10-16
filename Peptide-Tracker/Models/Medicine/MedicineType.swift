@@ -123,6 +123,19 @@ enum MedicineColor: String, Codable, CaseIterable, Identifiable {
         case .slate: Color(hex: 0x5A6577)
         }
     }
+
+    /// Apple's bright system colours, for a solid tile behind a white glyph
+    /// (the Medicines list). `slate` turns indigo, as grey isn't vibrant.
+    var vibrant: Color {
+        switch self {
+        case .blue: Color(hex: 0x0A84FF)
+        case .purple: Color(hex: 0xBF5AF2)
+        case .pink: Color(hex: 0xFF375F)
+        case .teal: Color(hex: 0x30B0C7)
+        case .amber: Color(hex: 0xFF9F0A)
+        case .slate: Color(hex: 0x5E5CE6)
+        }
+    }
 }
 
 extension String {

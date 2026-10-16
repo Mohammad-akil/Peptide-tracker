@@ -14,23 +14,23 @@ struct GroupedSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if title != nil || trailing != nil {
+                // Apple's inset-grouped header: a quiet label lined up with
+                // the rows' content, with a count or note on the right.
                 HStack(alignment: .firstTextBaseline) {
                     if let title {
                         Text(title)
-                            .font(.system(size: 20, weight: .bold))
-                            .kerning(-0.3)
-                            .foregroundStyle(AppTheme.ColorToken.primaryText)
                     }
                     Spacer(minLength: 8)
                     if let trailing {
                         Text(trailing)
-                            .font(.system(size: 15))
-                            .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                            .monospacedDigit()
                             .contentTransition(.numericText())
                     }
                 }
-                .padding(.horizontal, 4)
-                .padding(.bottom, 8)
+                .font(.system(size: 17))
+                .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 10)
                 .accessibilityElement(children: .combine)
                 .accessibilityAddTraits(.isHeader)
             }
@@ -162,11 +162,12 @@ struct RowPressStyle: ButtonStyle {
 struct StockRingIcon: View {
     let medicine: Medicine
     var size: CGFloat = 46
+    var isVibrant = false
 
     var body: some View {
         ZStack {
             ProgressRing(progress: medicine.stockFraction, lineWidth: 3, tint: medicine.urgency.tint)
-            MedicineIconView(medicine: medicine, size: size * 0.7)
+            MedicineIconView(medicine: medicine, size: size * 0.7, isVibrant: isVibrant)
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)

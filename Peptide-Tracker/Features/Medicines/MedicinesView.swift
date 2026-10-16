@@ -21,6 +21,7 @@ struct MedicinesView: View {
     @Environment(PurchaseStore.self) private var purchases
     @AppStorage("medicines.sort") private var sort: Sort = .daysLeft
     @AppStorage("medicines.pane") private var pane: Pane = .medicines
+    @AppStorage("medicines.isListView") private var isListView = true
     @State private var pendingDelete: Medicine?
     @State private var query = ""
     @State private var viewportHeight: CGFloat = 0
@@ -28,17 +29,7 @@ struct MedicinesView: View {
     var body: some View {
         let now = Date.now
         ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
-                ScreenHeader(title: "Medicines") {
-                    if showsStock { shareButton(now: now) } else { sortMenu }
-                }
-
-                if !store.medicines.isEmpty {
-                    PillSegmentedControl(options: Pane.allCases, selection: $pane) { option in
-                        AnyView(Text(option.title))
-                    }
-                }
-
+            VStack(alignment: .leading, spacing: 24) {
                 if showsStock {
                     RefillsSection(now: now)
                 } else if store.medicines.isEmpty {
@@ -47,29 +38,55 @@ struct MedicinesView: View {
                     Spacer(minLength: 0)
                 } else if store.medicines.count == 1, let only = store.medicines.first {
                     firstMedicine(only, now: now)
-                    HowItWorksCard()
+                } else if matches.isEmpty {
+                    Spacer(minLength: 0)
+                    noResults
+                    Spacer(minLength: 0)
                 } else {
-                    SearchField(text: $query)
-                    if matches.isEmpty {
-                        Spacer(minLength: 0)
-                        noResults
-                        Spacer(minLength: 0)
-                    } else {
-                        cabinet(now: now)
-                    }
+                    cabinet(now: now)
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
-            .padding(.top, 8)
+            .padding(.top, 20)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
             .fillsViewport(showsEmptyState, height: viewportHeight)
             .animation(.snappy, value: store.medicines.map(\.id))
             .animation(.snappy, value: pane)
+            .animation(.smooth(duration: 0.42), value: isListView)
         }
         .measuresViewport($viewportHeight)
         .scrollIndicators(.hidden)
-        .scrollEdgeEffectStyle(.soft, for: .top)
+        .scrollDismissesKeyboard(.immediately)
+        // Pinned: the title, the switch and search stay put while the list
+        // scrolls under them.
+        .safeAreaInset(edge: .top, spacing: 0) { topPanel(now: now) }
         .deleteMedicineAlert($pendingDelete)
+    }
+
+    private func topPanel(now: Date) -> some View {
+        TopPanel(title: "Medicines") {
+            if showsStock {
+                shareButton(now: now)
+            } else if store.medicines.count > 1 {
+                HStack(spacing: 8) {
+                    LayoutToggle(isListView: $isListView)
+                    sortMenu
+                }
+            }
+        } controls: {
+            if !store.medicines.isEmpty {
+                VStack(spacing: 12) {
+                    PillSegmentedControl(options: Pane.allCases, selection: $pane, height: 38) { option in
+                        AnyView(Text(option.title))
+                    }
+                    if pane == .medicines && store.medicines.count > 1 {
+                        SearchField(text: $query)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
     }
 
     /// The Stock side, once there's a medicine to keep stocked.
@@ -146,36 +163,63 @@ struct MedicinesView: View {
             let sorted = store.medicinesByUrgency.filter { medicine in matches.contains { $0.id == medicine.id } }
             let soon = sorted.filter { $0.urgency.isRunningLow }
             let stocked = sorted.filter { !$0.urgency.isRunningLow }
-            if !soon.isEmpty {
-                GroupedSection(title: "Refill soon", trailing: "\(soon.count)") { rows(soon, now: now) }
-            }
-            if !stocked.isEmpty {
-                GroupedSection(
-                    title: "Stocked",
-                    trailing: "\(stocked.count)",
-                    footer: "Sorted by run-out date. The ring shows how much is left of a full pack."
-                ) { rows(stocked, now: now) }
-            }
+            if !soon.isEmpty { section("Refill soon", soon, now: now) }
+            if !stocked.isEmpty { section("Stocked", stocked, now: now) }
         case .name:
             let sorted = matches.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-            GroupedSection(
-                title: "All medicines",
-                trailing: "\(sorted.count)",
-                footer: "Sorted by name. The ring shows how much is left of a full pack."
-            ) { rows(sorted, now: now) }
+            section("All medicines", sorted, now: now)
         }
+    }
+
+    /// A titled group of medicines as list rows or a two-column grid.
+    @ViewBuilder
+    private func section(_ title: String, _ medicines: [Medicine], now: Date) -> some View {
+        Group {
+            if isListView {
+                GroupedSection(title: title, trailing: "\(medicines.count)") { rows(medicines, now: now) }
+            } else {
+                VStack(alignment: .leading, spacing: 10) {
+                    // Same header as a grouped list, so both layouts read alike.
+                    HStack {
+                        Text(title)
+                        Spacer(minLength: 8)
+                        Text("\(medicines.count)").monospacedDigit()
+                    }
+                    .font(.system(size: 17))
+                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                    .padding(.horizontal, 16)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isHeader)
+
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())], spacing: 12) {
+                        ForEach(medicines) { medicine in
+                            Button { router.push(.medicine(medicine.id)) } label: {
+                                MedicineTile(medicine: medicine)
+                            }
+                            .buttonStyle(.pressable)
+                            .contentShape(.contextMenuPreview, .rect(cornerRadius: 22, style: .continuous))
+                            .contextMenu {
+                                MedicineQuickActions(medicine: medicine, pendingDelete: $pendingDelete)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .id(isListView)
+        .transition(.opacity.combined(with: .scale(scale: 0.98)))
     }
 
     private func rows(_ medicines: [Medicine], now: Date) -> some View {
         ForEach(Array(medicines.enumerated()), id: \.element.id) { index, medicine in
             Button { router.push(.medicine(medicine.id)) } label: {
-                MedicineRow(medicine: medicine, now: now, showsDivider: index < medicines.count - 1)
+                MedicineRow(medicine: medicine, now: now, showsDivider: index < medicines.count - 1, isVibrant: true)
             }
             .buttonStyle(RowPressStyle())
             .contextMenu {
                 MedicineQuickActions(medicine: medicine, pendingDelete: $pendingDelete)
             } preview: {
-                MedicineRow(medicine: medicine, now: now, showsDivider: false)
+                MedicineRow(medicine: medicine, now: now, showsDivider: false, isVibrant: true)
                     .frame(width: 358)
                     .background(AppTheme.ColorToken.cardBackground)
             }
@@ -184,12 +228,12 @@ struct MedicinesView: View {
 
     // MARK: One
 
-    /// Right after the first medicine is saved: its row, a way to add the
-    /// next one, and when the first reminder comes.
+    /// Right after the first medicine is saved: its row and a way to add
+    /// the next one.
     private func firstMedicine(_ medicine: Medicine, now: Date) -> some View {
-        GroupedSection(footer: firstReminderNote(medicine, now: now)) {
+        GroupedSection {
             Button { router.push(.medicine(medicine.id)) } label: {
-                MedicineRow(medicine: medicine, now: now, showsDivider: true)
+                MedicineRow(medicine: medicine, now: now, showsDivider: true, isVibrant: true)
             }
             .buttonStyle(RowPressStyle())
             .contextMenu { MedicineQuickActions(medicine: medicine, pendingDelete: $pendingDelete) }
@@ -211,62 +255,121 @@ struct MedicinesView: View {
             .buttonStyle(RowPressStyle())
         }
     }
-
-    /// "First reminder Fri 9 Oct at 9:00, five days before Metformin runs out."
-    private func firstReminderNote(_ medicine: Medicine, now: Date) -> String? {
-        guard medicine.wantsReminder else { return nil }
-        let date = medicine.reminderDate(now: now)
-        guard date > now else { return nil }
-        let days = medicine.reminderDaysBefore
-        return "First reminder \(date.weekdayDayMonth) at \(date.clockTime), \(days.spelledOut) \(days == 1 ? "day" : "days") before \(medicine.name) runs out."
-    }
 }
 
 // MARK: - Row
 
-/// Ring and tile, name with strength and daily amount, days left and the
-/// run-out date.
+/// One medicine, Apple-list style: its icon, the name, days left (in the
+/// urgency colour once it's running low) and a chevron to its page.
 struct MedicineRow: View {
     let medicine: Medicine
     let now: Date
     var showsDivider = true
+    /// Bright tile with a white glyph, as in the Medicines list.
+    var isVibrant = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            StockRingIcon(medicine: medicine)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(medicine.name)
-                    .font(.system(size: 17, weight: .semibold))
-                    .lineLimit(1)
-                Text(subtitle)
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                    .lineLimit(1)
-            }
-            .foregroundStyle(AppTheme.ColorToken.primaryText)
+        HStack(spacing: 14) {
+            MedicineIconView(medicine: medicine, size: 36, isVibrant: isVibrant)
+            Text(medicine.name)
+                .font(.system(size: 17))
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .lineLimit(1)
             Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 1) {
-                Text(medicine.daysLeftLabel)
-                    .font(.system(size: 16, weight: .bold))
-                    .monospacedDigit()
-                    .foregroundStyle(medicine.urgency.ink)
-                    .contentTransition(.numericText(value: Double(medicine.daysLeft)))
-                Text(medicine.runOutDate(now: now).weekdayDayMonth)
-                    .font(.system(size: 13))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            }
+            Text(value)
+                .font(.system(size: 17))
+                .monospacedDigit()
+                .foregroundStyle(valueColor)
+                .contentTransition(.numericText(value: Double(medicine.daysLeft)))
+            Chevron()
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .frame(minHeight: 52)
+        .frame(minHeight: 60)
         .contentShape(.rect)
-        .rowDivider(showsDivider, inset: 74)
+        .rowDivider(showsDivider, inset: 66)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Long-press for quick actions")
     }
 
-    private var subtitle: String {
-        medicine.isOrdered ? "Ordered \(medicine.orderedAt?.weekdayDayMonth ?? "")" : medicine.detailSubtitle
+    /// "13 days", "Run out", "On order"
+    private var value: String {
+        medicine.isOrdered ? "On order" : medicine.daysLeftLabel
+    }
+
+    private var valueColor: Color {
+        if medicine.isOrdered { return AppTheme.ColorToken.accent }
+        return medicine.urgency.isRunningLow ? medicine.urgency.ink : AppTheme.ColorToken.secondaryText
+    }
+}
+
+/// A medicine as a grid card: the bright icon, its name and days left.
+struct MedicineTile: View {
+    let medicine: Medicine
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            MedicineIconView(medicine: medicine, size: 44, isVibrant: true)
+            Spacer(minLength: 14)
+            Text(medicine.name)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            Text(value)
+                .font(.system(size: 14, weight: medicine.urgency.isRunningLow ? .semibold : .regular))
+                .monospacedDigit()
+                .foregroundStyle(valueColor)
+                .padding(.top, 2)
+        }
+        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
+        .padding(14)
+        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 22, style: .continuous))
+        .contentShape(.rect(cornerRadius: 22, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Long-press for quick actions")
+    }
+
+    /// "13 days left", "Run out", "On order"
+    private var value: String {
+        if medicine.isOrdered { return "On order" }
+        return medicine.urgency == .out ? "Run out" : "\(medicine.daysLeftLabel) left"
+    }
+
+    private var valueColor: Color {
+        if medicine.isOrdered { return AppTheme.ColorToken.accent }
+        return medicine.urgency.isRunningLow ? medicine.urgency.ink : AppTheme.ColorToken.secondaryText
+    }
+}
+
+/// List or grid, as two small round buttons; the active one is tinted.
+private struct LayoutToggle: View {
+    @Binding var isListView: Bool
+
+    var body: some View {
+        HStack(spacing: 2) {
+            option(isList: true, symbol: "list.bullet", name: "List")
+            option(isList: false, symbol: "square.grid.2x2", name: "Grid")
+        }
+        .padding(3)
+        .glassEffect(.regular.interactive(), in: .capsule)
+    }
+
+    private func option(isList: Bool, symbol: String, name: String) -> some View {
+        let isActive = isListView == isList
+        return Button {
+            guard !isActive else { return }
+            HapticFeedback.impact(.light)
+            withAnimation(.smooth(duration: 0.42)) { isListView = isList }
+        } label: {
+            Image(systemName: symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(isActive ? AppTheme.ColorToken.accent : AppTheme.ColorToken.secondaryText)
+                .frame(width: 38, height: 38)
+                .background(isActive ? AppTheme.ColorToken.accentSoft : .clear, in: .circle)
+                .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isActive ? "\(name) view, selected" : "Show \(name.lowercased()) view")
     }
 }
 
@@ -379,6 +482,5 @@ private struct SearchField: View {
         .padding(.horizontal, 14)
         .frame(height: 44)
         .background(AppTheme.ColorToken.controlFill, in: .capsule)
-        .padding(.top, -8)
     }
 }
