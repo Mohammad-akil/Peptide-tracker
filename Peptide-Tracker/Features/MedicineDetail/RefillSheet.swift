@@ -35,14 +35,13 @@ struct RefillSheet: View {
                         .foregroundStyle(AppTheme.ColorToken.secondaryText)
                 }
                 Spacer()
-                Button { dismiss() } label: {
-                    Icon(.x, size: 16)
-                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                        .frame(width: 36, height: 36)
-                        .background(AppTheme.ColorToken.controlFill, in: .circle)
+                // The system close button: glass circle, xmark, "Close" for VoiceOver.
+                Button(role: .close) { dismiss() } label: {
+                    Image(systemName: "xmark")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Close")
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .controlSize(.large)
             }
             .padding(.top, 24)
 
