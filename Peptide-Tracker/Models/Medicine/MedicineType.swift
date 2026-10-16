@@ -38,6 +38,21 @@ enum MedicineType: String, Codable, CaseIterable, Identifiable {
         }
     }
 
+    /// Each type's own Apple system colour, for its tile in type pickers.
+    var tint: Color {
+        switch self {
+        case .capsule: Color(hex: 0x0A84FF)   // blue
+        case .tablet: Color(hex: 0x5E5CE6)    // indigo
+        case .injection: Color(hex: 0xFF375F) // pink
+        case .liquid: Color(hex: 0x30B0C7)    // teal
+        case .drops: Color(hex: 0x64D2FF)     // cyan
+        case .inhaler: Color(hex: 0x30D158)   // green
+        case .powder: Color(hex: 0xFF9F0A)    // orange
+        case .cream: Color(hex: 0xBF5AF2)     // purple
+        case .other: Color(hex: 0x8E8E93)     // grey
+        }
+    }
+
     /// Whether the asset pack has a drawn glyph for this type (the original
     /// six); the rest use `symbol`.
     var hasGlyph: Bool { ![.inhaler, .powder, .other].contains(self) }

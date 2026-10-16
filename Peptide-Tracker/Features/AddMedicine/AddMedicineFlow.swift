@@ -29,7 +29,7 @@ struct AddMedicineFlow: View {
         var isOptional: Bool { [.brand, .reason].contains(self) }
     }
 
-    enum FinishOption { case instructions, reminders, icon }
+    enum FinishOption { case instructions, icon }
 
     init(name: String = "", onSaved: @escaping (Bool) -> Void) {
         var draft = MedicineDraft(settings: AppSettings())
@@ -162,14 +162,36 @@ struct AddMedicineFlow: View {
                 title: "What’s the brand name?",
                 reason: "Optional. Handy when the box says something different from the medicine’s name."
             )
-            VStack(spacing: 14) {
-                OnboardingField(label: "Brand name", placeholder: "e.g. Glucophage", text: $draft.brandName)
-                    .textInputAutocapitalization(.words)
-                    .focused($isTyping)
-                OnboardingField(label: "Strength", placeholder: "e.g. 500 mg", text: $draft.strength)
+            VStack(alignment: .leading, spacing: 18) {
+                labelled("Brand name") {
+                    InputCard {
+                        TextField("e.g. Glucophage", text: $draft.brandName)
+                            .font(.system(size: 18, weight: .medium))
+                            .textInputAutocapitalization(.words)
+                            .focused($isTyping)
+                            .submitLabel(.next)
+                    }
+                }
+                labelled("Strength") {
+                    InputCard {
+                        TextField("e.g. 500 mg", text: $draft.strength)
+                            .font(.system(size: 18, weight: .medium))
+                            .submitLabel(.next)
+                            .onSubmit(advance)
+                    }
+                }
             }
-            .padding(16)
-            .background(AppTheme.ColorToken.accentSoft.opacity(0.6), in: .rect(cornerRadius: 20, style: .continuous))
+        }
+    }
+
+    /// A small grey label over an input, lined up with the text inside it.
+    private func labelled<Field: View>(_ title: String, @ViewBuilder field: () -> Field) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 15))
+                .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                .padding(.horizontal, 22)
+            field()
         }
     }
 
@@ -203,15 +225,23 @@ struct AddMedicineFlow: View {
             if type == .other { isTyping = true }
         } label: {
             VStack(spacing: 8) {
+                // The type's own colour, white glyph — like the list icons.
                 Image(systemName: type.symbol)
-                    .font(.system(size: 24, weight: .semibold))
-                    .frame(height: 28)
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(
+                        LinearGradient(colors: [type.tint.mix(with: .white, by: 0.18), type.tint], startPoint: .top, endPoint: .bottom),
+                        in: .rect(cornerRadius: 42 * 0.31, style: .continuous)
+                    )
+                    .scaleEffect(isSelected ? 1.06 : 1)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                 Text(type.title)
                     .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
             }
-            .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
             .frame(maxWidth: .infinity)
-            .frame(height: 88)
+            .frame(height: 100)
             .background(
                 isSelected ? AppTheme.ColorToken.accentSoft : AppTheme.ColorToken.cardBackground,
                 in: .rect(cornerRadius: 20, style: .continuous)
@@ -251,40 +281,58 @@ struct AddMedicineFlow: View {
     // MARK: 5 How often
 
     private var scheduleStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: 24) {
             OnboardingHeader(
                 title: "How often do you take it?",
                 reason: "Pick the times a day. You can change the exact times later."
             )
-            VStack(spacing: 10) {
-                frequency(1, icon: .sun, title: "Once a day")
-                frequency(2, icon: .moon, title: "Twice a day")
-                frequency(3, icon: .clock, title: "3 times a day")
-                frequency(4, icon: .clock, title: "4 times a day")
+            // Apple's pick-one list: rows with a checkmark on the chosen one.
+            GroupedSection(title: "How often") {
+                ForEach(1...4, id: \.self) { count in
+                    frequency(count, showsDivider: count < 4)
+                }
             }
-            VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(title: "Each time")
-                FormRow(title: "\(draft.type.unit.plural.capitalizedFirst) each time", showsDivider: false) {
+            GroupedSection(title: "Each time", footer: "That’s \(draft.type.unit.format(draft.perDay)) a day.") {
+                FormRow(title: draft.type.unit.plural.capitalizedFirst, showsDivider: false) {
                     CountStepper(value: $perDose, range: 1...20, accessibilityName: "\(draft.type.unit.plural) each time")
                 }
-                .card(horizontal: 16, vertical: 0)
-                Text("That’s \(draft.type.unit.format(draft.perDay)) a day.")
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                    .padding(.horizontal, 6)
-                    .contentTransition(.numericText())
+                .padding(.horizontal, 16)
             }
         }
     }
 
-    private func frequency(_ count: Int, icon: AppIcon, title: String) -> some View {
-        OnboardingChoice(
-            icon: icon,
-            title: title,
-            subtitle: TimeOfDay.schedule(count: count).map(\.label).joined(separator: " · "),
-            isSelected: draft.dosesPerDay == count,
-            action: { draft.dosesPerDay = count }
-        )
+    private func frequency(_ count: Int, showsDivider: Bool) -> some View {
+        let isSelected = draft.dosesPerDay == count
+        let title = count == 1 ? "Once a day" : count == 2 ? "Twice a day" : "\(count) times a day"
+        return Button {
+            HapticFeedback.selection()
+            withAnimation(.snappy) { draft.dosesPerDay = count }
+        } label: {
+            HStack(spacing: 12) {
+                Text(title)
+                    .font(.system(size: 17))
+                    .foregroundStyle(AppTheme.ColorToken.primaryText)
+                Spacer(minLength: 8)
+                Text(TimeOfDay.schedule(count: count).map(\.label).joined(separator: " · "))
+                    .font(.system(size: 15))
+                    .monospacedDigit()
+                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .frame(width: 20)
+                    .opacity(isSelected ? 1 : 0)
+                    .scaleEffect(isSelected ? 1 : 0.5)
+            }
+            .padding(.horizontal, 16)
+            .frame(minHeight: 52)
+            .contentShape(.rect)
+            .rowDivider(showsDivider)
+        }
+        .buttonStyle(RowPressStyle())
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
     // MARK: 6 How many
@@ -335,15 +383,17 @@ struct AddMedicineFlow: View {
     // MARK: 7 Finish
 
     private var finishStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: 24) {
             OnboardingHeader(title: "Almost done", reason: "Add anything else you’d like, then save.")
 
-            summary
+            GroupedSection { summary }
 
-            VStack(spacing: 10) {
-                instructionsOption
-                remindersOption
-                iconOption
+            // Settings-style list: a coloured tile per row, controls opening
+            // inside the list.
+            GroupedSection(title: "Details") {
+                instructionsRows
+                remindersRows
+                iconRows
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -361,10 +411,10 @@ struct AddMedicineFlow: View {
 
     private var summary: some View {
         HStack(spacing: 14) {
-            MedicineIconView(type: draft.type, color: draft.color, size: 56)
-            VStack(alignment: .leading, spacing: 3) {
+            MedicineIconView(type: draft.type, color: draft.color, size: 44, isVibrant: true)
+            VStack(alignment: .leading, spacing: 2) {
                 Text(draft.trimmedName)
-                    .font(.system(size: 19, weight: .bold))
+                    .font(.system(size: 17, weight: .semibold))
                 Text(summaryDetail)
                     .font(.system(size: 14))
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
@@ -372,8 +422,8 @@ struct AddMedicineFlow: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(16)
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .accessibilityElement(children: .combine)
     }
 
@@ -389,45 +439,53 @@ struct AddMedicineFlow: View {
         .joined(separator: " · ")
     }
 
-    private var instructionsOption: some View {
-        OptionCard(
-            icon: .list,
-            title: "Add instructions",
-            value: draft.instructions.isEmpty ? "Optional" : draft.instructions,
-            isExpanded: expandedOption == .instructions,
-            onTap: { toggle(.instructions) }
-        ) {
-            InputCard {
+    @ViewBuilder
+    private var instructionsRows: some View {
+        let isOpen = expandedOption == .instructions
+        SettingsRow(symbol: "list.clipboard.fill", tint: Color(hex: 0xFF9F0A), title: "Instructions", showsDivider: true) {
+            toggle(.instructions)
+        } trailing: {
+            Text(draft.instructions.isEmpty ? "None" : draft.instructions)
+                .font(.system(size: 17))
+                .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                .lineLimit(1)
+            DisclosureMark(isOpen: isOpen)
+        }
+        if isOpen {
+            VStack(alignment: .leading, spacing: 12) {
                 TextField("e.g. Take with food", text: $draft.instructions, axis: .vertical)
-                    .font(.system(size: 16))
+                    .font(.system(size: 17))
                     .lineLimit(1...4)
+                SuggestionChips(
+                    options: ["With food", "Before bed", "On an empty stomach", "With a full glass of water"],
+                    selection: $draft.instructions
+                )
             }
-            SuggestionChips(
-                options: ["With food", "Before bed", "On an empty stomach", "With a full glass of water"],
-                selection: $draft.instructions
-            )
+            .padding(.leading, 58)
+            .padding(.trailing, 16)
+            .padding(.vertical, 12)
+            .rowDivider(true, inset: 58)
+            .transition(.opacity)
         }
     }
 
-    private var remindersOption: some View {
-        OptionCard(
-            icon: .bell,
-            title: "Get refill reminders",
-            value: draft.remindersOn
-                ? "\(draft.reminderDaysBefore) days before you run out, at \(draft.reminderTime.label)"
-                : "Off",
-            isExpanded: expandedOption == .reminders && draft.remindersOn,
-            onTap: { toggle(.reminders) },
-            trailing: {
-                Toggle("Get refill reminders", isOn: $draft.remindersOn)
-                    .labelsHidden()
-                    .tint(AppTheme.ColorToken.accent)
-            }
-        ) {
-            VStack(spacing: 0) {
-                FormRow(title: "Days before") {
+    @ViewBuilder
+    private var remindersRows: some View {
+        SettingsRow(symbol: "bell.fill", tint: Color(hex: 0xFF453A), title: "Refill reminders", showsDivider: true) {
+            withAnimation(.snappy) { draft.remindersOn.toggle() }
+        } trailing: {
+            Toggle("Refill reminders", isOn: $draft.remindersOn)
+                .labelsHidden()
+                .tint(AppTheme.ColorToken.accent)
+        }
+        if draft.remindersOn {
+            Group {
+                FormRow(title: "Days before", showsDivider: false) {
                     CountStepper(value: $draft.reminderDaysBefore, range: 0...30, accessibilityName: "days before")
                 }
+                .padding(.leading, 58)
+                .padding(.trailing, 16)
+                .rowDivider(true, inset: 58)
                 FormRow(title: "Time", showsDivider: false) {
                     DatePicker(
                         "Time",
@@ -440,20 +498,24 @@ struct AddMedicineFlow: View {
                     .labelsHidden()
                     .environment(\.locale, Locale(identifier: "en_GB"))
                 }
+                .padding(.leading, 58)
+                .padding(.trailing, 16)
+                .rowDivider(true, inset: 58)
             }
-            .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 14, style: .continuous))
+            .transition(.opacity)
         }
     }
 
-    private var iconOption: some View {
-        OptionCard(
-            icon: .sparkle,
-            title: "Change medicine icon",
-            value: "Pick a colour",
-            isExpanded: expandedOption == .icon,
-            onTap: { toggle(.icon) },
-            trailing: { MedicineIconView(type: draft.type, color: draft.color, size: 34) }
-        ) {
+    @ViewBuilder
+    private var iconRows: some View {
+        let isOpen = expandedOption == .icon
+        SettingsRow(symbol: "paintpalette.fill", tint: Color(hex: 0xBF5AF2), title: "Icon colour", showsDivider: isOpen) {
+            toggle(.icon)
+        } trailing: {
+            MedicineIconView(type: draft.type, color: draft.color, size: 28, isVibrant: true)
+            DisclosureMark(isOpen: isOpen)
+        }
+        if isOpen {
             HStack {
                 ForEach(MedicineColor.allCases) { color in
                     let isSelected = draft.color == color
@@ -461,12 +523,13 @@ struct AddMedicineFlow: View {
                         HapticFeedback.selection()
                         withAnimation(.snappy) { draft.color = color }
                     } label: {
-                        MedicineIconView(type: draft.type, color: color, size: 44)
+                        MedicineIconView(type: draft.type, color: color, size: 40, isVibrant: true)
                             .overlay {
-                                RoundedRectangle(cornerRadius: 44 * 0.31, style: .continuous)
-                                    .strokeBorder(color.color, lineWidth: isSelected ? 2 : 0)
+                                RoundedRectangle(cornerRadius: 40 * 0.31 + 3, style: .continuous)
+                                    .strokeBorder(color.vibrant, lineWidth: 2)
+                                    .padding(-4)
+                                    .opacity(isSelected ? 1 : 0)
                             }
-                            .scaleEffect(isSelected ? 1.08 : 1)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Colour \(color.rawValue)")
@@ -474,12 +537,14 @@ struct AddMedicineFlow: View {
                     if color != MedicineColor.allCases.last { Spacer(minLength: 0) }
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .transition(.opacity)
         }
     }
 
     private func toggle(_ option: FinishOption) {
         HapticFeedback.selection()
-        if option == .reminders && !draft.remindersOn { draft.remindersOn = true }
         expandedOption = expandedOption == option ? nil : option
     }
 
@@ -548,16 +613,17 @@ struct AddMedicineFlow: View {
 
 // MARK: - Pieces
 
-/// A white rounded card holding one big input.
+/// One big single-line input: a full capsule in Liquid Glass.
 private struct InputCard<Content: View>: View {
     @ViewBuilder var content: Content
 
     var body: some View {
         content
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 22)
             .padding(.vertical, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 18, style: .continuous))
+            .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
+            .contentShape(.rect)
+            .glassEffect(.regular.interactive(), in: .capsule)
     }
 }
 
@@ -577,94 +643,64 @@ private struct SuggestionChips: View {
                     Text(option)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(isSelected ? .white : AppTheme.ColorToken.primaryText)
-                        .padding(.horizontal, 14)
-                        .frame(height: 36)
-                        .background(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.cardBackground, in: .capsule)
+                        .padding(.horizontal, 16)
+                        .frame(height: 38)
+                        // Glass capsules, the picked one filled with accent glass.
+                        .glassEffect(
+                            isSelected ? .regular.tint(AppTheme.ColorToken.accent).interactive() : .regular.interactive(),
+                            in: .capsule
+                        )
                 }
-                .buttonStyle(.pressable)
+                .buttonStyle(.plain)
                 .accessibilityAddTraits(isSelected ? [.isSelected] : [])
             }
         }
     }
 }
 
-/// One finishing option: icon, title and its current value, opening to
-/// show its controls. `trailing` replaces the chevron (a toggle, a preview).
-private struct OptionCard<Trailing: View, Detail: View>: View {
-    let icon: AppIcon
+/// A row as in iOS Settings: a small coloured tile with a white glyph, the
+/// title, and whatever sits on the right (a value, a switch, a preview).
+private struct SettingsRow<Trailing: View>: View {
+    let symbol: String
+    let tint: Color
     let title: String
-    let value: String
-    let isExpanded: Bool
-    let onTap: () -> Void
+    let showsDivider: Bool
+    let action: () -> Void
     @ViewBuilder var trailing: Trailing
-    @ViewBuilder var detail: Detail
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                // Only the icon and words are the button, so a trailing
-                // toggle stays its own control.
-                Button(action: onTap) {
-                    HStack(spacing: 14) {
-                        FilledIcon(icon, size: 21)
-                            .foregroundStyle(AppTheme.ColorToken.accent)
-                            .frame(width: 42, height: 42)
-                            .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 13, style: .continuous))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(title)
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(AppTheme.ColorToken.primaryText)
-                            Text(value)
-                                .font(.system(size: 14))
-                                .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                                .lineLimit(2)
-                        }
-                        Spacer(minLength: 0)
-                    }
-                    .multilineTextAlignment(.leading)
-                    .contentShape(.rect)
+        HStack(spacing: 12) {
+            Button(action: action) {
+                HStack(spacing: 14) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(tint, in: .rect(cornerRadius: 8, style: .continuous))
+                    Text(title)
+                        .font(.system(size: 17))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                    Spacer(minLength: 8)
                 }
-                .buttonStyle(.plain)
-
-                trailing
+                .contentShape(.rect)
             }
-
-            if isExpanded {
-                detail
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-            }
+            .buttonStyle(.plain)
+            trailing
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            isExpanded ? AppTheme.ColorToken.accentSoft : AppTheme.ColorToken.cardBackground,
-            in: .rect(cornerRadius: 20, style: .continuous)
-        )
-        .selectionBorder(isExpanded, cornerRadius: 20)
+        .frame(minHeight: 52)
+        .rowDivider(showsDivider, inset: 58)
     }
 }
 
-extension OptionCard where Trailing == ChevronMark {
-    init(icon: AppIcon, title: String, value: String, isExpanded: Bool, onTap: @escaping () -> Void, @ViewBuilder detail: () -> Detail) {
-        self.init(icon: icon, title: title, value: value, isExpanded: isExpanded, onTap: onTap, trailing: { ChevronMark(isOpen: isExpanded, onTap: onTap) }, detail: detail)
-    }
-}
-
-/// The down chevron on an option that opens, turned up while open. It
-/// sits outside the option's button, so it handles its own tap.
-private struct ChevronMark: View {
+/// The chevron on a row that opens in place, turned down while open.
+private struct DisclosureMark: View {
     let isOpen: Bool
-    let onTap: () -> Void
 
     var body: some View {
-        Image(systemName: "chevron.down")
-            .font(.system(size: 14, weight: .bold))
-            .foregroundStyle(AppTheme.ColorToken.tertiaryText)
-            .rotationEffect(.degrees(isOpen ? 180 : 0))
-            .frame(width: 32, height: 42)
-            .contentShape(.rect)
-            .onTapGesture(perform: onTap)
-            .accessibilityHidden(true)
+        Chevron()
+            .rotationEffect(.degrees(isOpen ? 90 : 0))
+            .animation(.snappy, value: isOpen)
     }
 }
 

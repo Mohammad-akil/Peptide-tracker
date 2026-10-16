@@ -37,12 +37,11 @@ struct SectionLabel: View {
     let title: String
 
     var body: some View {
+        // Sentence case, quiet grey — the same voice as the list headers.
         Text(title)
-            .font(.system(size: 13, weight: .semibold))
-            .textCase(.uppercase)
-            .kerning(0.4)
+            .font(.system(size: 15))
             .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            .padding(.horizontal, 6)
+            .padding(.horizontal, 16)
     }
 }
 
