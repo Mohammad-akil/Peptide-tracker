@@ -100,7 +100,8 @@ struct RefillSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 4)
-            .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
+            // Lavender, so it stands out on the sheet's white.
+            .background(AppTheme.ColorToken.background, in: .rect(cornerRadius: 20, style: .continuous))
             .padding(.bottom, 16)
 
             Button {

@@ -79,6 +79,8 @@ struct RootView: View {
                 RefillSheet(medicineID: id)
                     .presentationDetents([.height(560)])
                     .presentationCornerRadius(44)
+                    // Solid white (dark grey in dark mode), not the glass sheet.
+                    .presentationBackground(AppTheme.ColorToken.cardBackground)
             case .paywall(let reason):
                 PaywallView(reason: reason)
             case .notificationPermission:

@@ -104,7 +104,11 @@ struct ToastView: View {
         .padding(.trailing, 20)
         .padding(.vertical, 12)
         .frame(maxWidth: 380)
-        .glassEffect(.regular.tint(toast.style.tint.opacity(0.12)), in: .rect(cornerRadius: 26, style: .continuous))
+        // Solid inside, Liquid Glass only around the edge: the solid body
+        // sits inset in a slightly larger glass shape, leaving a glass rim.
+        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 23, style: .continuous))
+        .padding(3)
+        .glassEffect(.regular.tint(toast.style.tint.opacity(0.18)), in: .rect(cornerRadius: 26, style: .continuous))
         .shadow(color: Color(hex: 0x28185A, opacity: 0.12), radius: 18, y: 10)
         .animation(.spring(response: 0.4, dampingFraction: 0.75), value: toast)
         .accessibilityElement(children: .combine)
