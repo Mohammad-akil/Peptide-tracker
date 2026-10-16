@@ -12,7 +12,7 @@ struct PeptideTrackerApp: App {
     /// the app) is mounted once and never swapped or slid in.
     @State private var startsWithOnboarding: Bool?
 
-    private static let minimumSplashDuration: Duration = .milliseconds(1100)
+    private static let minimumSplashDuration = SplashScreenView.entranceDuration
     private static let logoExitDuration: Duration = .milliseconds(380)
     private static let contentRevealDuration: Duration = .milliseconds(400)
 
