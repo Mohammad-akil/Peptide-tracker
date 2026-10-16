@@ -85,13 +85,13 @@ struct TodayView: View {
     private func alerts(now: Date) -> some View {
         let needing = store.medicinesNeedingRefill(now: now)
         let notificationsOff = systemNotificationsDenied || !store.settings.notificationsEnabled
-        if notificationsOff || !needing.isEmpty {
-            VStack(spacing: 10) {
-                if notificationsOff {
-                    CompactNote(symbol: "bell.slash.fill", tint: Urgency.low.tint, title: "Reminders are off", action: "Turn on", onAction: turnOn)
-                }
-                ForEach(needing) { medicine in
-                    RefillAlert(medicine: medicine)
+        if notificationsOff {
+            CompactNote(symbol: "bell.slash.fill", tint: Urgency.low.tint, title: "Reminders are off", action: "Turn on", onAction: turnOn)
+        }
+        if !needing.isEmpty {
+            GroupedSection(title: "Needs refill", trailing: "\(needing.count)") {
+                ForEach(Array(needing.enumerated()), id: \.element.id) { index, medicine in
+                    RefillAlert(medicine: medicine, showsDivider: index < needing.count - 1)
                 }
             }
             .animation(.snappy, value: needing.map(\.id))
@@ -156,26 +156,27 @@ struct TodayView: View {
 
 // MARK: - Rows
 
-/// A medicine that needs refilling, in one line: stock ring, name, how long
-/// it lasts, and Refill. Ordering lives on the medicine's page.
+/// A medicine that needs refilling, in the same shape as every list row:
+/// icon, name, how long it lasts, and Refill. Ordering lives on its page.
 private struct RefillAlert: View {
     @Environment(AppRouter.self) private var router
     let medicine: Medicine
+    let showsDivider: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Button { router.push(.medicine(medicine.id)) } label: {
-                HStack(spacing: 12) {
-                    StockRingIcon(medicine: medicine, size: 40)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(medicine.name)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(AppTheme.ColorToken.primaryText)
-                        Text(status)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(medicine.isOrdered ? AppTheme.ColorToken.accentInk : medicine.urgency.ink)
-                    }
-                    Spacer(minLength: 0)
+                HStack(spacing: 14) {
+                    MedicineIconView(medicine: medicine, size: 36, isVibrant: true)
+                    Text(medicine.name)
+                        .font(.system(size: 17))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                        .lineLimit(1)
+                    Spacer(minLength: 8)
+                    Text(status)
+                        .font(.system(size: 17))
+                        .monospacedDigit()
+                        .foregroundStyle(medicine.isOrdered ? AppTheme.ColorToken.accent : medicine.urgency.ink)
                 }
                 .contentShape(.rect)
             }
@@ -184,18 +185,18 @@ private struct RefillAlert: View {
             Button("Refill") { router.sheet = .refill(medicine.id) }
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(.white)
-                .padding(.horizontal, 16)
-                .frame(height: 36)
+                .padding(.horizontal, 14)
+                .frame(height: 32)
                 .background(AppTheme.ColorToken.accent, in: .capsule)
         }
-        .padding(12)
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
+        .padding(.horizontal, 16)
+        .frame(minHeight: 60)
+        .rowDivider(showsDivider, inset: 66)
     }
 
+    /// "3 days", "Run out", "On order"
     private var status: String {
-        if medicine.isOrdered { return "On order" }
-        if medicine.urgency == .out { return "Run out" }
-        return "\(medicine.daysLeftLabel) left"
+        medicine.isOrdered ? "On order" : medicine.daysLeftLabel
     }
 }
 

@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// A day's doses grouped under their time ("8:00"), one card per medicine.
-/// Today's next time is flagged, and a time with several doses left can be
-/// taken in one go. Future days are view-only.
+/// A day's doses, Apple-list style: one inset group per time ("8:00"), each
+/// row the medicine's icon, its name, the amount, and a check. Today's next
+/// time is flagged, and a time with several doses left can be taken in one
+/// go. Future days are view-only.
 struct DoseSchedule: View {
     @Environment(MedicineStore.self) private var store
     let doses: [ScheduledDose]
@@ -29,69 +30,80 @@ struct DoseSchedule: View {
             ForEach(groups, id: \.time) { group in
                 VStack(alignment: .leading, spacing: 10) {
                     header(for: group)
-                    ForEach(group.doses) { dose in
-                        DoseCard(dose: dose, isFuture: isFuture, isPast: !isFuture && !isToday)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    VStack(spacing: 0) {
+                        ForEach(Array(group.doses.enumerated()), id: \.element.id) { index, dose in
+                            DoseRow(
+                                dose: dose,
+                                isFuture: isFuture,
+                                isPast: !isFuture && !isToday,
+                                showsDivider: index < group.doses.count - 1
+                            )
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .groupedCard()
                 }
             }
         }
     }
 
+    /// The quiet list header: the time (with Up next today), and Take all.
     private func header(for group: (time: TimeOfDay, doses: [ScheduledDose])) -> some View {
         let pending = group.doses.filter { !$0.isTaken }
-        return HStack(spacing: 10) {
+        return HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(group.time.label)
-                .font(.system(size: 22, weight: .bold))
                 .monospacedDigit()
             if group.time == nextTime {
                 Text("Up next")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(AppTheme.ColorToken.accent)
                     .padding(.horizontal, 8)
-                    .frame(height: 22)
+                    .padding(.vertical, 3)
                     .background(AppTheme.ColorToken.accentSoft, in: .capsule)
             }
-            Spacer(minLength: 0)
+            Spacer(minLength: 8)
             if !isFuture, pending.count > 1 {
                 Button("Take all") {
                     withAnimation(.snappy) { store.markTaken(pending, now: now) }
                 }
-                .font(.system(size: 15, weight: .semibold))
+                .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(AppTheme.ColorToken.accent)
             }
         }
-        .padding(.horizontal, 4)
+        .font(.system(size: 17))
+        .foregroundStyle(AppTheme.ColorToken.secondaryText)
+        .padding(.horizontal, 16)
+        .accessibilityElement(children: .contain)
     }
 }
 
-/// One dose: the medicine's icon, a hairline, what to take, and a check.
-private struct DoseCard: View {
+/// One dose in the same shape as every list row: icon, name, the amount on
+/// the right, and a check where the chevron would be.
+private struct DoseRow: View {
     @Environment(MedicineStore.self) private var store
     @Environment(AppRouter.self) private var router
     let dose: ScheduledDose
     let isFuture: Bool
     /// A past day, where an unticked dose was missed.
     let isPast: Bool
+    let showsDivider: Bool
 
     var body: some View {
         HStack(spacing: 14) {
             Button { router.push(.medicine(dose.medicine.id)) } label: {
                 HStack(spacing: 14) {
-                    MedicineIconView(medicine: dose.medicine, size: 46)
-                    Rectangle()
-                        .fill(AppTheme.ColorToken.separator)
-                        .frame(width: 1, height: 38)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(dose.medicine.name)
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(dose.isTaken ? AppTheme.ColorToken.secondaryText : AppTheme.ColorToken.primaryText)
-                        Text(detail)
-                            .font(.system(size: 14))
-                            .foregroundStyle(isMissed ? Urgency.low.ink : AppTheme.ColorToken.secondaryText)
-                            .lineLimit(1)
-                    }
-                    Spacer(minLength: 0)
+                    MedicineIconView(medicine: dose.medicine, size: 36, isVibrant: true)
+                        .opacity(dose.isTaken ? 0.55 : 1)
+                    Text(dose.medicine.name)
+                        .font(.system(size: 17))
+                        .foregroundStyle(dose.isTaken ? AppTheme.ColorToken.secondaryText : AppTheme.ColorToken.primaryText)
+                        .lineLimit(1)
+                    Spacer(minLength: 8)
+                    Text(value)
+                        .font(.system(size: 17))
+                        .monospacedDigit()
+                        .foregroundStyle(valueColor)
+                        .contentTransition(.opacity)
                 }
                 .contentShape(.rect)
             }
@@ -109,19 +121,23 @@ private struct DoseCard: View {
             .accessibilityLabel(dose.isTaken ? "\(dose.medicine.name) taken" : "Mark \(dose.medicine.name) taken")
             .accessibilityAddTraits(dose.isTaken ? .isSelected : [])
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
+        .padding(.horizontal, 16)
+        .frame(minHeight: 60)
+        .rowDivider(showsDivider, inset: 66)
     }
 
     private var isMissed: Bool { isPast && !dose.isTaken }
 
-    /// "Take 1 pill · With food", "Taken at 8:02", "Not taken"
-    private var detail: String {
-        if let takenAt = dose.takenAt { return "Taken at \(takenAt.clockTime)" }
-        if isMissed { return "Not taken" }
-        let amount = "Take \(dose.medicine.unit.format(dose.medicine.unitsPerIntake))"
-        let instructions = dose.medicine.instructions
-        return instructions.isEmpty ? amount : "\(amount) · \(instructions)"
+    /// "1 pill", "8:02" once taken, "Missed" on a past day.
+    private var value: String {
+        if let takenAt = dose.takenAt { return takenAt.clockTime }
+        if isMissed { return "Missed" }
+        return dose.medicine.unit.format(dose.medicine.unitsPerIntake)
+    }
+
+    private var valueColor: Color {
+        if dose.isTaken { return Urgency.healthy.ink }
+        if isMissed { return Urgency.low.ink }
+        return AppTheme.ColorToken.secondaryText
     }
 }
