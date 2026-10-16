@@ -62,27 +62,14 @@ struct WeekStrip: View {
         .padding(.horizontal, 8)
     }
 
-    /// "Today, 16 Oct", or the picked day with a way back to today.
+    /// "Today, 16 Oct", or the picked day. The way back to today sits in
+    /// the panel's top corner, beside the bell.
     private var dateLabel: some View {
-        HStack(spacing: 10) {
-            Text(dayName)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(selection == today ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
-                .contentTransition(.opacity)
-            if selection != today {
-                Button("Today") {
-                    HapticFeedback.selection()
-                    withAnimation(.snappy) { selection = today }
-                }
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(AppTheme.ColorToken.accent)
-                .padding(.horizontal, 10)
-                .frame(height: 26)
-                .background(AppTheme.ColorToken.accentSoft, in: .capsule)
-                .transition(.scale.combined(with: .opacity))
-            }
-        }
-        .animation(.snappy, value: selection)
+        Text(dayName)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(selection == today ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
+            .contentTransition(.opacity)
+            .animation(.snappy, value: selection)
     }
 
     private var dayName: String {

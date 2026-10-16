@@ -70,7 +70,23 @@ struct TodayView: View {
     /// Pinned panel: the month, the reminders bell and the week.
     private func topPanel(now: Date) -> some View {
         TopPanel(title: selectedDay.monthName) {
-            RemindersMenu(now: now)
+            HStack(spacing: 8) {
+                // Back to today, beside the bell, once another day is picked.
+                if selectedDay != now.startOfDay {
+                    Button("Today") {
+                        HapticFeedback.selection()
+                        withAnimation(.snappy) { selectedDay = now.startOfDay }
+                    }
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .padding(.horizontal, 16)
+                    .frame(height: 44)
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .transition(.scale(scale: 0.6).combined(with: .opacity))
+                }
+                RemindersMenu(now: now)
+            }
+            .animation(.spring(response: 0.35, dampingFraction: 0.75), value: selectedDay == now.startOfDay)
         } controls: {
             if !store.medicines.isEmpty && store.settings.tracksDoses {
                 WeekStrip(selection: $selectedDay, today: now.startOfDay)
