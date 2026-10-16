@@ -480,13 +480,10 @@ struct AddMedicineFlow: View {
         }
         if draft.remindersOn {
             Group {
-                FormRow(title: "Days before", showsDivider: false) {
+                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: "Days before") {
                     CountStepper(value: $draft.reminderDaysBefore, range: 0...30, accessibilityName: "days before")
                 }
-                .padding(.leading, 58)
-                .padding(.trailing, 16)
-                .rowDivider(true, inset: 58)
-                FormRow(title: "Time", showsDivider: false) {
+                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: "Time") {
                     DatePicker(
                         "Time",
                         selection: Binding(
@@ -498,9 +495,6 @@ struct AddMedicineFlow: View {
                     .labelsHidden()
                     .environment(\.locale, Locale(identifier: "en_GB"))
                 }
-                .padding(.leading, 58)
-                .padding(.trailing, 16)
-                .rowDivider(true, inset: 58)
             }
             .transition(.opacity)
         }
@@ -672,11 +666,7 @@ private struct SettingsRow<Trailing: View>: View {
         HStack(spacing: 12) {
             Button(action: action) {
                 HStack(spacing: 14) {
-                    Image(systemName: symbol)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 30, height: 30)
-                        .background(tint, in: .rect(cornerRadius: 8, style: .continuous))
+                    SettingsTile(symbol: symbol, tint: tint)
                     Text(title)
                         .font(.system(size: 17))
                         .foregroundStyle(AppTheme.ColorToken.primaryText)
@@ -690,6 +680,45 @@ private struct SettingsRow<Trailing: View>: View {
         .padding(.horizontal, 16)
         .frame(minHeight: 52)
         .rowDivider(showsDivider, inset: 58)
+    }
+}
+
+/// A Settings-style row whose control sits on the right (a stepper, a time
+/// picker): the coloured tile, the title, the control.
+private struct ControlRow<Control: View>: View {
+    let symbol: String
+    let tint: Color
+    let title: String
+    @ViewBuilder var control: Control
+
+    var body: some View {
+        HStack(spacing: 14) {
+            SettingsTile(symbol: symbol, tint: tint)
+            Text(title)
+                .font(.system(size: 17))
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .lineLimit(1)
+            Spacer(minLength: 8)
+            control
+        }
+        .padding(.horizontal, 16)
+        .frame(minHeight: 52)
+        .rowDivider(true, inset: 58)
+    }
+}
+
+/// The small coloured square with a white glyph that leads a Settings row.
+private struct SettingsTile: View {
+    let symbol: String
+    let tint: Color
+
+    var body: some View {
+        Image(systemName: symbol)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 30, height: 30)
+            .background(tint, in: .rect(cornerRadius: 8, style: .continuous))
+            .accessibilityHidden(true)
     }
 }
 
