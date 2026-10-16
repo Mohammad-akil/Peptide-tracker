@@ -10,6 +10,8 @@ struct TodayView: View {
     @Environment(PurchaseStore.self) private var purchases
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
+    /// List or Timeline, chosen in Settings.
+    @AppStorage(DoseLayout.storageKey) private var doseLayout: DoseLayout = .list
     /// iOS-level permission, which can be switched off outside the app.
     @State private var systemNotificationsDenied = false
     @State private var viewportHeight: CGFloat = 0
@@ -133,7 +135,10 @@ struct TodayView: View {
                 }
                 .frame(maxWidth: .infinity, minHeight: 140)
             } else {
-                DoseSchedule(doses: doses, day: selectedDay, now: now)
+                switch doseLayout {
+                case .list: DoseSchedule(doses: doses, day: selectedDay, now: now)
+                case .timeline: DoseTimeline(doses: doses, day: selectedDay, now: now)
+                }
             }
         }
         .id(selectedDay)

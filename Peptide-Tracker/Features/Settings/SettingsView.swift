@@ -9,6 +9,7 @@ struct SettingsView: View {
     @Environment(AppRouter.self) private var router
     @State private var showsNotificationsDenied = false
     @State private var showsPrivacy = false
+    @AppStorage(DoseLayout.storageKey) private var doseLayout: DoseLayout = .list
     #if DEBUG
     @State private var confirmsDeleteAll = false
     #endif
@@ -82,10 +83,33 @@ struct SettingsView: View {
 
                 GroupedSection(
                     title: "Doses",
-                    footer: "When on, ticking off doses keeps your count exact. When off, we count down from your schedule."
+                    footer: store.settings.tracksDoses
+                        ? "Timeline shows your doses down the day, with where you are now."
+                        : "When on, ticking off doses keeps your count exact. When off, we count down from your schedule."
                 ) {
-                    ToggleRow(title: "Track doses", isOn: $store.settings.tracksDoses)
+                    ToggleRow(title: "Track doses", isOn: $store.settings.tracksDoses, showsDivider: store.settings.tracksDoses)
+                    if store.settings.tracksDoses {
+                        // How Today lays out the day's doses.
+                        HStack {
+                            Text("Dose view")
+                                .font(.system(size: 17))
+                                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                            Spacer(minLength: 8)
+                            Picker("Dose view", selection: $doseLayout) {
+                                ForEach(DoseLayout.allCases, id: \.self) { layout in
+                                    Text(layout.title).tag(layout)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .tint(AppTheme.ColorToken.secondaryText)
+                            .labelsHidden()
+                        }
+                        .padding(.leading, 16)
+                        .padding(.trailing, 8)
+                        .frame(minHeight: 52)
+                    }
                 }
+                .animation(.snappy, value: store.settings.tracksDoses)
 
                 GroupedSection(title: "Pharmacy", footer: "Shown on medicine pages so you can call in one tap.") {
                     fieldRow("Pharmacy", placeholder: "Add", text: $store.settings.pharmacyName, showsDivider: true)
