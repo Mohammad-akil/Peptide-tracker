@@ -8,7 +8,6 @@ struct WhoQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                eyebrow: "Question 1 of 5",
                 title: "Who are you tracking medicines for?",
                 reason: "So reminders use the right name. You can add more people later."
             )

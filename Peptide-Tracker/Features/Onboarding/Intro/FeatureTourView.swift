@@ -93,7 +93,7 @@ struct FeatureTourView: View {
     /// Edge to edge with no frame; the bottom fades into the page.
     private func video(_ feature: FeaturePage) -> some View {
         LoopingVideo(name: feature.video, isPlaying: true) {
-            Icon(feature.icon, size: 72)
+            FilledIcon(feature.icon, size: 72)
                 .foregroundStyle(AppTheme.ColorToken.accent)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(AppTheme.ColorToken.accentSoft)

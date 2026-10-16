@@ -37,6 +37,8 @@ struct PeptideTrackerApp: App {
             .environment(appDelegate.router)
             .environment(appDelegate.purchases)
             .tint(AppTheme.ColorToken.accent)
+            // SF Pro Rounded everywhere: every `.system` font picks it up.
+            .fontDesign(.rounded)
             .task { await runSplashSequence() }
             .onChange(of: scenePhase) { _, phase in
                 // Days may have ended while the app was in the background.

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// First-run setup: Get started → feature tour → Welcome → five questions (with what the
-/// lead-time answer means, as a chart) → the summary → Add medicine.
+/// lead-time answer means, as a chart) → notifications → setting up → the summary → Add medicine.
 struct OnboardingFlow: View {
     @Environment(MedicineStore.self) private var store
     /// Called with whether to open Add straight away.
@@ -31,6 +31,11 @@ struct OnboardingFlow: View {
             case .welcome:
                 WelcomeView(onContinue: { go(to: .who) })
                     .transition(.push(from: .trailing))
+            case .settingUp:
+                // Full screen, no back or progress bar; moves on by itself.
+                SettingUpStep(answers: answers) { go(to: .plan) }
+                    .padding(.horizontal, 20)
+                    .transition(.opacity)
             default:
                 questionFrame
                     .transition(.opacity)
@@ -76,12 +81,19 @@ struct OnboardingFlow: View {
         case .doses: DosesQuestion(answers: $answers)
         case .time: TimeQuestion(answers: $answers)
         case .pharmacy: PharmacyQuestion(answers: $answers)
+        case .notifications: NotificationsStep(answers: answers) { go(to: .settingUp) }
         case .plan: PlanSummary(answers: answers, onEdit: edit)
         default: EmptyView()
         }
     }
 
+    /// The notifications step answers with its own Allow / Don't Allow.
+    @ViewBuilder
     private var bottomBar: some View {
+        if step != .notifications { continueBar }
+    }
+
+    private var continueBar: some View {
         VStack(spacing: 12) {
             if step == .refill {
                 OnboardingNote(icon: .bell, text: leadTimeNote)

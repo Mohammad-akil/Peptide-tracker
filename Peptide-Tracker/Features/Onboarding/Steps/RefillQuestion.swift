@@ -8,7 +8,6 @@ struct RefillQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                eyebrow: "Question 2 of 5",
                 title: "How long does a refill usually take you?",
                 reason: "From the moment you order to having it in your hand. This sets how early we remind you."
             )

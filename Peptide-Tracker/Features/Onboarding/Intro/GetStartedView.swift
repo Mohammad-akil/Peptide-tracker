@@ -98,7 +98,7 @@ struct GetStartedView: View {
     }
 
     private func tile(_ icon: AppIcon, color: MedicineColor, angle: Double, at offset: CGPoint, delay: Double) -> some View {
-        Icon(icon, size: 26)
+        FilledIcon(icon, size: 26)
             .foregroundStyle(color.color)
             .frame(width: 56, height: 56)
             // A solid light pastel, so tiles stay bright in dark mode too.
@@ -114,7 +114,7 @@ struct GetStartedView: View {
 
     private var chip: some View {
         HStack(spacing: 8) {
-            Icon(.bell, size: 14)
+            FilledIcon(.bell, size: 14)
                 .foregroundStyle(.white)
                 .frame(width: 24, height: 24)
                 .background(AppTheme.ColorToken.accent, in: .rect(cornerRadius: 7, style: .continuous))

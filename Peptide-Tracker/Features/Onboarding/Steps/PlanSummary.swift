@@ -21,8 +21,6 @@ struct PlanSummary: View {
                 row(.store, "Pharmacy", pharmacyValue, step: .pharmacy, showsDivider: false)
             }
             .groupedCard()
-
-            OnboardingNote(icon: .sliders, text: Text("Change any of this later in Settings."))
         }
     }
 
@@ -39,7 +37,7 @@ struct PlanSummary: View {
     private func row(_ icon: AppIcon, _ title: String, _ value: String, step: OnboardingStep, showsDivider: Bool = true) -> some View {
         Button { onEdit(step) } label: {
             HStack(spacing: 12) {
-                Icon(icon, size: 18)
+                FilledIcon(icon, size: 18)
                     .foregroundStyle(AppTheme.ColorToken.accent)
                     .frame(width: 34, height: 34)
                     .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 10, style: .continuous))

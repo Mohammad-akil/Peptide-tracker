@@ -8,7 +8,6 @@ struct DosesQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                eyebrow: "Question 3 of 5",
                 title: "Do you want dose reminders too?",
                 reason: "Refill reminders are always on. Dose reminders are optional."
             )

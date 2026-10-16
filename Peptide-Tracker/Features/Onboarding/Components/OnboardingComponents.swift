@@ -48,22 +48,25 @@ struct OnboardingTopBar: View {
     }
 }
 
-/// "Question 2 of 5", the question, and why we ask it.
+/// The question, and why we ask it, with an optional small label above
+/// ("What this means for you", "All done").
 struct OnboardingHeader: View {
-    let eyebrow: String
+    var eyebrow: String?
     let title: String
     var reason: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(eyebrow)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(AppTheme.ColorToken.accent)
+            if let eyebrow {
+                Text(eyebrow)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .padding(.bottom, 6)
+            }
             Text(title)
                 .font(.system(size: 30, weight: .heavy))
                 .kerning(-0.7)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 6)
                 .accessibilityAddTraits(.isHeader)
             if let reason {
                 Text(reason)
@@ -95,11 +98,11 @@ struct OnboardingChoice<Detail: View>: View {
                 withAnimation(.snappy) { action() }
             } label: {
                 HStack(spacing: 14) {
-                    Icon(icon, size: 21)
-                        .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
+                    FilledIcon(icon, size: 21)
+                        .foregroundStyle(isSelected ? .white : AppTheme.ColorToken.primaryText)
                         .frame(width: 42, height: 42)
                         .background(
-                            isSelected ? AppTheme.ColorToken.accentSoft : Color(hex: 0x767680, opacity: 0.1),
+                            isSelected ? AppTheme.ColorToken.accent : Color(hex: 0x767680, opacity: 0.1),
                             in: .rect(cornerRadius: 13, style: .continuous)
                         )
                     VStack(alignment: .leading, spacing: 2) {
@@ -124,14 +127,11 @@ struct OnboardingChoice<Detail: View>: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 20, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(
-                    isSelected ? AppTheme.ColorToken.accent : Color(hex: 0x28185A, opacity: 0.08),
-                    lineWidth: isSelected ? 2 : 0.5
-                )
-        }
+        .background(
+            isSelected ? AppTheme.ColorToken.accentSoft : AppTheme.ColorToken.cardBackground,
+            in: .rect(cornerRadius: 20, style: .continuous)
+        )
+        .selectionBorder(isSelected, cornerRadius: 20)
     }
 }
 
@@ -141,19 +141,53 @@ extension OnboardingChoice where Detail == EmptyView {
     }
 }
 
+/// An empty ring that, when selected, fills with a springy purple pop and
+/// then draws its tick.
 struct RadioMark: View {
     let isSelected: Bool
+    var size: CGFloat = 26
 
     var body: some View {
         ZStack {
-            Circle().fill(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.cardBackground)
-            Circle().strokeBorder(isSelected ? AppTheme.ColorToken.accent : Color(light: 0xCBC6D9, dark: 0x4C4858), lineWidth: 2)
-            if isSelected {
-                Icon(.check, size: 15).foregroundStyle(.white)
-            }
+            Circle()
+                .strokeBorder(Color(light: 0xCBC6D9, dark: 0x4C4858), lineWidth: 2)
+                .opacity(isSelected ? 0 : 1)
+            Circle()
+                .fill(AppTheme.ColorToken.accent)
+                .scaleEffect(isSelected ? 1 : 0.2)
+                .opacity(isSelected ? 1 : 0)
+                .animation(.spring(response: 0.32, dampingFraction: 0.55), value: isSelected)
+            CheckShape()
+                .trim(from: 0, to: isSelected ? 1 : 0)
+                .stroke(.white, style: StrokeStyle(lineWidth: size * 0.1, lineCap: .round, lineJoin: .round))
+                .frame(width: size * 0.46, height: size * 0.46)
+                // The tick draws once the circle has popped in; it clears fast.
+                .animation(isSelected ? .easeOut(duration: 0.26).delay(0.12) : .easeOut(duration: 0.1), value: isSelected)
         }
-        .frame(width: 26, height: 26)
+        .frame(width: size, height: size)
         .accessibilityHidden(true)
+    }
+}
+
+/// A tick, drawn short stroke first so trimming animates it like a pen.
+private struct CheckShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX + rect.width * 0.08, y: rect.minY + rect.height * 0.54))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.38, y: rect.minY + rect.height * 0.82))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.94, y: rect.minY + rect.height * 0.2))
+        return path
+    }
+}
+
+extension View {
+    /// The accent outline that marks the chosen answer; unchosen cards have none.
+    func selectionBorder(_ isSelected: Bool, cornerRadius: CGFloat) -> some View {
+        overlay {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(AppTheme.ColorToken.accent, lineWidth: 2)
+                .opacity(isSelected ? 1 : 0)
+        }
     }
 }
 
@@ -172,7 +206,8 @@ struct OnboardingField: View {
                 .font(.system(size: 17))
                 .padding(.horizontal, 14)
                 .frame(height: 46)
-                .background(Color(hex: 0x767680, opacity: 0.1), in: .rect(cornerRadius: 12, style: .continuous))
+                // White, so the field stands out on the selected card's lilac.
+                .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 12, style: .continuous))
         }
     }
 }
@@ -184,7 +219,7 @@ struct OnboardingNote: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Icon(icon, size: 19).foregroundStyle(AppTheme.ColorToken.accent)
+            FilledIcon(icon, size: 19).foregroundStyle(AppTheme.ColorToken.accent)
             text
                 .font(.system(size: 15))
                 .lineSpacing(2)

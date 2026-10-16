@@ -16,7 +16,6 @@ struct TimeQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                eyebrow: "Question 4 of 5",
                 title: "When should refill reminders arrive?",
                 reason: "Pick a time you can act on, like before you pass the pharmacy."
             )
@@ -30,7 +29,7 @@ struct TimeQuestion: View {
                 Label {
                     Text(isCustom ? "Another time · \(answers.reminderTime.label)" : "Choose another time")
                 } icon: {
-                    Icon(.clock, size: 18)
+                    FilledIcon(.clock, size: 18)
                 }
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(AppTheme.ColorToken.accent)
@@ -47,7 +46,7 @@ struct TimeQuestion: View {
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
                     .padding(.leading, 4)
                 HStack(alignment: .top, spacing: 12) {
-                    Icon(.pill, size: 20)
+                    FilledIcon(.pill, size: 20)
                         .foregroundStyle(.white)
                         .frame(width: 36, height: 36)
                         .background(AppTheme.ColorToken.accent, in: .rect(cornerRadius: 10, style: .continuous))
@@ -100,12 +99,11 @@ struct TimeQuestion: View {
                 isSelected ? AppTheme.ColorToken.accentSoft : AppTheme.ColorToken.cardBackground,
                 in: .rect(cornerRadius: 20, style: .continuous)
             )
-            .overlay {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(
-                        isSelected ? AppTheme.ColorToken.accent : Color(hex: 0x28185A, opacity: 0.08),
-                        lineWidth: isSelected ? 2 : 0.5
-                    )
+            .selectionBorder(isSelected, cornerRadius: 20)
+            .overlay(alignment: .topTrailing) {
+                RadioMark(isSelected: isSelected, size: 22)
+                    .opacity(isSelected ? 1 : 0)
+                    .padding(12)
             }
             .contentShape(.rect)
         }

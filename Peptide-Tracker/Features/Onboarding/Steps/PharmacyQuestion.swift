@@ -8,7 +8,6 @@ struct PharmacyQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                eyebrow: "Question 5 of 5",
                 title: "Where do you get your refills?",
                 reason: "Optional. With a pharmacy saved, reminders get a Call pharmacy button."
             )

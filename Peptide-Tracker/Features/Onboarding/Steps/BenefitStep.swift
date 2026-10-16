@@ -23,7 +23,7 @@ struct BenefitStep: View {
 
     private func point(_ icon: AppIcon, _ text: String) -> some View {
         HStack(spacing: 12) {
-            Icon(icon, size: 17)
+            FilledIcon(icon, size: 17)
                 .foregroundStyle(AppTheme.ColorToken.accent)
                 .frame(width: 32, height: 32)
                 .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 10, style: .continuous))
