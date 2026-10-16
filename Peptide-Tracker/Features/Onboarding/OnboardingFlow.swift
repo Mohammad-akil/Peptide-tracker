@@ -4,7 +4,7 @@ import SwiftUI
 /// app behaves; skipping one keeps its default.
 enum OnboardingStep: Int, CaseIterable, Comparable {
     // Raw names double as `-onboarding <step>` debug launch arguments.
-    case getStarted, welcome, who, refill, benefit, doses, time, pharmacy, plan
+    case getStarted, tour, welcome, who, refill, benefit, doses, time, pharmacy, plan
 
     static let questionCount = 5
 
@@ -13,7 +13,7 @@ enum OnboardingStep: Int, CaseIterable, Comparable {
     /// Filled segments of the progress bar.
     var progress: Int {
         switch self {
-        case .getStarted, .welcome: 0
+        case .getStarted, .tour, .welcome: 0
         case .who: 1
         case .refill, .benefit: 2
         case .doses: 3
@@ -66,7 +66,7 @@ struct OnboardingAnswers {
     }
 }
 
-/// First-run setup: Get started → Welcome → five questions (with what the
+/// First-run setup: Get started → feature tour → Welcome → five questions (with what the
 /// lead-time answer means, as a chart) → the summary → Add medicine.
 struct OnboardingFlow: View {
     @Environment(MedicineStore.self) private var store
@@ -89,8 +89,11 @@ struct OnboardingFlow: View {
 
             switch step {
             case .getStarted:
-                GetStartedView { go(to: .welcome) }
+                GetStartedView { go(to: .tour) }
                     .transition(.opacity)
+            case .tour:
+                FeatureTourView { go(to: .welcome) }
+                    .transition(.push(from: .trailing))
             case .welcome:
                 WelcomeView(onContinue: { go(to: .who) })
                     .transition(.push(from: .trailing))

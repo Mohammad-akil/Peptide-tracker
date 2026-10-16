@@ -47,9 +47,9 @@ enum AppTheme {
         static let medium: CGFloat = 16
         static let mediumLarge: CGFloat = 20
         static let large: CGFloat = 24
-        /// Room kept under scroll content so the floating tab bar never
-        /// covers the last card.
-        static let tabBarClearance: CGFloat = 120
+        /// Room under the last card. The system tab bar already insets
+        /// scroll content, so this is only breathing space.
+        static let tabBarClearance: CGFloat = 24
     }
 }
 

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// One navigation stack over the tab shell, so pushed screens (medicine
-/// detail, insights) cover the floating tab bar like the design shows, and
+/// detail, insights) cover the tab bar like the design shows, and
 /// every sheet is presented from one place.
 struct RootView: View {
     @Environment(AppRouter.self) private var router
