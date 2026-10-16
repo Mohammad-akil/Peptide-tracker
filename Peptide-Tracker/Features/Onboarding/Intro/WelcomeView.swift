@@ -38,7 +38,7 @@ struct WelcomeView: View {
 
             VStack(spacing: 8) {
                 Button("Get started", action: onContinue)
-                    .buttonStyle(.primary(height: 56))
+                    .buttonStyle(.glassPrimary)
                 Text("5 quick questions, about a minute")
                     .font(.system(size: 14))
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)

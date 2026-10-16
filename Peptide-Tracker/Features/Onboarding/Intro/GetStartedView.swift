@@ -44,17 +44,9 @@ struct GetStartedView: View {
 
             Spacer(minLength: 16)
 
-            Button(action: onStart) {
-                Text("Get started")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 55)
-                    .contentShape(.capsule)
-            }
-            .buttonStyle(.plain)
-            .glassEffect(.regular.tint(AppTheme.ColorToken.accent).interactive(), in: .capsule)
-            .padding(.horizontal, 20)
+            Button("Get started", action: onStart)
+                .buttonStyle(.glassPrimary)
+                .padding(.horizontal, 20)
                 .padding(.bottom, 12)
                 .opacity(showsText ? 1 : 0)
                 .offset(y: showsText ? 0 : 18)
@@ -151,15 +143,6 @@ struct GetStartedView: View {
         floats = true
         withAnimation(.spring(response: 0.5, dampingFraction: 0.75).delay(2.0)) { showsChip = true }
         withAnimation(.spring(response: 0.6, dampingFraction: 0.85).delay(2.2)) { showsText = true }
-    }
-}
-
-extension Bundle {
-    /// The name under the app icon.
-    var appName: String {
-        (object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
-            ?? (object(forInfoDictionaryKey: "CFBundleName") as? String)?.replacingOccurrences(of: "-", with: " ")
-            ?? "Refills"
     }
 }
 
