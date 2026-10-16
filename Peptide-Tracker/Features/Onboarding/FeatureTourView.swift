@@ -33,28 +33,33 @@ struct FeatureTourView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Pages crossfade instead of sliding; swiping still turns them.
-            ZStack {
-                ForEach(pages.indices, id: \.self) { index in
-                    if index == page {
-                        pageView(pages[index], isCurrent: true)
-                            .transition(.opacity)
+            // Videos crossfade and the words roll over to the next page's;
+            // swiping still turns pages.
+            VStack(spacing: 0) {
+                ZStack {
+                    ForEach(pages.indices, id: \.self) { index in
+                        if index == page {
+                            video(pages[index])
+                                .transition(.opacity)
+                        }
                     }
                 }
+                .ignoresSafeArea(edges: .top)
+                .overlay(alignment: .topTrailing) {
+                    Button("Skip", action: onContinue)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .glassEffect(.regular, in: .capsule)
+                        .padding(.trailing, 20)
+                        .opacity(isLastPage ? 0 : 1)
+                }
+
+                caption(pages[page])
             }
             .contentShape(.rect)
             .gesture(swipe)
-            .ignoresSafeArea(edges: .top)
-            .overlay(alignment: .topTrailing) {
-                Button("Skip", action: onContinue)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(AppTheme.ColorToken.primaryText)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .glassEffect(.regular, in: .capsule)
-                    .padding(.trailing, 20)
-                    .opacity(isLastPage ? 0 : 1)
-            }
 
             dots
                 .padding(.bottom, 20)
@@ -86,42 +91,44 @@ struct FeatureTourView: View {
             }
     }
 
-    private func pageView(_ feature: FeaturePage, isCurrent: Bool) -> some View {
-        VStack(spacing: 0) {
-            // Edge to edge with no frame; the bottom fades into the page.
-            LoopingVideo(name: feature.video, isPlaying: isCurrent) {
-                Icon(feature.icon, size: 72)
-                    .foregroundStyle(AppTheme.ColorToken.accent)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(AppTheme.ColorToken.accentSoft)
-            }
-            .clipped()
-            .overlay(alignment: .bottom) {
-                LinearGradient(
-                    colors: [AppTheme.ColorToken.background.opacity(0), AppTheme.ColorToken.background],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(height: 120)
-            }
-            .accessibilityHidden(true)
-
-            VStack(spacing: 12) {
-                Text(feature.title)
-                    .font(.system(size: 30, weight: .heavy))
-                    .kerning(-0.6)
-                    .accessibilityAddTraits(.isHeader)
-                Text(feature.text)
-                    .font(.system(size: 17))
-                    .lineSpacing(3)
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            }
-            .multilineTextAlignment(.center)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 28)
-            .padding(.top, 8)
-            .padding(.bottom, 16)
+    /// Edge to edge with no frame; the bottom fades into the page.
+    private func video(_ feature: FeaturePage) -> some View {
+        LoopingVideo(name: feature.video, isPlaying: true) {
+            Icon(feature.icon, size: 72)
+                .foregroundStyle(AppTheme.ColorToken.accent)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(AppTheme.ColorToken.accentSoft)
         }
+        .clipped()
+        .overlay(alignment: .bottom) {
+            LinearGradient(
+                colors: [AppTheme.ColorToken.background.opacity(0), AppTheme.ColorToken.background],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 120)
+        }
+        .accessibilityHidden(true)
+    }
+
+    /// Stays on screen across pages so its words can roll to the next.
+    private func caption(_ feature: FeaturePage) -> some View {
+        VStack(spacing: 12) {
+            Text(feature.title)
+                .font(.system(size: 30, weight: .heavy))
+                .kerning(-0.6)
+                .accessibilityAddTraits(.isHeader)
+            Text(feature.text)
+                .font(.system(size: 17))
+                .lineSpacing(3)
+                .foregroundStyle(AppTheme.ColorToken.secondaryText)
+        }
+        .contentTransition(.numericText(countsDown: false))
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, 28)
+        .padding(.top, 8)
+        .padding(.bottom, 16)
     }
 
     private var dots: some View {

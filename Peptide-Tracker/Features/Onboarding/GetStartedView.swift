@@ -17,12 +17,6 @@ struct GetStartedView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text(Bundle.main.appName)
-                .font(.system(size: 15, weight: .bold))
-                .kerning(0.2)
-                .foregroundStyle(AppTheme.ColorToken.accent)
-                .padding(.top, 8)
-
             Spacer(minLength: 12)
 
             hero
@@ -106,11 +100,8 @@ struct GetStartedView: View {
     private func tile(_ icon: AppIcon, color: MedicineColor, size: CGFloat, angle: Double, at offset: CGPoint, delay: Double) -> some View {
         Icon(icon, size: size * 0.46)
             .foregroundStyle(color.color)
-            .frame(width: size - 10, height: size - 10)
-            .background(color.color.opacity(0.13), in: .rect(cornerRadius: size * 0.26, style: .continuous))
             .frame(width: size, height: size)
-            .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: size * 0.31, style: .continuous))
-            .shadow(color: Color(hex: 0x28185A, opacity: 0.14), radius: 15, y: 12)
+            .background(color.color.opacity(0.13), in: .rect(cornerRadius: size * 0.3, style: .continuous))
             .rotationEffect(.degrees(angle))
             .scaleEffect(showsTiles ? 1 : 0.4)
             .opacity(showsTiles ? 1 : 0)
