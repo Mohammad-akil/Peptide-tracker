@@ -11,15 +11,43 @@ struct RootView: View {
     @State private var shouldAskForNotifications = false
     @Environment(PurchaseStore.self) private var purchases
     /// Kept from the old welcome screen so existing users skip setup.
-    @AppStorage("welcome.seen") private var hasSeenWelcome = false
-    @State private var showsOnboarding = false
+    @AppStorage(Self.welcomeSeenKey) private var hasSeenWelcome = false
+    /// Setup is the first screen rather than a cover slid over the app;
+    /// whether it shows is decided during the splash.
+    @State private var showsOnboarding: Bool
     /// After setup: the paywall, then Add once it closes.
     @State private var showsSetupPaywall = false
 
+    private static let welcomeSeenKey = "welcome.seen"
+
+    init(startsWithOnboarding: Bool) {
+        _showsOnboarding = State(initialValue: startsWithOnboarding)
+    }
+
+    /// Whether launch should open on setup: never finished it and has no
+    /// medicines yet (or a debug `-onboarding <step>` launch).
+    static func needsOnboarding(store: MedicineStore) -> Bool {
+        if debugOnboardingStep != nil { return true }
+        return !UserDefaults.standard.bool(forKey: welcomeSeenKey) && store.medicines.isEmpty
+    }
+
     var body: some View {
+        ZStack {
+            if showsOnboarding {
+                OnboardingFlow(startingAt: Self.debugOnboardingStep ?? .getStarted) { _ in finishOnboarding() }
+                    .transition(.opacity)
+            } else {
+                app
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.4), value: showsOnboarding)
+    }
+
+    private var app: some View {
         @Bindable var router = router
 
-        NavigationStack(path: $router.path) {
+        return NavigationStack(path: $router.path) {
             MainTabView()
                 .navigationDestination(for: AppRouter.Route.self) { route in
                     switch route {
@@ -42,17 +70,12 @@ struct RootView: View {
                     .accessibilityAddTraits(.isStaticText)
             }
         }
-        .fullScreenCover(isPresented: $showsOnboarding) {
-            OnboardingFlow(startingAt: debugOnboardingStep ?? .getStarted) { _ in finishOnboarding() }
-        }
         .fullScreenCover(isPresented: $showsSetupPaywall, onDismiss: openAddAfterSetup) {
             PaywallView()
         }
         .onAppear {
-            if !hasSeenWelcome && store.medicines.isEmpty { showsOnboarding = true }
             #if DEBUG
             // `-onboarding time` opens setup on a step; `-paywall YES` opens Pro.
-            if debugOnboardingStep != nil { showsOnboarding = true }
             if UserDefaults.standard.bool(forKey: "paywall") { router.sheet = .paywall(reason: nil) }
             #endif
         }
@@ -82,7 +105,7 @@ struct RootView: View {
         }
     }
 
-    private var debugOnboardingStep: OnboardingStep? {
+    private static var debugOnboardingStep: OnboardingStep? {
         #if DEBUG
         let name = UserDefaults.standard.string(forKey: "onboarding")
         return OnboardingStep.allCases.first { String(describing: $0) == name }
@@ -119,7 +142,7 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView()
+    RootView(startsWithOnboarding: false)
         .environment(MedicineStore.preview())
         .environment(AppRouter())
         .environment(PurchaseStore())

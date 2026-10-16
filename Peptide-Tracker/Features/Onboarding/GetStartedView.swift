@@ -44,9 +44,17 @@ struct GetStartedView: View {
 
             Spacer(minLength: 16)
 
-            Button("Get started", action: onStart)
-                .buttonStyle(.primary(height: 56))
-                .padding(.horizontal, 20)
+            Button(action: onStart) {
+                Text("Get started")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 55)
+                    .contentShape(.capsule)
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.tint(AppTheme.ColorToken.accent).interactive(), in: .capsule)
+            .padding(.horizontal, 20)
                 .padding(.bottom, 12)
                 .opacity(showsText ? 1 : 0)
                 .offset(y: showsText ? 0 : 18)
@@ -88,20 +96,21 @@ struct GetStartedView: View {
             .scaleEffect(showsNumber ? 1 : 0.85)
             .opacity(showsNumber ? 1 : 0)
 
-            tile(.pill, color: .blue, size: 62, angle: -10, at: CGPoint(x: -130, y: -91), delay: 0)
-            tile(.syringe, color: .amber, size: 54, angle: 12, at: CGPoint(x: 130, y: -113), delay: 0.15)
-            tile(.drop, color: .teal, size: 50, angle: 8, at: CGPoint(x: -126, y: 117), delay: 0.3)
-            tile(.liquid, color: .pink, size: 58, angle: -8, at: CGPoint(x: 126, y: 109), delay: 0.45)
+            tile(.pill, color: .blue, angle: -10, at: CGPoint(x: -130, y: -91), delay: 0)
+            tile(.syringe, color: .amber, angle: 12, at: CGPoint(x: 130, y: -113), delay: 0.15)
+            tile(.drop, color: .teal, angle: 8, at: CGPoint(x: -126, y: 117), delay: 0.3)
+            tile(.liquid, color: .pink, angle: -8, at: CGPoint(x: 126, y: 109), delay: 0.45)
         }
         .accessibilityElement()
         .accessibilityLabel("A medicine with 5 days left")
     }
 
-    private func tile(_ icon: AppIcon, color: MedicineColor, size: CGFloat, angle: Double, at offset: CGPoint, delay: Double) -> some View {
-        Icon(icon, size: size * 0.46)
+    private func tile(_ icon: AppIcon, color: MedicineColor, angle: Double, at offset: CGPoint, delay: Double) -> some View {
+        Icon(icon, size: 26)
             .foregroundStyle(color.color)
-            .frame(width: size, height: size)
-            .background(color.color.opacity(0.13), in: .rect(cornerRadius: size * 0.3, style: .continuous))
+            .frame(width: 56, height: 56)
+            // A solid light pastel, so tiles stay bright in dark mode too.
+            .background(color.color.mix(with: .white, by: 0.82), in: .rect(cornerRadius: 17, style: .continuous))
             .rotationEffect(.degrees(angle))
             .scaleEffect(showsTiles ? 1 : 0.4)
             .opacity(showsTiles ? 1 : 0)
