@@ -10,6 +10,7 @@ struct SettingUpStep: View {
     let answers: OnboardingAnswers
     let onFinish: () -> Void
 
+    @Environment(AppRouter.self) private var router
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var progress: Double = 0
 
@@ -140,7 +141,8 @@ struct SettingUpStep: View {
             if crossedItem { HapticFeedback.selection() }
         }
         HapticFeedback.notification(.success)
-        try? await Task.sleep(for: .milliseconds(600))
+        router.celebrate()
+        try? await Task.sleep(for: .milliseconds(1200))
         guard !Task.isCancelled else { return }
         onFinish()
     }
@@ -149,4 +151,5 @@ struct SettingUpStep: View {
 #Preview {
     SettingUpStep(answers: OnboardingAnswers()) {}
         .padding(.horizontal, 20)
+        .environment(AppRouter())
 }

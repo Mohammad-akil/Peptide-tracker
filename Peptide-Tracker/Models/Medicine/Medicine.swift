@@ -25,6 +25,14 @@ struct Medicine: Identifiable, Codable, Hashable {
     /// and marked refilled.
     var orderedAt: Date?
     var createdAt = Date()
+    /// The brand on the box ("Glucophage"), when it differs from the name.
+    var brandName = ""
+    /// What it's for ("Blood pressure"). Optional.
+    var reason = ""
+    /// How to take it ("With food"). Optional.
+    var instructions = ""
+    /// The user's own word for the type, when it's `.other` ("Patch").
+    var customTypeName = ""
     /// Units ticked off today. Not saved — the store derives it from the
     /// dose logs — but kept here so days left stays put while today's doses
     /// are taken, instead of dropping a day every evening.
@@ -33,9 +41,16 @@ struct Medicine: Identifiable, Codable, Hashable {
     private enum CodingKeys: String, CodingKey {
         case id, name, strength, type, color, stock, capacity, perDay, intakeTimes
         case reminderDaysBefore, reminderTime, remindersPaused, orderedAt, createdAt
+        case brandName, reason, instructions, customTypeName
     }
 
     var unit: MedicineUnit { type.unit }
+
+    /// "Inhaler", or the user's own name for an Other type.
+    var typeTitle: String {
+        let custom = customTypeName.trimmingCharacters(in: .whitespaces)
+        return type == .other && !custom.isEmpty ? custom : type.title
+    }
 
     var unitsPerIntake: Int { max(1, perDay / max(intakeTimes.count, 1)) }
 
@@ -99,6 +114,34 @@ struct Medicine: Identifiable, Codable, Hashable {
         let labels = intakeTimes.map(\.label)
         guard labels.count > 1 else { return labels.first ?? "" }
         return labels.dropLast().joined(separator: ", ") + " and " + labels.last!
+    }
+}
+
+// MARK: - Decoding
+
+extension Medicine {
+    /// Medicines saved before the brand, reason, instructions and custom
+    /// type fields existed load with those left empty.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        strength = try c.decode(String.self, forKey: .strength)
+        type = try c.decode(MedicineType.self, forKey: .type)
+        color = try c.decode(MedicineColor.self, forKey: .color)
+        stock = try c.decode(Int.self, forKey: .stock)
+        capacity = try c.decode(Int.self, forKey: .capacity)
+        perDay = try c.decode(Int.self, forKey: .perDay)
+        intakeTimes = try c.decode([TimeOfDay].self, forKey: .intakeTimes)
+        reminderDaysBefore = try c.decode(Int.self, forKey: .reminderDaysBefore)
+        reminderTime = try c.decode(TimeOfDay.self, forKey: .reminderTime)
+        remindersPaused = try c.decodeIfPresent(Bool.self, forKey: .remindersPaused) ?? false
+        orderedAt = try c.decodeIfPresent(Date.self, forKey: .orderedAt)
+        createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        brandName = try c.decodeIfPresent(String.self, forKey: .brandName) ?? ""
+        reason = try c.decodeIfPresent(String.self, forKey: .reason) ?? ""
+        instructions = try c.decodeIfPresent(String.self, forKey: .instructions) ?? ""
+        customTypeName = try c.decodeIfPresent(String.self, forKey: .customTypeName) ?? ""
     }
 }
 
@@ -196,6 +239,11 @@ struct TimeOfDay: Codable, Hashable, Comparable {
     /// a whole number of units.
     static func defaultSchedule(perDay: Int) -> [TimeOfDay] {
         let count = [4, 3, 2, 1].first { $0 <= max(perDay, 1) && max(perDay, 1) % $0 == 0 } ?? 1
+        return schedule(count: count)
+    }
+
+    /// Evenly spaced waking-hours times for a number of doses a day (1–4).
+    static func schedule(count: Int) -> [TimeOfDay] {
         switch count {
         case 4: return [.init(hour: 8, minute: 0), .init(hour: 12, minute: 0), .init(hour: 16, minute: 0), .init(hour: 20, minute: 0)]
         case 3: return [.init(hour: 8, minute: 0), .init(hour: 14, minute: 0), .init(hour: 20, minute: 0)]

@@ -112,13 +112,26 @@ struct MedicineIconView: View {
     var size: CGFloat = 42
 
     var body: some View {
-        type.glyph(in: color)
-            .resizable()
-            .scaledToFit()
-            .frame(width: size * 0.78, height: size * 0.78)
+        glyph
             .frame(width: size, height: size)
             .background(color.color.opacity(0.13), in: .rect(cornerRadius: size * 0.31, style: .continuous))
             .accessibilityHidden(true)
+    }
+
+    /// The asset pack's drawn glyph where there is one; the type's symbol in
+    /// the tile colour for the rest (inhaler, powder, other).
+    @ViewBuilder
+    private var glyph: some View {
+        if type.hasGlyph {
+            type.glyph(in: color)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size * 0.78, height: size * 0.78)
+        } else {
+            Image(systemName: type.symbol)
+                .font(.system(size: size * 0.42, weight: .semibold))
+                .foregroundStyle(color.color)
+        }
     }
 }
 

@@ -42,6 +42,8 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.4), value: showsOnboarding)
+        // Toasts and confetti draw in their own window above every sheet.
+        .onAppear { OverlayWindow.install(router: router) }
     }
 
     private var app: some View {
@@ -56,20 +58,6 @@ struct RootView: View {
                     }
                 }
         }
-        .overlay(alignment: .top) {
-            if let toast = router.toast {
-                Label(toast, systemImage: "checkmark.circle.fill")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(AppTheme.ColorToken.primaryText)
-                    .symbolRenderingMode(.multicolor)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 12)
-                    .glassEffect(.regular, in: .capsule)
-                    .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .accessibilityAddTraits(.isStaticText)
-            }
-        }
         .fullScreenCover(isPresented: $showsSetupPaywall, onDismiss: openAddAfterSetup) {
             PaywallView()
         }
@@ -82,13 +70,9 @@ struct RootView: View {
         .sheet(item: $router.sheet, onDismiss: presentPermissionIfNeeded) { sheet in
             switch sheet {
             case .addMedicine:
-                AddMedicineView(editing: nil) { isFirstMedicine in
-                    if isFirstMedicine { shouldAskForNotifications = true }
-                }
+                AddMedicineFlow(onSaved: medicineAdded)
             case .addMedicineNamed(let name):
-                AddMedicineView(editing: nil, name: name) { isFirstMedicine in
-                    if isFirstMedicine { shouldAskForNotifications = true }
-                }
+                AddMedicineFlow(name: name, onSaved: medicineAdded)
             case .editMedicine(let id):
                 AddMedicineView(editing: store.medicine(id: id)) { _ in }
             case .refill(let id):
@@ -129,6 +113,10 @@ struct RootView: View {
             try? await Task.sleep(for: .milliseconds(350))
             router.requestAddMedicine(count: store.medicines.count, purchases: purchases)
         }
+    }
+
+    private func medicineAdded(isFirstMedicine: Bool) {
+        if isFirstMedicine { shouldAskForNotifications = true }
     }
 
     private func presentPermissionIfNeeded() {

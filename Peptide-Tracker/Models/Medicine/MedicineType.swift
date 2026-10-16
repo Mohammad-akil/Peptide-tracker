@@ -2,33 +2,45 @@ import SwiftUI
 
 /// What form a medicine comes in. The type sets the unit everywhere — the
 /// Add form's labels, card chips, row subtitles and the reminder copy.
+/// Case order is the order the type pickers show them in.
 enum MedicineType: String, Codable, CaseIterable, Identifiable {
-    case capsule, tablet, injection, cream, liquid, drops
+    case capsule, tablet, injection, liquid, drops, inhaler, powder, cream, other
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .capsule: "Capsule"
+        case .capsule: "Pill"
         case .tablet: "Tablet"
         case .injection: "Injection"
-        case .cream: "Cream"
         case .liquid: "Liquid"
         case .drops: "Drops"
+        case .inhaler: "Inhaler"
+        case .powder: "Powder"
+        case .cream: "Cream"
+        case .other: "Other"
         }
     }
 
-    /// The line icon on the Add form's type picker.
-    var icon: AppIcon {
+    /// The filled SF Symbol for type pickers, and the tile glyph for types
+    /// the asset pack doesn't draw.
+    var symbol: String {
         switch self {
-        case .capsule: .pill
-        case .tablet: .round
-        case .injection: .syringe
-        case .cream: .cream
-        case .liquid: .liquid
-        case .drops: .drop
+        case .capsule: "pills.fill"
+        case .tablet: "pill.fill"
+        case .injection: "syringe.fill"
+        case .liquid: "waterbottle.fill"
+        case .drops: "drop.fill"
+        case .inhaler: "lungs.fill"
+        case .powder: "aqi.medium"
+        case .cream: "hands.and.sparkles.fill"
+        case .other: "cross.case.fill"
         }
     }
+
+    /// Whether the asset pack has a drawn glyph for this type (the original
+    /// six); the rest use `symbol`.
+    var hasGlyph: Bool { ![.inhaler, .powder, .other].contains(self) }
 
     /// The asset-pack glyph, in the type's own colour.
     var glyph: Image { Image("type-\(rawValue)") }
@@ -44,6 +56,9 @@ enum MedicineType: String, Codable, CaseIterable, Identifiable {
         case .cream: MedicineUnit(singular: "application", plural: "applications")
         case .liquid: MedicineUnit(singular: "ml", plural: "ml")
         case .drops: MedicineUnit(singular: "drop", plural: "drops")
+        case .inhaler: MedicineUnit(singular: "puff", plural: "puffs")
+        case .powder: MedicineUnit(singular: "sachet", plural: "sachets")
+        case .other: MedicineUnit(singular: "dose", plural: "doses")
         }
     }
 
@@ -63,6 +78,7 @@ enum MedicineType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .injection: "Count single doses. A pen with 300 units at 15 units a dose is 20 doses."
         case .liquid: "Count millilitres. A 150 ml bottle at 5 ml a dose is 150 ml."
+        case .inhaler: "Count puffs. Most inhalers show how many are left on a counter."
         default: nil
         }
     }
@@ -74,6 +90,8 @@ enum MedicineType: String, Codable, CaseIterable, Identifiable {
         case .cream: [30, 60, 100]
         case .liquid: [100, 150, 200]
         case .drops: [100, 200, 300]
+        case .inhaler: [120, 200]
+        case .powder: [10, 20, 30]
         default: [30, 60, 90]
         }
     }

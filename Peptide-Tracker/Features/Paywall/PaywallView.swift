@@ -4,6 +4,7 @@ import SwiftUI
 /// plans, one button. Shown after setup and from Settings.
 struct PaywallView: View {
     @Environment(PurchaseStore.self) private var purchases
+    @Environment(AppRouter.self) private var router
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @State private var plan = PurchaseStore.Plan.lifetime
@@ -19,8 +20,6 @@ struct PaywallView: View {
     ]
 
     var body: some View {
-        @Bindable var purchases = purchases
-
         ScrollView {
             VStack(spacing: 0) {
                 IllustrationView(.neverRunOut, width: 220)
@@ -102,7 +101,7 @@ struct PaywallView: View {
                     .padding(.top, 4)
 
                 HStack(spacing: 18) {
-                    Button("Restore") { Task { await purchases.restore(); if purchases.isPro { dismiss() } } }
+                    Button("Restore", action: restore)
                     Button("Terms") { openURL(AppLinks.termsOfUse) }
                     Button("Privacy") { openURL(AppLinks.privacyPolicy) }
                 }
@@ -141,11 +140,6 @@ struct PaywallView: View {
             .padding(.trailing, 12)
             .padding(.top, 8)
             .accessibilityLabel("Close")
-        }
-        .alert("Purchase", isPresented: Binding(get: { purchases.errorMessage != nil }, set: { if !$0 { purchases.errorMessage = nil } })) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(purchases.errorMessage ?? "")
         }
     }
 
@@ -221,9 +215,37 @@ struct PaywallView: View {
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
+    // MARK: Purchase
+
     private func buy() {
         Task {
-            if await purchases.purchase(plan) { dismiss() }
+            router.show(.loading("Contacting the App Store…"))
+            if await purchases.purchase(plan) {
+                router.show(.success("Welcome to Pro", message: plan == .lifetime ? "Unlocked for good. Thank you!" : "Everything’s unlocked. Thank you!"))
+                router.celebrate()
+                dismiss()
+            } else if let error = purchases.errorMessage {
+                purchases.errorMessage = nil
+                router.show(.error("Purchase didn’t go through", message: error))
+            } else {
+                // Cancelled or waiting for approval: nothing to report.
+                router.dismissToast()
+            }
+        }
+    }
+
+    private func restore() {
+        Task {
+            router.show(.loading("Checking your purchases…"))
+            await purchases.restore()
+            purchases.errorMessage = nil
+            if purchases.isPro {
+                router.show(.success("Pro restored", message: "Welcome back."))
+                router.celebrate()
+                dismiss()
+            } else {
+                router.show(.warning("No earlier purchase found", message: "Nothing to restore for this Apple Account."))
+            }
         }
     }
 }
@@ -231,4 +253,5 @@ struct PaywallView: View {
 #Preview {
     PaywallView()
         .environment(PurchaseStore())
+        .environment(AppRouter())
 }

@@ -46,6 +46,10 @@ extension AppIcon {
         case .timeline: "chart.bar.fill"
         case .plus: "plus.circle.fill"
         case .share: "square.and.arrow.up.fill"
+        case .sun: "sun.max.fill"
+        case .moon: "moon.fill"
+        case .list: "list.clipboard.fill"
+        case .sparkle: "sparkles"
         default: nil
         }
     }

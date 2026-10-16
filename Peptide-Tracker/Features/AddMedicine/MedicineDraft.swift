@@ -12,6 +12,15 @@ struct MedicineDraft {
     var perDay = 0
     var reminderDaysBefore = 5
     var reminderTime = TimeOfDay.defaultReminder
+    var brandName = ""
+    var reason = ""
+    var instructions = ""
+    var customTypeName = ""
+    /// Doses a day picked in the add flow ("Twice a day"). When set, intake
+    /// times follow it exactly; otherwise they're spread from `perDay`.
+    var dosesPerDay: Int?
+    /// Off saves the medicine with its refill reminder paused.
+    var remindersOn = true
 
     /// The medicine being edited, if any — keeps its id, capacity and
     /// schedule.
@@ -32,6 +41,11 @@ struct MedicineDraft {
         perDay = medicine.perDay
         reminderDaysBefore = medicine.reminderDaysBefore
         reminderTime = medicine.reminderTime
+        brandName = medicine.brandName
+        reason = medicine.reason
+        instructions = medicine.instructions
+        customTypeName = medicine.customTypeName
+        remindersOn = !medicine.remindersPaused
     }
 
     var isEditing: Bool { original != nil }
@@ -57,15 +71,18 @@ struct MedicineDraft {
     }
 
     func build() -> Medicine {
-        let intakeTimes: [TimeOfDay] = if let original, original.perDay == perDay {
+        let intakeTimes: [TimeOfDay] = if let dosesPerDay {
+            TimeOfDay.schedule(count: dosesPerDay)
+        } else if let original, original.perDay == perDay {
             original.intakeTimes
         } else {
             TimeOfDay.defaultSchedule(perDay: perDay)
         }
+        func trimmed(_ text: String) -> String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
         return Medicine(
             id: original?.id ?? UUID(),
             name: trimmedName,
-            strength: strength.trimmingCharacters(in: .whitespacesAndNewlines),
+            strength: trimmed(strength),
             type: type,
             color: color,
             stock: stock,
@@ -74,9 +91,13 @@ struct MedicineDraft {
             intakeTimes: intakeTimes,
             reminderDaysBefore: reminderDaysBefore,
             reminderTime: reminderTime,
-            remindersPaused: original?.remindersPaused ?? false,
+            remindersPaused: !remindersOn,
             orderedAt: original?.orderedAt,
-            createdAt: original?.createdAt ?? .now
+            createdAt: original?.createdAt ?? .now,
+            brandName: trimmed(brandName),
+            reason: trimmed(reason),
+            instructions: trimmed(instructions),
+            customTypeName: type == .other ? trimmed(customTypeName) : ""
         )
     }
 }

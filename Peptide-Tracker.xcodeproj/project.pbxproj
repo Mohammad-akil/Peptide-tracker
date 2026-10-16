@@ -6,6 +6,10 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		444352F130823DD90002BADB /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 444352F030823DD90002BADB /* ConfettiSwiftUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Peptide-Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Peptide-Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -22,6 +26,7 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				444352F130823DD90002BADB /* ConfettiSwiftUI in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -60,6 +65,9 @@
 				000000000000000000000010 /* Peptide-Tracker */,
 			);
 			name = "Peptide-Tracker";
+			packageProductDependencies = (
+				444352F030823DD90002BADB /* ConfettiSwiftUI */,
+			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* Peptide-Tracker.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +96,9 @@
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				444352EF30823DD90002BADB /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
 			projectDirPath = "";
@@ -349,6 +360,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		444352EF30823DD90002BADB /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		444352F030823DD90002BADB /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 444352EF30823DD90002BADB /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }

@@ -106,8 +106,8 @@ struct RefillSheet: View {
 
             Button {
                 store.refill(medicineID, adding: amount)
-                HapticFeedback.notification(.success)
                 router.showToast("Refilled. Next reminder \(after.reminderDate(now: now).weekdayDayMonth).")
+                router.celebrate()
                 dismiss()
             } label: {
                 Text("Confirm · \(after.unit.format(after.stock))")

@@ -65,7 +65,7 @@ private struct MedicineListPage: View {
                     GridRow(alignment: .top) {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(medicine.name).font(.system(size: 12, weight: .semibold))
-                            Text([medicine.strength, medicine.type.title].filter { !$0.isEmpty }.joined(separator: " · "))
+                            Text([medicine.strength, medicine.typeTitle].filter { !$0.isEmpty }.joined(separator: " · "))
                                 .font(.system(size: 10)).foregroundStyle(.secondary)
                         }
                         cell("\(medicine.unit.format(medicine.unitsPerIntake)), \(medicine.scheduleTitle.lowercased())")

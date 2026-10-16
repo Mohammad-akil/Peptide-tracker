@@ -55,9 +55,11 @@ final class AppRouter {
     var selectedTab: Tab = .today
     var path: [Route] = []
     var sheet: Sheet?
-    /// A short confirmation shown above everything ("Refilled. Reminder
-    /// moved to 24 Oct").
-    private(set) var toast: String?
+    /// The message at the top of the screen, drawn by `OverlayWindow` above
+    /// everything, sheets included.
+    private(set) var toast: Toast?
+    /// Bumped to fire confetti for a moment worth celebrating.
+    private(set) var celebrations = 0
     private var toastTask: Task<Void, Never>?
 
     func openMedicine(_ id: UUID) {
@@ -84,13 +86,54 @@ final class AppRouter {
         path.append(route)
     }
 
+    /// A quick success confirmation ("Refilled. Next reminder Tue 24 Oct.").
     func showToast(_ message: String) {
+        show(.success(message))
+    }
+
+    func show(_ toast: Toast) {
+        var toast = toast
+        // A result replacing a spinner keeps its place, so it morphs.
+        if let current = self.toast, current.style == .loading { toast.id = current.id }
         toastTask?.cancel()
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { toast = message }
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) { self.toast = toast }
+        toast.style.playHaptic()
+        AccessibilityNotification.Announcement(toast.title).post()
+        guard let duration = toast.style.duration else { return }
         toastTask = Task {
-            try? await Task.sleep(for: .seconds(2.6))
+            try? await Task.sleep(for: duration)
             guard !Task.isCancelled else { return }
-            withAnimation(.easeOut(duration: 0.25)) { toast = nil }
+            dismissToast()
         }
+    }
+
+    func dismissToast() {
+        toastTask?.cancel()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) { toast = nil }
+    }
+
+    /// Runs `operation` under a loading toast, then turns it into a success
+    /// or an error. Returns whether it worked.
+    @discardableResult
+    func withLoadingToast(
+        _ loading: String,
+        success: Toast,
+        failureTitle: String,
+        operation: () async throws -> Void
+    ) async -> Bool {
+        show(.loading(loading))
+        do {
+            try await operation()
+            show(success)
+            return true
+        } catch {
+            show(.error(failureTitle, message: error.localizedDescription))
+            return false
+        }
+    }
+
+    /// Confetti, for a step worth celebrating.
+    func celebrate() {
+        celebrations += 1
     }
 }
