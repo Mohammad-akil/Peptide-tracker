@@ -646,24 +646,25 @@ private struct OptionCard<Trailing: View, Detail: View>: View {
 
 extension OptionCard where Trailing == ChevronMark {
     init(icon: AppIcon, title: String, value: String, isExpanded: Bool, onTap: @escaping () -> Void, @ViewBuilder detail: () -> Detail) {
-        self.init(icon: icon, title: title, value: value, isExpanded: isExpanded, onTap: onTap, trailing: {
-            ChevronMark(isOpen: isExpanded)
-                .frame(width: 32, height: 42)
-                .contentShape(.rect)
-                .onTapGesture(perform: onTap)
-        }, detail: detail)
+        self.init(icon: icon, title: title, value: value, isExpanded: isExpanded, onTap: onTap, trailing: { ChevronMark(isOpen: isExpanded, onTap: onTap) }, detail: detail)
     }
 }
 
-/// The down chevron on an option that opens, turned up while open.
+/// The down chevron on an option that opens, turned up while open. It
+/// sits outside the option's button, so it handles its own tap.
 private struct ChevronMark: View {
     let isOpen: Bool
+    let onTap: () -> Void
 
     var body: some View {
         Image(systemName: "chevron.down")
             .font(.system(size: 14, weight: .bold))
             .foregroundStyle(AppTheme.ColorToken.tertiaryText)
             .rotationEffect(.degrees(isOpen ? 180 : 0))
+            .frame(width: 32, height: 42)
+            .contentShape(.rect)
+            .onTapGesture(perform: onTap)
+            .accessibilityHidden(true)
     }
 }
 
