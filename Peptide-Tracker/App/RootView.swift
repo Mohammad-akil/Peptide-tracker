@@ -81,6 +81,11 @@ struct RootView: View {
                     .presentationCornerRadius(44)
                     // Solid white (dark grey in dark mode), not the glass sheet.
                     .presentationBackground(AppTheme.ColorToken.cardBackground)
+            case .injectionSite(let dose):
+                InjectionSiteSheet(dose: dose)
+                    .presentationDetents([.large])
+                    .presentationCornerRadius(44)
+                    .presentationBackground(AppTheme.ColorToken.cardBackground)
             case .paywall(let reason):
                 PaywallView(reason: reason)
             case .notificationPermission:

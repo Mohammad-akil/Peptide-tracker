@@ -42,6 +42,9 @@ struct MedicineDetailView: View {
                         .background(banner.wash, in: .rect(cornerRadius: 18, style: .continuous))
                 }
                 infoRows(medicine, now: now)
+                if medicine.type == .injection {
+                    InjectionSitesCard(medicine: medicine, now: now)
+                }
                 StockForecastCard(medicine: medicine, refills: store.refills(for: medicine.id), now: now)
             }
             .padding(.horizontal, AppTheme.Spacing.medium)

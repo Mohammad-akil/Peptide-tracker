@@ -12,6 +12,8 @@ struct DoseLog: Identifiable, Codable, Hashable {
     var time: TimeOfDay
     var units: Int
     var takenAt: Date?
+    /// Where an injection went, when the user picked a site.
+    var site: InjectionSite?
 
     var isTaken: Bool { takenAt != nil }
 }
@@ -34,6 +36,7 @@ struct ScheduledDose: Identifiable, Hashable {
     let day: Date
     let time: TimeOfDay
     let takenAt: Date?
+    var site: InjectionSite? = nil
 
     var id: String { "\(medicine.id)-\(day.timeIntervalSince1970)-\(time.minutesSinceMidnight)" }
     var isTaken: Bool { takenAt != nil }

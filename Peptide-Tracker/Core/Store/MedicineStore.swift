@@ -137,7 +137,7 @@ final class MedicineStore {
                     // taken (or not) before the stock was counted — leave
                     // them out so they aren't counted down or called missed.
                     if log == nil, time.on(day) < medicine.createdAt { return nil }
-                    return ScheduledDose(medicine: medicine, day: day, time: time, takenAt: log?.takenAt)
+                    return ScheduledDose(medicine: medicine, day: day, time: time, takenAt: log?.takenAt, site: log?.site)
                 }
             }
             .sorted { ($0.time, $0.medicine.name) < ($1.time, $1.medicine.name) }
@@ -149,8 +149,9 @@ final class MedicineStore {
 
     /// Ticks a dose off, or un-ticks it. Ticking today's dose takes units
     /// from stock; a past dose was already counted down at day's end, so
-    /// ticking it later only records that it was taken.
-    func toggle(_ dose: ScheduledDose, now: Date = .now) {
+    /// ticking it later only records that it was taken. `site` is where an
+    /// injection went, kept with the log when ticking.
+    func toggle(_ dose: ScheduledDose, site: InjectionSite? = nil, now: Date = .now) {
         guard dose.day <= now.startOfDay else { return }
         let isToday = dose.day == now.startOfDay
         let units = dose.medicine.unitsPerIntake
@@ -162,12 +163,14 @@ final class MedicineStore {
                     mutate(dose.medicine.id, save: false) { $0.stock += units }
                 } else {
                     doseLogs[index].takenAt = nil
+                    doseLogs[index].site = nil
                 }
             } else {
                 doseLogs[index].takenAt = now
+                doseLogs[index].site = site
             }
         } else {
-            doseLogs.append(DoseLog(medicineID: dose.medicine.id, day: dose.day, time: dose.time, units: units, takenAt: now))
+            doseLogs.append(DoseLog(medicineID: dose.medicine.id, day: dose.day, time: dose.time, units: units, takenAt: now, site: site))
             mutate(dose.medicine.id, save: false) { $0.stock = max(0, $0.stock - units) }
         }
         HapticFeedback.impact()
@@ -177,6 +180,39 @@ final class MedicineStore {
     /// "Take all 3" on a timeline slot.
     func markTaken(_ doses: [ScheduledDose], now: Date = .now) {
         for dose in doses where !dose.isTaken { toggle(dose, now: now) }
+    }
+
+    // MARK: - Injection sites
+
+    /// Taken injections with a site, newest first.
+    func injectionHistory(for medicineID: UUID) -> [DoseLog] {
+        doseLogs
+            .filter { $0.medicineID == medicineID && $0.site != nil && $0.takenAt != nil }
+            .sorted { $0.takenAt! > $1.takenAt! }
+    }
+
+    /// Where the next injection should go: the site after the last one in
+    /// the rotation, across every injection medicine, so two pens don't
+    /// share a spot.
+    func suggestedSite() -> InjectionSite {
+        let last = doseLogs
+            .filter { $0.site != nil && $0.takenAt != nil }
+            .max { $0.takenAt! < $1.takenAt! }?
+            .site
+        guard let last, let index = InjectionSite.rotation.firstIndex(of: last) else {
+            return InjectionSite.rotation[0]
+        }
+        return InjectionSite.rotation[(index + 1) % InjectionSite.rotation.count]
+    }
+
+    /// When each site was last used, for fading recent sites on the map.
+    func lastUsed() -> [InjectionSite: Date] {
+        var used: [InjectionSite: Date] = [:]
+        for log in doseLogs {
+            guard let site = log.site, let takenAt = log.takenAt else { continue }
+            used[site] = max(used[site] ?? .distantPast, takenAt)
+        }
+        return used
     }
 
     private func logIndex(for dose: ScheduledDose) -> Int? {

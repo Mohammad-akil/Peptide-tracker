@@ -30,6 +30,15 @@ extension Date {
     var monthName: String { formatted(.dateTime.month(.wide)) }
     /// "Sep"
     var monthAbbrev: String { formatted(.dateTime.month(.abbreviated)) }
+    /// "today", "yesterday", "3 days ago"
+    func relativeDay(now: Date = .now) -> String {
+        let days = Calendar.current.days(from: self, to: now)
+        switch days {
+        case ...0: return "today"
+        case 1: return "yesterday"
+        default: return "\(days) days ago"
+        }
+    }
 }
 
 extension Int {

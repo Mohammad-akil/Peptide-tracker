@@ -110,7 +110,12 @@ private struct DoseRow: View {
             .buttonStyle(.plain)
 
             Button {
-                withAnimation(.snappy) { store.toggle(dose) }
+                // An injection asks where it went before it's ticked off.
+                if dose.medicine.type == .injection && !dose.isTaken {
+                    router.sheet = .injectionSite(dose)
+                } else {
+                    withAnimation(.snappy) { store.toggle(dose) }
+                }
             } label: {
                 DoseCheckmark(isTaken: dose.isTaken)
             }

@@ -35,6 +35,8 @@ final class AppRouter {
         case addMedicineNamed(String)
         case editMedicine(UUID)
         case refill(UUID)
+        /// "Where did you inject?" before an injection is ticked off.
+        case injectionSite(ScheduledDose)
         case notificationPermission
         /// `reason` says why it opened, when something hit the free limit.
         case paywall(reason: String?)
@@ -45,6 +47,7 @@ final class AppRouter {
             case .addMedicineNamed(let name): "add-\(name)"
             case .editMedicine(let id): "edit-\(id)"
             case .refill(let id): "refill-\(id)"
+            case .injectionSite(let dose): "site-\(dose.id)"
             case .notificationPermission: "permission"
             case .paywall: "paywall"
             }
