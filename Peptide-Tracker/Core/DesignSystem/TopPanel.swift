@@ -5,6 +5,9 @@ import SwiftUI
 /// Medicines' switch and search). Content scrolls underneath it.
 struct TopPanel<Actions: View, Controls: View>: View {
     let title: String
+    /// A number that orders titles (e.g. the month), so the title rolls
+    /// up or down like a counter when it changes. Nil just fades.
+    var titleValue: Double?
     @ViewBuilder var actions: Actions
     @ViewBuilder var controls: Controls
 
@@ -16,7 +19,7 @@ struct TopPanel<Actions: View, Controls: View>: View {
                     .kerning(-0.6)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                    .contentTransition(.opacity)
+                    .contentTransition(titleValue.map { .numericText(value: $0) } ?? .opacity)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 0)
                 actions

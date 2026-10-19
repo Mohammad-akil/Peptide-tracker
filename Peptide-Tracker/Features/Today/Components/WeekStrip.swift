@@ -1,11 +1,14 @@
 import SwiftUI
 
-/// A Sun–Sat row of days that pages a week at a time, with the picked day
-/// in an accent circle and a dot under each day for how its doses went.
-/// Below it, one label for the picked day ("Today, 16 Oct") and a grabber:
-/// dragging down unrolls the whole month, following the finger, and it
-/// settles open or closed on release. Picking a day in the month folds it
-/// back to the week.
+/// The weekday names over a Sun–Sat row of days that pages a week at a time,
+/// with the picked day in an accent circle and a dot under each day for how
+/// its doses went. Below it, one label for the picked day ("Today, 16 Oct")
+/// and a grabber.
+///
+/// Dragging down unrolls the whole month around the picked week: that row
+/// holds still while the weeks above slide down into view and the ones below
+/// are revealed, following the finger. On release it springs open or closed
+/// from the finger's speed. Picking a day in the month folds back to its week.
 struct WeekStrip: View {
     @Environment(MedicineStore.self) private var store
     @Binding var selection: Date
@@ -13,48 +16,105 @@ struct WeekStrip: View {
 
     /// Weeks you can page to, either side of this one.
     static let weekRange = -8...8
-    /// Weekday, the 42 pt date circle and the status dot, with their gaps.
-    static let rowHeight: CGFloat = 82
-
-    /// A day in the month grid, without the weekday above it.
-    static let monthRowHeight: CGFloat = 54
-    /// The weekday letters over the month grid, and the gap under them.
-    static let monthHeaderHeight: CGFloat = 22
+    /// One row of days: the 42 pt date circle, the status dot, and room
+    /// between rows. The same in the week and the month, so they line up.
+    static let rowHeight: CGFloat = 58
+    /// The weekday names, and the gap under them that keeps them clear of
+    /// the circles.
+    private static let headerHeight: CGFloat = 18
+    private static let headerGap: CGFloat = 8
 
     @State private var shownWeek: Int?
-    @State private var shownMonth: Int?
+    /// The month on show while the month is open.
+    @State private var shownMonth = 0
+    /// Whether the month grid is drawn in place of the week pager; true
+    /// from the start of a drag until the strip has settled closed.
+    @State private var showsMonth = false
     /// 0 shows the week, 1 the month; in between while dragging.
     @State private var expansion: CGFloat = 0
     /// `expansion` when the current drag began; nil when not dragging.
     @State private var dragStart: CGFloat?
+    /// The drag's direction, settled by its first movement.
+    @State private var dragAxis: Axis?
+    /// Which way the last month change went, so the grid slides that way.
+    @State private var monthMovesForward = true
+    /// When the last up/down drag ended. A button under the finger as it
+    /// lifts (the grabber rides down with the drag) would count that as a
+    /// tap, so taps this close to a drag are ignored.
+    @State private var lastDragEnded = Date.distantPast
+    /// True while a drag is in progress; drops back on its own if the
+    /// system cancels the drag, which never calls `onEnded`.
+    @GestureState private var isDragging = false
+
+    /// A tap that is really the end of a drag.
+    private var isDragRelease: Bool {
+        dragStart != nil || Date.now.timeIntervalSince(lastDragEnded) < 0.35
+    }
 
     private var isExpanded: Bool { expansion > 0.5 }
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 0) {
+            weekdayHeader
+                .padding(.bottom, Self.headerGap)
+
             ZStack(alignment: .top) {
+                // Kept while hidden so it stays on the picked week, ready to
+                // show again without a jump.
                 weekPager
-                    .opacity(Double(max(0, 1 - expansion * 2.5)))
-                    .allowsHitTesting(!isExpanded)
-                if expansion > 0 {
-                    monthPager
-                        .opacity(Double(min(1, max(0, expansion * 2 - 0.3))))
-                        .allowsHitTesting(isExpanded)
+                    .opacity(showsMonth ? 0 : 1)
+                    .allowsHitTesting(!showsMonth)
+                if showsMonth {
+                    monthGrid(shownMonth)
+                        // Collapsed, only the picked week's row shows; the
+                        // rows above slide down into place as it opens.
+                        .offset(y: -CGFloat(anchorRow) * Self.rowHeight * (1 - expansion))
+                        .id(shownMonth)
+                        .transition(.push(from: monthMovesForward ? .trailing : .leading))
                 }
             }
-            // Grows with the drag and clips, so the month unrolls downwards.
             .frame(height: Self.rowHeight + (monthHeight - Self.rowHeight) * expansion, alignment: .top)
             .clipped()
-            // Months of five and six weeks differ in height.
-            .animation(.snappy, value: shownMonth)
 
             VStack(spacing: 10) {
                 dateLabel
                 grabber
             }
+            .padding(.top, 6)
         }
         .contentShape(.rect)
-        .simultaneousGesture(expandGesture)
+        .simultaneousGesture(dragGesture)
+        .onChange(of: selection) { _, day in
+            // Picked from outside the open month (Today, or swiping the
+            // doses): slide the grid to that day's month.
+            let month = monthOffset(of: day)
+            guard showsMonth, month != shownMonth, monthRange.contains(month) else { return }
+            monthMovesForward = month > shownMonth
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.88)) { shownMonth = month }
+        }
+        .onChange(of: isDragging) { _, dragging in
+            // Cancelled mid-drag: settle wherever it's nearer.
+            guard !dragging, let start = dragStart else { return }
+            endVerticalDrag(open: isExpanded, start: start, velocity: 0)
+        }
+    }
+
+    /// "Sun Mon Tue…", with today's column in accent while its week shows.
+    private var weekdayHeader: some View {
+        let start = weekStart(0)
+        let showsThisWeek = !showsMonth && shownWeek == 0
+        return HStack(spacing: 0) {
+            ForEach(0..<7, id: \.self) { index in
+                let day = start.adding(days: index)
+                Text(day.formatted(.dateTime.weekday(.abbreviated)))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(showsThisWeek && day == today ? AppTheme.ColorToken.accent : AppTheme.ColorToken.secondaryText)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.horizontal, 8)
+        .frame(height: Self.headerHeight)
+        .animation(.snappy, value: showsThisWeek)
     }
 
     // MARK: Week
@@ -78,10 +138,7 @@ struct WeekStrip: View {
         .frame(height: Self.rowHeight)
         .onAppear { shownWeek = weekOffset(of: selection) }
         .onChange(of: selection) { _, day in
-            withAnimation(.snappy) {
-                shownWeek = weekOffset(of: day)
-                if expansion > 0 { shownMonth = monthOffset(of: day) }
-            }
+            withAnimation(.snappy) { shownWeek = weekOffset(of: day) }
         }
     }
 
@@ -89,23 +146,61 @@ struct WeekStrip: View {
         let start = weekStart(offset)
         return HStack(spacing: 0) {
             ForEach(0..<7, id: \.self) { index in
-                let day = start.adding(days: index)
-                DayCell(
-                    day: day,
-                    status: status(on: day),
-                    isSelected: day == selection,
-                    isToday: day == today
-                ) {
-                    HapticFeedback.selection()
-                    withAnimation(.snappy) { selection = day }
+                dayCell(start.adding(days: index))
+            }
+        }
+        .padding(.horizontal, 8)
+        .frame(height: Self.rowHeight, alignment: .top)
+    }
+
+    // MARK: Month
+
+    /// The month's weeks, in rows the same as the week pager's.
+    private func monthGrid(_ offset: Int) -> some View {
+        let start = monthStart(offset)
+        let gridStart = Calendar.current.dateInterval(of: .weekOfYear, for: start)?.start ?? start
+        return VStack(spacing: 0) {
+            ForEach(0..<rows(in: offset), id: \.self) { row in
+                HStack(spacing: 0) {
+                    ForEach(0..<7, id: \.self) { column in
+                        let day = gridStart.adding(days: row * 7 + column)
+                        if Calendar.current.isDate(day, equalTo: start, toGranularity: .month) {
+                            dayCell(day)
+                        } else {
+                            Color.clear.frame(maxWidth: .infinity)
+                        }
+                    }
                 }
-                .frame(maxWidth: .infinity)
+                .frame(height: Self.rowHeight, alignment: .top)
             }
         }
         .padding(.horizontal, 8)
     }
 
-    // MARK: Month
+    private func dayCell(_ day: Date) -> some View {
+        DayCell(day: day, status: status(on: day), isSelected: day == selection, isToday: day == today) {
+            guard !isDragRelease else { return }
+            HapticFeedback.selection()
+            withAnimation(.snappy) { selection = day }
+            if showsMonth { setExpanded(false) }
+        }
+        .disabled(!isPickable(day))
+        .opacity(isPickable(day) ? 1 : 0.35)
+        .frame(maxWidth: .infinity)
+    }
+
+    /// The row of the picked day in the month on show; the row the month
+    /// folds into.
+    private var anchorRow: Int {
+        guard monthOffset(of: selection) == shownMonth else { return 0 }
+        let start = monthStart(shownMonth)
+        let gridStart = Calendar.current.dateInterval(of: .weekOfYear, for: start)?.start ?? start
+        return Calendar.current.days(from: gridStart, to: selection) / 7
+    }
+
+    private var monthHeight: CGFloat {
+        CGFloat(rows(in: showsMonth ? shownMonth : monthOffset(of: selection))) * Self.rowHeight
+    }
 
     /// Months that overlap the weeks you can page to.
     private var monthRange: ClosedRange<Int> {
@@ -114,87 +209,18 @@ struct WeekStrip: View {
         return monthOffset(of: first)...monthOffset(of: last)
     }
 
-    private var monthPager: some View {
-        VStack(spacing: 0) {
-            // Weekday names, in the week row's place, so they hold still
-            // while the grid unrolls under them.
-            HStack(spacing: 0) {
-                ForEach(0..<7, id: \.self) { index in
-                    Text(weekStart(0).adding(days: index).formatted(.dateTime.weekday(.abbreviated)))
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .padding(.horizontal, 8)
-            .frame(height: Self.monthHeaderHeight, alignment: .top)
-
-            ScrollView(.horizontal) {
-                LazyHStack(alignment: .top, spacing: 0) {
-                    ForEach(monthRange, id: \.self) { offset in
-                        month(offset)
-                            .containerRelativeFrame(.horizontal)
-                            .id(offset)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.paging)
-            .scrollIndicators(.hidden)
-            .scrollPosition(id: $shownMonth)
-            .frame(height: CGFloat(rows(in: shownMonth ?? monthOffset(of: selection))) * Self.monthRowHeight, alignment: .top)
-        }
-        .onAppear { shownMonth = monthOffset(of: selection) }
-        .onChange(of: shownMonth) { _, month in
-            // Swiping to another month picks a day in it, as Calendar does:
-            // today if it's there, otherwise the first day you can pick.
-            guard let month, month != monthOffset(of: selection) else { return }
-            let days = monthDays(month).filter(isPickable)
-            guard let day = days.first(where: { $0 == today }) ?? days.first else { return }
-            HapticFeedback.selection()
+    /// Pages the open month. Like Calendar, the new month picks a day:
+    /// today if it's there, otherwise the first day you can pick.
+    private func showMonth(_ offset: Int) {
+        guard monthRange.contains(offset), offset != shownMonth else { return }
+        let days = monthDays(offset).filter(isPickable)
+        guard let day = days.first(where: { $0 == today }) ?? days.first else { return }
+        HapticFeedback.selection()
+        monthMovesForward = offset > shownMonth
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.88)) {
+            shownMonth = offset
             selection = day
         }
-    }
-
-    private func month(_ offset: Int) -> some View {
-        let start = monthStart(offset)
-        let gridStart = Calendar.current.dateInterval(of: .weekOfYear, for: start)?.start ?? start
-        return VStack(spacing: 0) {
-            ForEach(0..<rows(in: offset), id: \.self) { row in
-                HStack(spacing: 0) {
-                    ForEach(0..<7, id: \.self) { column in
-                        let day = gridStart.adding(days: row * 7 + column)
-                        Group {
-                            if Calendar.current.isDate(day, equalTo: start, toGranularity: .month) {
-                                DayCell(
-                                    day: day,
-                                    status: status(on: day),
-                                    isSelected: day == selection,
-                                    isToday: day == today,
-                                    showsWeekday: false
-                                ) {
-                                    HapticFeedback.selection()
-                                    withAnimation(.snappy) { selection = day }
-                                    setExpanded(false)
-                                }
-                                .disabled(!isPickable(day))
-                                .opacity(isPickable(day) ? 1 : 0.35)
-                            } else {
-                                Color.clear
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: Self.monthRowHeight, alignment: .top)
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 8)
-    }
-
-    /// The month grid's full height for the month on show.
-    private var monthHeight: CGFloat {
-        Self.monthHeaderHeight + CGFloat(rows(in: shownMonth ?? monthOffset(of: selection))) * Self.monthRowHeight
     }
 
     // MARK: Expanding
@@ -202,6 +228,7 @@ struct WeekStrip: View {
     /// The 20 × 3 pt handle under the date. Tapping it toggles the month.
     private var grabber: some View {
         Button {
+            guard !isDragRelease else { return }
             setExpanded(!isExpanded)
         } label: {
             Capsule()
@@ -214,38 +241,79 @@ struct WeekStrip: View {
         .accessibilityLabel(isExpanded ? "Show week" : "Show month")
     }
 
-    /// Vertical drags anywhere on the strip follow the finger; sideways
-    /// ones are left to the week and month pagers.
-    private var expandGesture: some Gesture {
-        DragGesture(minimumDistance: 10)
+    /// Up and down drags anywhere on the strip open and close the month,
+    /// following the finger. Sideways ones page the week (its own scroll
+    /// view) or, while open, the month.
+    private var dragGesture: some Gesture {
+        DragGesture(minimumDistance: 8)
+            .updating($isDragging) { _, dragging, _ in dragging = true }
             .onChanged { value in
+                if dragAxis == nil {
+                    dragAxis = abs(value.translation.height) > abs(value.translation.width) ? .vertical : .horizontal
+                }
+                guard dragAxis == .vertical else { return }
                 if dragStart == nil {
-                    guard abs(value.translation.height) > abs(value.translation.width) else { return }
                     dragStart = expansion
-                    if shownMonth == nil { shownMonth = monthOffset(of: selection) }
+                    openMonthGrid()
                 }
                 guard let dragStart else { return }
-                let travel = max(monthHeight - Self.rowHeight, 1)
-                expansion = min(max(dragStart + value.translation.height / travel, 0), 1)
+                let raw = dragStart + value.translation.height / travel
+                // A little give past either end, as scroll views have.
+                expansion = raw > 1 ? 1 + (raw - 1) * 0.15 : raw < 0 ? raw * 0.15 : raw
+                expansion = min(max(expansion, 0), 1.06)
             }
             .onEnded { value in
+                defer { dragAxis = nil }
+                if dragAxis == .horizontal {
+                    if showsMonth, isExpanded, abs(value.predictedEndTranslation.width) > 60 {
+                        showMonth(shownMonth + (value.predictedEndTranslation.width < 0 ? 1 : -1))
+                    }
+                    return
+                }
                 guard let start = dragStart else { return }
-                dragStart = nil
                 // Where a flick would carry it, so a quick swipe is enough.
-                let travel = max(monthHeight - Self.rowHeight, 1)
-                setExpanded(start + value.predictedEndTranslation.height / travel > 0.5, from: start)
+                let open = start + value.predictedEndTranslation.height / travel > 0.5
+                endVerticalDrag(open: open, start: start, velocity: value.velocity.height / travel)
             }
     }
 
-    /// Settles open or closed. `start` is where a drag began, so the tick
-    /// plays only when the strip actually changes state.
-    private func setExpanded(_ open: Bool, from start: CGFloat? = nil) {
+    private func endVerticalDrag(open: Bool, start: CGFloat, velocity: CGFloat) {
+        dragStart = nil
+        dragAxis = nil
+        lastDragEnded = .now
+        setExpanded(open, from: start, velocity: velocity)
+    }
+
+    /// How far the finger moves to open the month fully.
+    private var travel: CGFloat { max(monthHeight - Self.rowHeight, 1) }
+
+    /// Draws the month in the week's place. At `expansion` 0 it shows just
+    /// the picked week's row, so the swap can't be seen.
+    private func openMonthGrid() {
+        guard !showsMonth else { return }
+        shownMonth = monthOffset(of: selection)
+        showsMonth = true
+    }
+
+    /// Springs open or closed. `start` is where a drag began, so the tick
+    /// plays only when the state changes; `velocity` (in strip heights a
+    /// second) carries the finger's speed into the spring.
+    private func setExpanded(_ open: Bool, from start: CGFloat? = nil, velocity: CGFloat = 0) {
         if open != ((start ?? expansion) > 0.5) { HapticFeedback.selection() }
-        if open { shownMonth = monthOffset(of: selection) }
-        withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
-            expansion = open ? 1 : 0
+        openMonthGrid()
+        let target: CGFloat = open ? 1 : 0
+        let distance = target - expansion
+        let initialVelocity = abs(distance) > 0.01 ? min(max(velocity / distance, -12), 12) : 0
+        withAnimation(.interpolatingSpring(duration: 0.45, bounce: 0.1, initialVelocity: initialVelocity)) {
+            expansion = target
+        } completion: {
+            // Settled closed: hand back to the week pager, on the same week.
+            guard !open, expansion == 0, dragStart == nil else { return }
+            showsMonth = false
         }
     }
+
+    // MARK: Label
 
     /// "Today, 16 Oct", or the picked day. The way back to today sits in
     /// the panel's top corner, beside the bell.
@@ -321,7 +389,8 @@ struct WeekStrip: View {
     }
 }
 
-/// "Sun" over "11" in a circle when picked, with a small status dot.
+/// "11" in a circle when picked, with a small status dot. The weekday sits
+/// in the strip's header above.
 private struct DayCell: View {
     enum Status { case none, planned, partial, missed, complete }
 
@@ -329,18 +398,11 @@ private struct DayCell: View {
     let status: Status
     let isSelected: Bool
     let isToday: Bool
-    /// Off in the month grid, where the weekdays head the columns.
-    var showsWeekday = true
     let onSelect: () -> Void
 
     var body: some View {
         Button(action: onSelect) {
-            VStack(spacing: 6) {
-                if showsWeekday {
-                    Text(day.formatted(.dateTime.weekday(.abbreviated)))
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(isToday ? AppTheme.ColorToken.accent : AppTheme.ColorToken.secondaryText)
-                }
+            VStack(spacing: 4) {
                 Text(day.formatted(.dateTime.day()))
                     .font(.system(size: 19, weight: .semibold))
                     .monospacedDigit()

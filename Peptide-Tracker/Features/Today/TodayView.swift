@@ -71,7 +71,7 @@ struct TodayView: View {
 
     /// Pinned panel: the month, the reminders bell and the week.
     private func topPanel(now: Date) -> some View {
-        TopPanel(title: selectedDay.monthName) {
+        TopPanel(title: selectedDay.monthName, titleValue: Double(monthNumber(of: selectedDay))) {
             HStack(spacing: 8) {
                 // Back to today, beside the bell, once another day is picked.
                 if selectedDay != now.startOfDay {
@@ -95,6 +95,12 @@ struct TodayView: View {
             }
         }
         .animation(.snappy, value: selectedDay.monthName)
+    }
+
+    /// Months counted from year zero, so the title rolls the right way.
+    private func monthNumber(of day: Date) -> Int {
+        let parts = Calendar.current.dateComponents([.year, .month], from: day)
+        return (parts.year ?? 0) * 12 + (parts.month ?? 0)
     }
 
     // MARK: Needs doing
