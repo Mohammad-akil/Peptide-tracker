@@ -27,6 +27,7 @@ final class AppRouter {
 
     enum Route: Hashable {
         case medicine(UUID)
+        case settings(SettingsPage)
     }
 
     enum Sheet: Identifiable {

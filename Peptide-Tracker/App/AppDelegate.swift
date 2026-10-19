@@ -14,7 +14,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
-        store.scheduler.registerCategories()
+        store.scheduler.registerCategories(snooze: store.settings.snooze)
         #if DEBUG
         // Launch with `-sampleData` to start from the design's cabinet.
         if ProcessInfo.processInfo.arguments.contains("-sampleData") { store.loadSampleData() }

@@ -11,6 +11,10 @@ final class MedicineStore {
     private(set) var medicines: [Medicine]
     private(set) var doseLogs: [DoseLog]
     private(set) var refills: [RefillEvent]
+    /// Doctors, carers and clinics, A–Z.
+    private(set) var contacts: [HealthContact]
+    /// One per day the user checked in, oldest first.
+    private(set) var checkIns: [DailyCheckIn]
     var settings: AppSettings {
         didSet { didChange() }
     }
@@ -26,6 +30,8 @@ final class MedicineStore {
         medicines = snapshot.medicines
         doseLogs = snapshot.doseLogs
         refills = snapshot.refills
+        contacts = snapshot.contacts
+        checkIns = snapshot.checkIns
         settings = snapshot.settings
         lastCountdownDay = snapshot.lastCountdownDay
         refreshTodayUsage()
@@ -267,6 +273,56 @@ final class MedicineStore {
             .min { $0.1 < $1.1 }
     }
 
+    // MARK: - Health contacts
+
+    /// Adds the contact, or updates it if it's already saved.
+    func save(_ contact: HealthContact) {
+        if let index = contacts.firstIndex(where: { $0.id == contact.id }) {
+            contacts[index] = contact
+        } else {
+            contacts.append(contact)
+        }
+        contacts.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        persist()
+    }
+
+    func deleteContact(id: UUID) {
+        contacts.removeAll { $0.id == id }
+        persist()
+    }
+
+    // MARK: - Daily check-in
+
+    func checkIn(on day: Date) -> DailyCheckIn? {
+        checkIns.last { $0.day == day.startOfDay }
+    }
+
+    /// Saves how the user feels today, replacing an earlier pick.
+    func checkIn(_ mood: DailyCheckIn.Mood, now: Date = .now) {
+        let today = now.startOfDay
+        if let index = checkIns.firstIndex(where: { $0.day == today }) {
+            checkIns[index].mood = mood
+        } else {
+            checkIns.append(DailyCheckIn(day: today, mood: mood))
+        }
+        HapticFeedback.selection()
+        persist()
+    }
+
+    /// Days in a row with a check-in, back from today (or yesterday, while
+    /// today's is still to do).
+    func checkInStreak(now: Date = .now) -> Int {
+        let days = Set(checkIns.map(\.day))
+        var day = now.startOfDay
+        if !days.contains(day) { day = day.adding(days: -1) }
+        var streak = 0
+        while days.contains(day) {
+            streak += 1
+            day = day.adding(days: -1)
+        }
+        return streak
+    }
+
     // MARK: - Data management
 
     func loadSampleData(now: Date = .now) {
@@ -278,10 +334,20 @@ final class MedicineStore {
         didChange()
     }
 
+    /// Settings → Delete all data: everything, settings and profile photo
+    /// included, as if the app were new.
+    func eraseEverything() {
+        ProfilePhoto.remove()
+        settings = AppSettings()
+        deleteAllData()
+    }
+
     func deleteAllData() {
         medicines = []
         doseLogs = []
         refills = []
+        contacts = []
+        checkIns = []
         lastCountdownDay = nil
         didChange()
     }
@@ -318,11 +384,20 @@ final class MedicineStore {
             doseLogs: doseLogs,
             refills: refills,
             settings: settings,
-            lastCountdownDay: lastCountdownDay
+            lastCountdownDay: lastCountdownDay,
+            contacts: contacts,
+            checkIns: checkIns
         ))
     }
 
     private var rescheduleTask: Task<Void, Never>?
+
+    /// "Refresh reminder times": re-plans every notification now, without
+    /// the usual short wait.
+    func refreshReminders() async {
+        rescheduleTask?.cancel()
+        await scheduler.reschedule(medicines: medicines, settings: settings)
+    }
 
     /// Coalesces bursts of changes (e.g. "Take all 3") into one re-plan.
     func rescheduleReminders() {

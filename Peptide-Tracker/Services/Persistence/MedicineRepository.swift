@@ -10,6 +10,43 @@ struct MedicineSnapshot: Codable {
     var settings = AppSettings()
     /// The last day whose untaken doses were counted down.
     var lastCountdownDay: Date?
+    var contacts: [HealthContact] = []
+    var checkIns: [DailyCheckIn] = []
+
+    init(
+        medicines: [Medicine] = [],
+        doseLogs: [DoseLog] = [],
+        refills: [RefillEvent] = [],
+        settings: AppSettings = AppSettings(),
+        lastCountdownDay: Date? = nil,
+        contacts: [HealthContact] = [],
+        checkIns: [DailyCheckIn] = []
+    ) {
+        self.medicines = medicines
+        self.doseLogs = doseLogs
+        self.refills = refills
+        self.settings = settings
+        self.lastCountdownDay = lastCountdownDay
+        self.contacts = contacts
+        self.checkIns = checkIns
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case medicines, doseLogs, refills, settings, lastCountdownDay, contacts, checkIns
+    }
+
+    /// Tolerates keys added in later versions (`contacts`, `checkIns`), so an older
+    /// save still loads.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        medicines = try c.decodeIfPresent([Medicine].self, forKey: .medicines) ?? []
+        doseLogs = try c.decodeIfPresent([DoseLog].self, forKey: .doseLogs) ?? []
+        refills = try c.decodeIfPresent([RefillEvent].self, forKey: .refills) ?? []
+        settings = try c.decodeIfPresent(AppSettings.self, forKey: .settings) ?? AppSettings()
+        lastCountdownDay = try c.decodeIfPresent(Date.self, forKey: .lastCountdownDay)
+        contacts = try c.decodeIfPresent([HealthContact].self, forKey: .contacts) ?? []
+        checkIns = try c.decodeIfPresent([DailyCheckIn].self, forKey: .checkIns) ?? []
+    }
 }
 
 protocol MedicineRepository {

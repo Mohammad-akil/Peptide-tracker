@@ -18,27 +18,7 @@ struct MedicineListPDF: Transferable {
 
     @MainActor
     private func render() throws -> URL {
-        let url = FileManager.default.temporaryDirectory.appending(path: "Medicine list.pdf")
-        let page = CGSize(width: 595, height: 842) // A4 in points
-        let renderer = ImageRenderer(content: MedicineListPage(document: self).frame(width: page.width))
-        renderer.proposedSize = ProposedViewSize(width: page.width, height: nil)
-
-        var failure: Error?
-        renderer.render { size, draw in
-            var box = CGRect(origin: .zero, size: CGSize(width: page.width, height: max(size.height, page.height)))
-            guard let context = CGContext(url as CFURL, mediaBox: &box, nil) else {
-                failure = CocoaError(.fileWriteUnknown)
-                return
-            }
-            context.beginPDFPage(nil)
-            // Content draws from the top of the page.
-            context.translateBy(x: 0, y: box.height - size.height)
-            draw(context)
-            context.endPDFPage()
-            context.closePDF()
-        }
-        if let failure { throw failure }
-        return url
+        try PDFRendering.render(MedicineListPage(document: self), fileName: "Medicine list.pdf")
     }
 }
 

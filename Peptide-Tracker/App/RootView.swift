@@ -55,6 +55,8 @@ struct RootView: View {
                     switch route {
                     case .medicine(let id):
                         MedicineDetailView(medicineID: id)
+                    case .settings(let page):
+                        page.destination
                     }
                 }
         }

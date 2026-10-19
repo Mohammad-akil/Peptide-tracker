@@ -370,8 +370,11 @@ private extension View {
 }
 
 /// List or grid, as two small round buttons; the active one is tinted.
-private struct LayoutToggle: View {
+/// List or grid, as two icons in a glass capsule. Also heads the report's
+/// By medicine section, a size smaller.
+struct LayoutToggle: View {
     @Binding var isListView: Bool
+    var buttonSize: CGFloat = 38
 
     var body: some View {
         HStack(spacing: 2) {
@@ -390,9 +393,9 @@ private struct LayoutToggle: View {
             withAnimation(.smooth(duration: 0.42)) { isListView = isList }
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: buttonSize * 0.42, weight: .semibold))
                 .foregroundStyle(isActive ? AppTheme.ColorToken.accent : AppTheme.ColorToken.secondaryText)
-                .frame(width: 38, height: 38)
+                .frame(width: buttonSize, height: buttonSize)
                 .background(isActive ? AppTheme.ColorToken.accentSoft : .clear, in: .circle)
                 .contentShape(.circle)
         }

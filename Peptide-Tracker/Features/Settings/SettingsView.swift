@@ -1,269 +1,166 @@
 import SwiftUI
 
-/// The Settings tab: reminder defaults, dose tracking, your pharmacy, your
-/// data. Each group explains itself in a footer.
+/// The Settings tab, in the same frame as Today and Medicines: the pinned
+/// panel up top, the user's profile, then iOS Settings–style rows that each open their own page
+/// (Reminders, Doses, Pharmacy, Tracking for, About). Each row shows what's
+/// set now, so most visits never need to open one.
 struct SettingsView: View {
     @Environment(MedicineStore.self) private var store
-    @Environment(\.openURL) private var openURL
     @Environment(PurchaseStore.self) private var purchases
     @Environment(AppRouter.self) private var router
-    @State private var showsNotificationsDenied = false
-    @State private var showsPrivacy = false
     @AppStorage(DoseLayout.storageKey) private var doseLayout: DoseLayout = .list
-    #if DEBUG
-    @State private var confirmsDeleteAll = false
-    #endif
+    @State private var confirmsErase = false
+    /// Bumped after erasing, so the profile reloads its (now gone) photo.
+    @State private var profileVersion = 0
 
     var body: some View {
-        @Bindable var store = store
-
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                ScreenHeader(title: "Settings")
+                ProfileHeader()
+                    .id(profileVersion)
+                DailyCheckInCard()
+                proCard
 
-                GroupedSection(footer: proFooter) {
-                    if let plan = purchases.activePlan {
-                        ValueRow(title: "\(Bundle.main.appName) Pro", value: plan.title, showsDivider: false)
-                    } else {
-                        ValueRow(title: "Upgrade to Pro", value: "From \(purchases.price(for: .monthly))", valueTint: AppTheme.ColorToken.accent, showsDivider: false) {
-                            router.sheet = .paywall(reason: nil)
-                        }
-                    }
+                GroupedSection {
+                    SettingsLinkRow(page: .reminders, value: remindersValue)
+                    SettingsLinkRow(page: .notifications, value: store.settings.showsMedicineName ? nil : "Names hidden")
+                    SettingsLinkRow(page: .doses, value: dosesValue)
+                    SettingsLinkRow(page: .pharmacy, value: pharmacyValue)
+                    SettingsLinkRow(page: .contacts, value: store.contacts.isEmpty ? "Add" : "\(store.contacts.count)")
+                    SettingsLinkRow(page: .tracking, value: trackingValue, showsDivider: false)
                 }
 
-                GroupedSection(
-                    title: "Reminders",
-                    footer: "If you haven’t marked a medicine as ordered or refilled, we remind you again each morning."
-                ) {
-                    if !store.settings.notificationsEnabled {
-                        ValueRow(title: "Notifications", value: "Turn on", valueTint: AppTheme.ColorToken.accent, action: enableNotifications)
-                    }
-                    HStack {
-                        Text("Reminder time").font(.system(size: 17))
-                        Spacer()
-                        DatePicker(
-                            "Reminder time",
-                            selection: Binding(
-                                get: { store.settings.defaultReminderTime.on(.now) },
-                                set: { store.settings.defaultReminderTime = TimeOfDay(date: $0) }
-                            ),
-                            displayedComponents: .hourAndMinute
-                        )
-                        .labelsHidden()
-                        .environment(\.locale, Locale(identifier: "en_GB"))
-                    }
-                    .padding(.horizontal, 16)
-                    .frame(minHeight: 52)
-                    .rowDivider(true)
-
-                    HStack {
-                        Text("Heads-up").font(.system(size: 17))
-                        Spacer()
-                        Menu {
-                            Picker("Heads-up", selection: $store.settings.defaultDaysBefore) {
-                                ForEach([1, 2, 3, 5, 7, 10, 14], id: \.self) { days in
-                                    Text("\(days) \(days == 1 ? "day" : "days") before").tag(days)
-                                }
-                            }
-                        } label: {
-                            HStack(spacing: 6) {
-                                Text("\(store.settings.defaultDaysBefore) \(store.settings.defaultDaysBefore == 1 ? "day" : "days") before")
-                                Image(systemName: "chevron.up.chevron.down").font(.system(size: 12, weight: .semibold))
-                            }
-                            .font(.system(size: 17))
-                            .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .frame(minHeight: 52)
-                    .rowDivider(true)
-
-                    ToggleRow(title: "Remind again until refilled", isOn: $store.settings.remindAgainUntilRefilled)
-                }
-
-                GroupedSection(
-                    title: "Doses",
-                    footer: store.settings.tracksDoses
-                        ? "Timeline shows your doses down the day, with where you are now."
-                        : "When on, ticking off doses keeps your count exact. When off, we count down from your schedule."
-                ) {
-                    ToggleRow(title: "Track doses", isOn: $store.settings.tracksDoses, showsDivider: store.settings.tracksDoses)
-                    if store.settings.tracksDoses {
-                        // How Today lays out the day's doses.
-                        HStack {
-                            Text("Dose view")
-                                .font(.system(size: 17))
-                                .foregroundStyle(AppTheme.ColorToken.primaryText)
-                            Spacer(minLength: 8)
-                            Picker("Dose view", selection: $doseLayout) {
-                                ForEach(DoseLayout.allCases, id: \.self) { layout in
-                                    Text(layout.title).tag(layout)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .tint(AppTheme.ColorToken.secondaryText)
-                            .labelsHidden()
-                        }
-                        .padding(.leading, 16)
-                        .padding(.trailing, 8)
-                        .frame(minHeight: 52)
-                    }
-                }
-                .animation(.snappy, value: store.settings.tracksDoses)
-
-                GroupedSection(title: "Pharmacy", footer: "Shown on medicine pages so you can call in one tap.") {
-                    fieldRow("Pharmacy", placeholder: "Add", text: $store.settings.pharmacyName, showsDivider: true)
-                    fieldRow("Phone", placeholder: "Add", text: $store.settings.pharmacyPhone, showsDivider: false)
-                        .keyboardType(.phonePad)
-                        .textContentType(.telephoneNumber)
-                }
-
-                GroupedSection(title: "Your data", footer: "A PDF of your medicines and doses, handy for doctor visits.") {
+                GroupedSection(footer: "PDFs of your medicines and how you’re doing, handy for doctor visits.") {
+                    SettingsLinkRow(page: .report, value: reportValue)
                     ShareLink(
                         item: MedicineListPDF(medicines: store.medicinesByUrgency, pharmacyName: store.settings.pharmacyName, date: .now),
                         preview: SharePreview("Medicine list", image: Image(systemName: "doc.text"))
                     ) {
-                        ValueRow(title: "Export medicine list", showsDivider: false)
-                            .overlay(alignment: .trailing) { Chevron().padding(.trailing, 16) }
-                            .contentShape(.rect)
+                        SettingsRowLabel(symbol: "square.and.arrow.up.fill", tint: Color(hex: 0xFF9F0A), title: "Export medicine list", showsChevron: true)
                     }
                     .buttonStyle(RowPressStyle())
                     .disabled(store.medicines.isEmpty)
                 }
 
                 GroupedSection {
-                    ValueRow(title: "Privacy") { showsPrivacy = true }
-                    ValueRow(title: "Terms of Use") { openURL(AppLinks.termsOfUse) }
-                    ValueRow(title: "Version", value: appVersion, showsDivider: false)
+                    SettingsLinkRow(page: .help)
+                    #if DEBUG
+                    SettingsLinkRow(page: .about, value: AboutSettingsView.version)
+                    SettingsLinkRow(page: .developer, showsDivider: false)
+                    #else
+                    SettingsLinkRow(page: .about, value: AboutSettingsView.version, showsDivider: false)
+                    #endif
                 }
 
-                #if DEBUG
-                GroupedSection(title: "Debug") {
-                    ValueRow(title: "Load sample medicines") { store.loadSampleData() }
-                    Menu {
-                        Button("Success") { router.show(.success("Metformin added", message: "We’ll remind you on 9 Oct at 9:00.")) }
-                        Button("Info") { router.show(.info("Reminders paused")) }
-                        Button("Warning") { router.show(.warning("No earlier purchase found")) }
-                        Button("Error") { router.show(.error("Purchase didn’t go through", message: "Check your connection and try again.")) }
-                        Button("Loading, then success") {
-                            Task {
-                                await router.withLoadingToast(
-                                    "Contacting the App Store…",
-                                    success: .success("Purchase restored"),
-                                    failureTitle: "Couldn’t restore"
-                                ) { try await Task.sleep(for: .seconds(2)) }
-                            }
-                        }
-                    } label: {
-                        ValueRow(title: "Test toast", value: "Choose")
+                GroupedSection(footer: "Deletes every medicine, dose, refill, contact and setting on this iPhone. You can’t undo this.") {
+                    Button { confirmsErase = true } label: {
+                        SettingsRowLabel(symbol: "trash.fill", tint: AppTheme.ColorToken.destructive, title: "Delete all data")
                     }
                     .buttonStyle(RowPressStyle())
-                    ValueRow(title: "Delete all data", valueTint: AppTheme.ColorToken.destructive, showsDivider: false) {
-                        confirmsDeleteAll = true
-                    }
                 }
-                #endif
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
-            .padding(.top, 8)
+            .padding(.top, 20)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
         .scrollIndicators(.hidden)
-        .scrollDismissesKeyboard(.interactively)
-        .scrollEdgeEffectStyle(.soft, for: .top)
-        .sheet(isPresented: $showsPrivacy) { PrivacySheet() }
-        .alert("Notifications are off", isPresented: $showsNotificationsDenied) {
-            Button("Not now", role: .cancel) {}
-            Button("Open Settings") {
-                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+        // Pinned, as on the other tabs: the title stays while rows scroll under.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            TopPanel(title: "Settings") { EmptyView() } controls: { EmptyView() }
+        }
+        .confirmationDialog("Delete all your data?", isPresented: $confirmsErase, titleVisibility: .visible) {
+            Button("Delete all data", role: .destructive) {
+                store.eraseEverything()
+                profileVersion += 1
+                router.showToast("All data deleted")
             }
         } message: {
-            Text("Turn on notifications for this app in Settings to get refill reminders.")
+            Text("Every medicine, dose, refill, contact and setting is removed from this iPhone. You can’t undo this.")
         }
-        #if DEBUG
-        .confirmationDialog("Delete all medicines, doses and refills?", isPresented: $confirmsDeleteAll, titleVisibility: .visible) {
-            Button("Delete all data", role: .destructive) { store.deleteAllData() }
-        } message: {
-            Text("You can’t undo this.")
-        }
-        #endif
     }
 
-    private func fieldRow(_ title: String, placeholder: String, text: Binding<String>, showsDivider: Bool) -> some View {
-        HStack(spacing: 12) {
-            Text(title).font(.system(size: 17))
-            TextField(title, text: text, prompt: Text(placeholder).foregroundStyle(AppTheme.ColorToken.accent))
-                .multilineTextAlignment(.trailing)
-                .font(.system(size: 17))
-                .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                .submitLabel(.done)
-        }
-        .padding(.horizontal, 16)
-        .frame(minHeight: 52)
-        .rowDivider(showsDivider)
-    }
+    // MARK: Pro
 
-    /// "1 of 2 free medicines used." for free users.
-    private var proFooter: String? {
-        guard !purchases.isPro else { return nil }
-        let limit = PurchaseStore.freeMedicineLimit
-        return "\(min(store.medicines.count, limit)) of \(limit) free medicines used. Pro tracks as many as you take."
-    }
-
-    private var appVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-    }
-
-    /// Asks iOS first; if the user said no before, point them to Settings.
-    private func enableNotifications() {
-        Task {
-            switch await store.scheduler.authorizationStatus() {
-            case .notDetermined:
-                store.settings.notificationsEnabled = await store.scheduler.requestAuthorization()
-            case .denied:
-                showsNotificationsDenied = true
-            default:
-                store.settings.notificationsEnabled = true
+    /// Free: the way to Pro, with how much of the free limit is used.
+    /// Pro: the plan.
+    @ViewBuilder
+    private var proCard: some View {
+        if let plan = purchases.activePlan {
+            GroupedSection {
+                SettingsRowLabel(symbol: "crown.fill", tint: Color(hex: 0xFF9F0A), title: "\(Bundle.main.appName) Pro", value: plan.title)
             }
-        }
-    }
-}
-
-/// What the app keeps and where.
-private struct PrivacySheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("Your medicines, doses and refills are saved only on this iPhone. There’s no account, and nothing is sent to us or anyone else.")
-                    Text("Reminders are scheduled on the device. Exporting a medicine list creates a PDF that goes only where you choose to share it.")
-                    Text("Deleting the app deletes everything it saved.")
-                    Link("Read the full Privacy Policy", destination: AppLinks.privacyPolicy)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(AppTheme.ColorToken.accent)
+        } else {
+            let limit = PurchaseStore.freeMedicineLimit
+            let used = min(store.medicines.count, limit)
+            Button { router.sheet = .paywall(reason: nil) } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 48, height: 48)
+                        .background(
+                            LinearGradient(colors: [Color(hex: 0x8A6CF0), AppTheme.ColorToken.accent], startPoint: .top, endPoint: .bottom),
+                            in: .rect(cornerRadius: 13, style: .continuous)
+                        )
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Upgrade to Pro")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(AppTheme.ColorToken.primaryText)
+                        Text("\(used) of \(limit) free medicines used · From \(purchases.price(for: .monthly))")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 8)
+                    Chevron()
                 }
-                .font(.system(size: 17))
-                .lineSpacing(3)
-                .padding(20)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .contentShape(.rect)
             }
-            .navigationTitle("Privacy")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
+            .buttonStyle(RowPressStyle())
+            .groupedCard()
         }
-        .presentationDetents([.medium])
+    }
+
+    // MARK: Row values
+
+    /// "9:00 · 5d before", or "Off".
+    private var remindersValue: String {
+        let settings = store.settings
+        guard settings.notificationsEnabled else { return "Off" }
+        return "\(settings.defaultReminderTime.label) · \(settings.defaultDaysBefore)d before"
+    }
+
+    /// The last 30 days' rate ("92%"), once anything was due.
+    private var reportValue: String? {
+        AdherenceReport(store: store, period: .month).rate?.percentLabel
+    }
+
+    /// "List", "Timeline", or "Off".
+    private var dosesValue: String {
+        store.settings.tracksDoses ? doseLayout.title : "Off"
+    }
+
+    private var pharmacyValue: String {
+        let name = store.settings.pharmacyName.trimmingCharacters(in: .whitespaces)
+        return name.isEmpty ? "Add" : name
+    }
+
+    /// "Just me", or the person's name.
+    private var trackingValue: String {
+        let name = store.settings.personName.trimmingCharacters(in: .whitespaces)
+        if store.settings.trackingFor != .me, !name.isEmpty { return name }
+        return store.settings.trackingFor == .me ? "Just me" : "Someone else"
     }
 }
 
 #Preview {
-    SettingsView()
-        .environment(MedicineStore.preview())
-        .environment(PurchaseStore())
-        .environment(AppRouter())
-        .background(AppTheme.ColorToken.background)
+    NavigationStack {
+        SettingsView()
+    }
+    .environment(MedicineStore.preview())
+    .environment(PurchaseStore())
+    .environment(AppRouter())
+    .background(AppTheme.ColorToken.background)
 }
