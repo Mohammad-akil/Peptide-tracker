@@ -140,6 +140,24 @@ struct SettingsView: View {
                 #if DEBUG
                 GroupedSection(title: "Debug") {
                     ValueRow(title: "Load sample medicines") { store.loadSampleData() }
+                    Menu {
+                        Button("Success") { router.show(.success("Metformin added", message: "We’ll remind you on 9 Oct at 9:00.")) }
+                        Button("Info") { router.show(.info("Reminders paused")) }
+                        Button("Warning") { router.show(.warning("No earlier purchase found")) }
+                        Button("Error") { router.show(.error("Purchase didn’t go through", message: "Check your connection and try again.")) }
+                        Button("Loading, then success") {
+                            Task {
+                                await router.withLoadingToast(
+                                    "Contacting the App Store…",
+                                    success: .success("Purchase restored"),
+                                    failureTitle: "Couldn’t restore"
+                                ) { try await Task.sleep(for: .seconds(2)) }
+                            }
+                        }
+                    } label: {
+                        ValueRow(title: "Test toast", value: "Choose")
+                    }
+                    .buttonStyle(RowPressStyle())
                     ValueRow(title: "Delete all data", valueTint: AppTheme.ColorToken.destructive, showsDivider: false) {
                         confirmsDeleteAll = true
                     }
