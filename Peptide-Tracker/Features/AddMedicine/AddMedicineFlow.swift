@@ -20,6 +20,9 @@ struct AddMedicineFlow: View {
     /// Which way the last move went, so screens slide in from that side.
     @State private var isMovingForward = true
     @State private var expandedOption: FinishOption?
+    /// The catalogue medicine picked from the name suggestions, which
+    /// offers its strengths and usual serving on later steps.
+    @State private var catalogPick: CatalogMedicine?
     @FocusState private var isTyping: Bool
 
     enum Step: Int, CaseIterable {
@@ -35,6 +38,7 @@ struct AddMedicineFlow: View {
         var draft = MedicineDraft(settings: AppSettings())
         draft.name = name
         draft.dosesPerDay = 1
+        draft.doseTimes = TimeOfDay.schedule(count: 1)
         draft.perDay = 1
         _draft = State(initialValue: draft)
         self.onSaved = onSaved
@@ -69,7 +73,14 @@ struct AddMedicineFlow: View {
             if draft.trimmedName.isEmpty { isTyping = true }
         }
         .onChange(of: perDose) { _, _ in updatePerDay() }
-        .onChange(of: draft.dosesPerDay) { _, _ in updatePerDay() }
+        .onChange(of: draft.name) { _, name in
+            // Typing over a picked suggestion makes it the user's own name.
+            if let pick = catalogPick, pick.name != name { catalogPick = nil }
+        }
+        .onChange(of: draft.dosesPerDay) { _, count in
+            updatePerDay()
+            draft.doseTimes = TimeOfDay.schedule(count: count ?? 1)
+        }
         .interactiveDismissDisabled(!draft.trimmedName.isEmpty)
     }
 
@@ -148,7 +159,9 @@ struct AddMedicineFlow: View {
     // MARK: 1 Name
 
     private var nameStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        // Hidden once a suggestion is picked, until the name is typed over.
+        let matches = catalogPick == nil ? MedicineCatalog.search(draft.name) : []
+        return VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
                 title: "What medicine would you like to add?",
                 reason: "Use the name on the box or your prescription."
@@ -157,11 +170,62 @@ struct AddMedicineFlow: View {
                 TextField("e.g. Metformin", text: $draft.name)
                     .font(.system(size: 20, weight: .semibold))
                     .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled()
                     .focused($isTyping)
                     .submitLabel(.next)
                     .onSubmit { if canContinue { advance() } }
             }
+            if !matches.isEmpty {
+                GroupedSection(title: "Suggestions") {
+                    ForEach(Array(matches.enumerated()), id: \.element.id) { index, match in
+                        suggestionRow(match, showsDivider: index < matches.count - 1)
+                    }
+                }
+                .transition(.opacity)
+            }
         }
+        .animation(.snappy, value: matches.map(\.id))
+    }
+
+    /// A catalogue medicine: icon in its type, name, and what it is
+    /// ("Ozempic · Injection · Weight & GLP-1").
+    private func suggestionRow(_ match: CatalogMatch, showsDivider: Bool) -> some View {
+        let medicine = match.medicine
+        let detail = [match.brand, medicine.type.title, medicine.category].compactMap { $0 }.joined(separator: " · ")
+        return Button { pick(match) } label: {
+            HStack(spacing: 14) {
+                MedicineIconView(type: medicine.type, color: draft.color, size: 36, isVibrant: true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(medicine.name)
+                        .font(.system(size: 17))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                        .lineLimit(1)
+                    Text(detail)
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                Chevron()
+            }
+            .padding(.horizontal, 16)
+            .frame(minHeight: 60)
+            .contentShape(.rect)
+            .rowDivider(showsDivider, inset: 66)
+        }
+        .buttonStyle(RowPressStyle())
+        .accessibilityLabel("\(medicine.name), \(detail)")
+    }
+
+    /// Fills in what the catalogue knows — name, type, the brand searched
+    /// for, the usual amount each time — and moves on.
+    private func pick(_ match: CatalogMatch) {
+        catalogPick = match.medicine
+        draft.name = match.medicine.name
+        draft.type = match.medicine.type
+        if let brand = match.brand { draft.brandName = brand }
+        perDose = min(max(match.medicine.perDose, 1), 20)
+        advance()
     }
 
     // MARK: 2 Brand
@@ -184,10 +248,13 @@ struct AddMedicineFlow: View {
                 }
                 labelled("Strength") {
                     InputCard {
-                        TextField("e.g. 500 mg", text: $draft.strength)
+                        TextField("e.g. \(catalogPick?.strengths.first ?? "500 mg")", text: $draft.strength)
                             .font(.system(size: 18, weight: .medium))
                             .submitLabel(.next)
                             .onSubmit(advance)
+                    }
+                    if let strengths = catalogPick?.strengths, !strengths.isEmpty {
+                        SuggestionChips(options: strengths, selection: $draft.strength)
                     }
                 }
             }
@@ -265,7 +332,7 @@ struct AddMedicineFlow: View {
         VStack(alignment: .leading, spacing: 24) {
             OnboardingHeader(
                 title: "How often do you take it?",
-                reason: "Pick the times a day. You can change the exact times later."
+                reason: "Pick how many times a day, then when you take each dose."
             )
             // Apple's pick-one list: rows with a checkmark on the chosen one.
             GroupedSection(title: "How often") {
@@ -273,13 +340,44 @@ struct AddMedicineFlow: View {
                     frequency(count, showsDivider: count < 4)
                 }
             }
-            GroupedSection(title: "Each time", footer: "That’s \(draft.type.unit.format(draft.perDay)) a day.") {
+            GroupedSection(title: "Dose times") {
+                ForEach(draft.doseTimes.indices, id: \.self) { index in
+                    ControlRow(
+                        symbol: "clock.fill",
+                        tint: Color(hex: 0x30B0C7),
+                        title: "Dose \(index + 1)",
+                        showsDivider: index < draft.doseTimes.count - 1
+                    ) {
+                        DatePicker(
+                            "Dose \(index + 1)",
+                            selection: Binding(
+                                // Guarded: a row can outlive its time while the count shrinks.
+                                get: { draft.doseTimes.indices.contains(index) ? draft.doseTimes[index].on(.now) : .now },
+                                set: { if draft.doseTimes.indices.contains(index) { draft.doseTimes[index] = TimeOfDay(date: $0) } }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .labelsHidden()
+                        .environment(\.locale, Locale(identifier: "en_GB"))
+                    }
+                }
+            }
+            .animation(.snappy, value: draft.doseTimes.count)
+            GroupedSection(title: "Each time", footer: eachTimeFooter) {
                 FormRow(title: draft.type.unit.plural.capitalizedFirst, showsDivider: false) {
                     CountStepper(value: $perDose, range: 1...20, accessibilityName: "\(draft.type.unit.plural) each time")
                 }
                 .padding(.horizontal, 16)
             }
         }
+    }
+
+    /// "That’s 2 pills a day. Usual serving: 1 capsule."
+    private var eachTimeFooter: String {
+        let total = "That’s \(draft.type.unit.format(draft.perDay)) a day."
+        // Only while the type is still the catalogue's, so the units agree.
+        guard let pick = catalogPick, pick.type == draft.type else { return total }
+        return "\(total) Usual serving: \(pick.serving)."
     }
 
     private func frequency(_ count: Int, showsDivider: Bool) -> some View {
@@ -294,7 +392,7 @@ struct AddMedicineFlow: View {
                     .font(.system(size: 17))
                     .foregroundStyle(AppTheme.ColorToken.primaryText)
                 Spacer(minLength: 8)
-                Text(TimeOfDay.schedule(count: count).map(\.label).joined(separator: " · "))
+                Text((isSelected ? draft.doseTimes : TimeOfDay.schedule(count: count)).map(\.label).joined(separator: " · "))
                     .font(.system(size: 15))
                     .monospacedDigit()
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)

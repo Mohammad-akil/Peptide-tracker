@@ -19,6 +19,9 @@ struct MedicineDraft {
     /// Doses a day picked in the add flow ("Twice a day"). When set, intake
     /// times follow it exactly; otherwise they're spread from `perDay`.
     var dosesPerDay: Int?
+    /// The time of each dose, picked in the add flow. Used when it has one
+    /// time per dose; otherwise the even spread for `dosesPerDay` applies.
+    var doseTimes: [TimeOfDay] = []
     /// Off saves the medicine with its refill reminder paused.
     var remindersOn = true
 
@@ -71,7 +74,9 @@ struct MedicineDraft {
     }
 
     func build() -> Medicine {
-        let intakeTimes: [TimeOfDay] = if let dosesPerDay {
+        let intakeTimes: [TimeOfDay] = if let dosesPerDay, doseTimes.count == dosesPerDay {
+            doseTimes.sorted()
+        } else if let dosesPerDay {
             TimeOfDay.schedule(count: dosesPerDay)
         } else if let original, original.perDay == perDay {
             original.intakeTimes
