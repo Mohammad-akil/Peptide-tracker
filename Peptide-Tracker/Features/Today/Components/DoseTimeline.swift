@@ -2,11 +2,28 @@ import SwiftUI
 
 /// How Today lays out a day's doses, picked in Settings.
 enum DoseLayout: String, CaseIterable {
-    case list, timeline
+    case list, timeline, squarePillbox, roundPillbox
 
     static let storageKey = "today.doseLayout"
 
-    var title: String { self == .list ? "List" : "Timeline" }
+    var title: String {
+        switch self {
+        case .list: "List"
+        case .timeline: "Timeline"
+        case .squarePillbox: "Square pillbox"
+        case .roundPillbox: "Round pillbox"
+        }
+    }
+
+    /// The line under it in Settings → Doses.
+    var detail: String {
+        switch self {
+        case .list: "Doses grouped by time, as a list."
+        case .timeline: "Doses down the day, with a line for now."
+        case .squarePillbox: "A square compartment for each time, like a pill organiser."
+        case .roundPillbox: "The same compartments, round."
+        }
+    }
 }
 
 /// The Timeline view of a day: each dose time down a rail, with a NOW line

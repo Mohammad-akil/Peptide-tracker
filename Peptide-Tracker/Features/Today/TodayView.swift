@@ -144,6 +144,8 @@ struct TodayView: View {
                 switch doseLayout {
                 case .list: DoseSchedule(doses: doses, day: selectedDay, now: now)
                 case .timeline: DoseTimeline(doses: doses, day: selectedDay, now: now)
+                case .squarePillbox: DosePillbox(doses: doses, day: selectedDay, now: now, style: .square)
+                case .roundPillbox: DosePillbox(doses: doses, day: selectedDay, now: now, style: .round)
                 }
             }
         }
