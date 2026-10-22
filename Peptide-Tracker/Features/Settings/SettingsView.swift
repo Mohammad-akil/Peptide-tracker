@@ -66,7 +66,7 @@ struct SettingsView: View {
         .scrollIndicators(.hidden)
         // Pinned, as on the other tabs: the title stays while rows scroll under.
         .safeAreaInset(edge: .top, spacing: 0) {
-            TopPanel(title: "Settings") { EmptyView() } controls: { EmptyView() }
+            TopPanel(title: "Settings") { shareButton } controls: { EmptyView() }
         }
         .confirmationDialog("Delete all your data?", isPresented: $confirmsErase, titleVisibility: .visible) {
             Button("Delete all data", role: .destructive) {
@@ -77,6 +77,21 @@ struct SettingsView: View {
         } message: {
             Text("Every medicine, dose, refill, contact and setting is removed from this iPhone. You can’t undo this.")
         }
+    }
+
+    /// Tell a friend: the app's website.
+    private var shareButton: some View {
+        ShareLink(
+            item: AppLinks.website,
+            message: Text("I keep track of my medicines with \(Bundle.main.appName)."),
+            preview: SharePreview(Bundle.main.appName)
+        ) {
+            Icon(.share, size: 20)
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .frame(width: 44, height: 44)
+        }
+        .glassEffect(.regular.interactive(), in: .circle)
+        .accessibilityLabel("Share \(Bundle.main.appName)")
     }
 
     // MARK: Pro

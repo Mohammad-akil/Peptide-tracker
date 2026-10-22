@@ -11,7 +11,7 @@ struct ReportSettingsView: View {
     var body: some View {
         let report = AdherenceReport(store: store, period: period)
 
-        SettingsPageScaffold(page: .report, titleDisplayMode: .inline) {
+        SettingsPageScaffold(page: .report) {
             SectionPicker(selection: $period.animation(.snappy), title: \.title)
 
             if report.due == 0 {

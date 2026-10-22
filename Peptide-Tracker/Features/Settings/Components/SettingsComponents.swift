@@ -130,11 +130,10 @@ struct SettingsRowLabel: View {
     }
 }
 
-/// A pushed Settings page: a large title (or a small centred one), then
-/// its groups, on the lavender ground.
+/// A pushed Settings page: a small title centred in the bar, then its
+/// groups, on the lavender ground.
 struct SettingsPageScaffold<Content: View>: View {
     let page: SettingsPage
-    var titleDisplayMode: NavigationBarItem.TitleDisplayMode = .large
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -150,7 +149,7 @@ struct SettingsPageScaffold<Content: View>: View {
         .scrollDismissesKeyboard(.interactively)
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
         .navigationTitle(page.title)
-        .navigationBarTitleDisplayMode(titleDisplayMode)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

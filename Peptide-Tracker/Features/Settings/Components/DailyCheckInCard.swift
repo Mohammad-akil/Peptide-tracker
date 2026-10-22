@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// Under the profile: today at a glance and a one-tap check-in. Today's
-/// doses as a small ring (tap to go to Today), "How are you feeling?" with
-/// five faces, the streak of days checked in, and the week's check-ins.
+/// Under the profile: today at a glance. Today's
+/// doses as a small ring (tap to go to Today), the streak of days checked in, and the week's check-ins.
 struct DailyCheckInCard: View {
     @Environment(MedicineStore.self) private var store
     @Environment(AppRouter.self) private var router
@@ -35,17 +34,6 @@ struct DailyCheckInCard: View {
             }
 
             dosesToday(now: now)
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text(today.map { "Feeling \($0.mood.title.lowercased()) today" } ?? "How are you feeling?")
-                    .font(.system(size: 15, weight: .semibold))
-                    .contentTransition(.opacity)
-                HStack(spacing: 8) {
-                    ForEach(DailyCheckIn.Mood.allCases) { mood in
-                        moodButton(mood, isSelected: today?.mood == mood)
-                    }
-                }
-            }
 
             week(now: now)
         }
@@ -91,35 +79,6 @@ struct DailyCheckInCard: View {
         }
         .buttonStyle(.pressable)
         .disabled(doses.isEmpty)
-    }
-
-    // MARK: Mood
-
-    private func moodButton(_ mood: DailyCheckIn.Mood, isSelected: Bool) -> some View {
-        Button {
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.7)) { store.checkIn(mood) }
-        } label: {
-            VStack(spacing: 4) {
-                Text(mood.emoji)
-                    .font(.system(size: 26))
-                    .scaleEffect(isSelected ? 1.15 : 1)
-                Text(mood.title)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.secondaryText)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .background(isSelected ? AppTheme.ColorToken.accentSoft : AppTheme.ColorToken.controlFill, in: .rect(cornerRadius: 14, style: .continuous))
-            .overlay {
-                if isSelected {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(AppTheme.ColorToken.accent, lineWidth: 1.5)
-                }
-            }
-        }
-        .buttonStyle(.pressable)
-        .accessibilityLabel("Feeling \(mood.title.lowercased())")
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     // MARK: Week

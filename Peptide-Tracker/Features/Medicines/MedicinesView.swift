@@ -70,10 +70,13 @@ struct MedicinesView: View {
         TopPanel(title: "Medicines") {
             if showsStock {
                 shareButton(now: now)
-            } else if store.medicines.count > 1 {
+            } else if !store.medicines.isEmpty {
                 HStack(spacing: 8) {
-                    LayoutToggle(isListView: $isListView)
-                    sortMenu
+                    if store.medicines.count > 1 {
+                        LayoutToggle(isListView: $isListView)
+                        sortMenu
+                    }
+                    shareMedicinesButton
                 }
             }
         } controls: {
@@ -107,6 +110,20 @@ struct MedicinesView: View {
         }
         .glassEffect(.regular.interactive(), in: .circle)
         .accessibilityLabel("Share refill list")
+    }
+
+    /// The medicine list as a PDF, the same one Settings exports.
+    private var shareMedicinesButton: some View {
+        ShareLink(
+            item: MedicineListPDF(medicines: store.medicinesByUrgency, pharmacyName: store.settings.pharmacyName, date: .now),
+            preview: SharePreview("Medicine list", image: Image(systemName: "doc.text"))
+        ) {
+            Icon(.share, size: 20)
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .frame(width: 44, height: 44)
+        }
+        .glassEffect(.regular.interactive(), in: .circle)
+        .accessibilityLabel("Share medicine list")
     }
 
     private var sortMenu: some View {
