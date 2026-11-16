@@ -204,3 +204,36 @@ enum AppearanceTransition {
             .first(where: \.isKeyWindow)
     }
 }
+
+// MARK: - Header toggle
+
+/// The sun/moon glass button in the Settings header: flips between Light
+/// and Dark, revealing the new look in a circle growing out of the button,
+/// the same effect as the Theme switch in Appearance.
+struct AppearanceToggleButton: View {
+    @AppStorage(AppearanceMode.storageKey) private var modeRaw = AppearanceMode.system.rawValue
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var frame: CGRect = .zero
+
+    private var isDark: Bool { colorScheme == .dark }
+
+    var body: some View {
+        Button {
+            HapticFeedback.impact()
+            let next: AppearanceMode = isDark ? .light : .dark
+            let origin = frame.isEmpty ? nil : CGPoint(x: frame.midX, y: frame.midY)
+            AppearanceTransition.switchTo(next, from: origin) { modeRaw = next.rawValue }
+        } label: {
+            Image(systemName: isDark ? "moon.fill" : "sun.max.fill")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .contentTransition(.symbolEffect(.replace.downUp))
+                .frame(width: 44, height: 44)
+                .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame = $0 }
+        .accessibilityLabel(isDark ? "Switch to Light Mode" : "Switch to Dark Mode")
+    }
+}

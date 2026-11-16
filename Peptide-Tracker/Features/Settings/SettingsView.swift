@@ -45,7 +45,10 @@ struct SettingsView: View {
         .scrollIndicators(.hidden)
         // Pinned, as on the other tabs: the title stays while rows scroll under.
         .safeAreaInset(edge: .top, spacing: 0) {
-            TopPanel(title: "Settings") { shareButton } controls: { EmptyView() }
+            TopPanel(title: "Settings") {
+                AppearanceToggleButton()
+                shareButton
+            } controls: { EmptyView() }
         }
     }
 
