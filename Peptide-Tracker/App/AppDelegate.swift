@@ -14,6 +14,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        // Back chevrons and bar buttons: black in light mode, white in dark,
+        // like the toolbar icons — the accent stays for primary actions.
+        UINavigationBar.appearance().tintColor = UIColor { traits in
+            UIColor(hex: traits.userInterfaceStyle == .dark ? 0xF4F3F8 : 0x111418)
+        }
         store.scheduler.registerCategories(snooze: store.settings.snooze)
         #if DEBUG
         // Launch with `-sampleData` to start from the design's cabinet.
@@ -42,9 +47,32 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didReceive response: UNNotificationResponse
     ) async {
         let action = response.actionIdentifier
-        let idString = response.notification.request.content.userInfo[ReminderScheduler.medicineIDKey] as? String
+        let request = response.notification.request
+        let info = request.content.userInfo
+        let idString = info[ReminderScheduler.medicineIDKey] as? String
         guard let idString, let id = UUID(uuidString: idString) else { return }
+        // Dose reminders carry their day and time.
+        if request.content.categoryIdentifier == ReminderScheduler.Category.dose,
+           let day = info[ReminderScheduler.DoseKey.day] as? Double,
+           let minutes = info[ReminderScheduler.DoseKey.minutes] as? Int {
+            await handleDose(action: action, medicineID: id, day: Date(timeIntervalSince1970: day), minutes: minutes, request: request)
+            return
+        }
         await handle(action: action, medicineID: id)
+    }
+
+    /// "Taken" ticks the dose without opening the app; "in 10 minutes"
+    /// re-sends it; tapping the reminder opens Today on that day.
+    private func handleDose(action: String, medicineID: UUID, day: Date, minutes: Int, request: UNNotificationRequest) async {
+        switch action {
+        case ReminderScheduler.Action.markTaken:
+            store.reloadFromDisk()
+            store.markTaken(medicineID: medicineID, day: day, minutes: minutes)
+        case ReminderScheduler.Action.snoozeDose:
+            await store.scheduler.snoozeDose(request)
+        default:
+            router.showToday(.day(day))
+        }
     }
 
     private func handle(action: String, medicineID: UUID) async {
@@ -55,12 +83,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             // This can run with the app in the background, where the store's
             // debounced re-plan may never get to fire — move the reminder now.
             await store.scheduler.clear(medicine)
-            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings)
+            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings, takenDoseIDs: store.takenDoseIDs)
         case ReminderScheduler.Action.markOrdered:
             // Reminders pause until the refill is picked up.
             store.markOrdered(medicineID)
             await store.scheduler.clear(medicine)
-            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings)
+            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings, takenDoseIDs: store.takenDoseIDs)
         case ReminderScheduler.Action.remindTomorrow:
             await store.scheduler.snooze(medicine, settings: store.settings)
         default:

@@ -1,88 +1,78 @@
 {
-  "appPolicies" : {
-    "eula" : "",
-    "policies" : [
+  "appPolicies": {
+    "eula": "",
+    "policies": [
       {
-        "locale" : "en_US",
-        "policyText" : "",
-        "policyURL" : ""
+        "locale": "en_US",
+        "policyText": "",
+        "policyURL": ""
       }
     ]
   },
-  "identifier" : "6B1F2C3A",
-  "nonRenewingSubscriptions" : [
-
-  ],
-  "products" : [
+  "identifier": "6B1F2C3A",
+  "nonRenewingSubscriptions": [],
+  "products": [
     {
-      "displayPrice" : "39.99",
-      "familyShareable" : false,
-      "internalID" : "6739000002",
-      "localizations" : [
+      "displayPrice": "39.99",
+      "familyShareable": false,
+      "internalID": "6739000002",
+      "localizations": [
         {
-          "description" : "Unlock Pro forever with one purchase.",
-          "displayName" : "Pro Lifetime",
-          "locale" : "en_US"
+          "description": "Unlock Pro forever with one purchase.",
+          "displayName": "Pro Lifetime",
+          "locale": "en_US"
         }
       ],
-      "productID" : "pro.lifetime",
-      "referenceName" : "Pro Lifetime",
-      "type" : "NonConsumable"
+      "productID": "com.doseday.ios.pro.lifetime",
+      "referenceName": "Pro Lifetime",
+      "type": "NonConsumable"
     }
   ],
-  "settings" : {
-    "_applicationInternalID" : "6739000000",
-    "_developerTeamID" : "C52Z2BQ842",
-    "_failTransactionsEnabled" : false,
-    "_locale" : "en_US",
-    "_storefront" : "USA",
-    "_storeKitErrors" : [
-
-    ]
+  "settings": {
+    "_applicationInternalID": "6739000000",
+    "_developerTeamID": "C52Z2BQ842",
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
   },
-  "subscriptionGroups" : [
+  "subscriptionGroups": [
     {
-      "id" : "6739000010",
-      "localizations" : [
-
-      ],
-      "name" : "Pro",
-      "subscriptions" : [
+      "id": "6739000010",
+      "localizations": [],
+      "name": "Doseday Pro",
+      "subscriptions": [
         {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "3.99",
-          "familyShareable" : false,
-          "groupNumber" : 1,
-          "internalID" : "6739000001",
-          "introductoryOffer" : {
-            "internalID" : "6739000011",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
-          },
-          "localizations" : [
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "2.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "6739000001",
+          "localizations": [
             {
-              "description" : "Pro, billed monthly.",
-              "displayName" : "Pro Monthly",
-              "locale" : "en_US"
+              "description": "Pro, billed monthly.",
+              "displayName": "Pro Monthly",
+              "locale": "en_US"
             }
           ],
-          "productID" : "pro.monthly",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Pro Monthly",
-          "subscriptionGroupID" : "6739000010",
-          "type" : "RecurringSubscription"
+          "productID": "com.doseday.ios.pro.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Pro Monthly",
+          "subscriptionGroupID": "6739000010",
+          "type": "RecurringSubscription",
+          "introductoryOffer": {
+            "internalID": "6739000012",
+            "numberOfPeriods": 1,
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W"
+          }
         }
       ]
     }
   ],
-  "version" : {
-    "major" : 4,
-    "minor" : 0
+  "version": {
+    "major": 4,
+    "minor": 0
   }
 }

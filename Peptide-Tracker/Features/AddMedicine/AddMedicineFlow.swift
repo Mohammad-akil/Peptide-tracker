@@ -332,10 +332,11 @@ struct AddMedicineFlow: View {
         VStack(alignment: .leading, spacing: 24) {
             OnboardingHeader(
                 title: "How often do you take it?",
-                reason: "Pick how many times a day, then when you take each dose."
+                reason: "Pick which days, how many times on those days, then when you take each dose."
             )
+            FrequencyPicker(frequency: $draft.frequency, start: $draft.scheduleStart)
             // Apple's pick-one list: rows with a checkmark on the chosen one.
-            GroupedSection(title: "How often") {
+            GroupedSection(title: "Times that day") {
                 ForEach(1...4, id: \.self) { count in
                     frequency(count, showsDivider: count < 4)
                 }
@@ -374,7 +375,8 @@ struct AddMedicineFlow: View {
 
     /// "That’s 2 pills a day. Usual serving: 1 capsule."
     private var eachTimeFooter: String {
-        let total = "That’s \(draft.type.unit.format(draft.perDay)) a day."
+        let total = "That’s \(draft.type.unit.format(draft.perDay)) \(draft.frequency.isDaily ? "a day" : "each dose day")."
+
         // Only while the type is still the catalogue's, so the units agree.
         guard let pick = catalogPick, pick.type == draft.type else { return total }
         return "\(total) Usual serving: \(pick.serving)."
@@ -511,7 +513,7 @@ struct AddMedicineFlow: View {
         let medicine = draft.build()
         return [
             draft.brandName, draft.strength, medicine.typeTitle,
-            "\(medicine.unit.format(draft.perDay)) a day", draft.reason,
+            "\(medicine.unit.format(draft.perDay)) \(draft.frequency.isDaily ? "a day" : "· " + draft.frequency.title)", draft.reason,
         ]
         .map { $0.trimmingCharacters(in: .whitespaces) }
         .filter { !$0.isEmpty }

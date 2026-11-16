@@ -3,8 +3,8 @@ import SwiftUI
 // MARK: - Notifications
 
 /// Asks for notification permission in context, right after the reminder
-/// questions, with a stand-in of the system alert and a hand pointing at
-/// Allow. "Allow" shows the real system prompt; "Don't Allow" moves on
+/// questions, with a stand-in of the system alert (Cal AI style) and a hand
+/// pointing at Allow. "Allow" shows the real system prompt; "Don't Allow" moves on
 /// without asking, so nobody is pushed into it. Same as the team's other apps.
 struct NotificationsStep: View {
     let answers: OnboardingAnswers
@@ -19,7 +19,17 @@ struct NotificationsStep: View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
 
-            Text("Never miss a refill")
+            Image(systemName: "bell.badge.fill")
+                .font(.system(size: 30, weight: .semibold))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(Urgency.critical.tint, .white)
+                .frame(width: 64, height: 64)
+                .background(AppTheme.ColorToken.accent, in: .rect(cornerRadius: 18, style: .continuous))
+                .symbolEffect(.wiggle, options: .repeating.speed(0.6), isActive: !reduceMotion)
+                .padding(.bottom, 20)
+                .accessibilityHidden(true)
+
+            Text(title)
                 .font(.system(size: 30, weight: .heavy))
                 .kerning(-0.7)
                 .multilineTextAlignment(.center)
@@ -32,18 +42,29 @@ struct NotificationsStep: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 10)
-                .padding(.bottom, 28)
+                .padding(.bottom, 32)
 
             permissionCard
 
-            Text("👆")
-                .font(.system(size: 34))
-                .offset(x: 62, y: isPointing ? -4 : 6)
-                .padding(.top, 8)
-                .accessibilityHidden(true)
+            // Points up at Allow, nudging toward it.
+            HStack {
+                Spacer()
+                Image(systemName: "hand.point.up.left.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .offset(y: isPointing ? -6 : 6)
+                    .frame(maxWidth: .infinity)
+            }
+            .frame(width: 270)
+            .padding(.top, 10)
+            .accessibilityHidden(true)
 
             Spacer(minLength: 0)
-            Spacer(minLength: 0)
+
+            Text("You can change this anytime in Settings.")
+                .font(.system(size: 13))
+                .foregroundStyle(AppTheme.ColorToken.tertiaryText)
+                .padding(.bottom, 8)
         }
         .frame(maxWidth: .infinity)
         .onAppear {
@@ -52,22 +73,35 @@ struct NotificationsStep: View {
         }
     }
 
+    private var title: String {
+        answers.tracksDoses ? "Never miss a dose" : "Never miss a refill"
+    }
+
     private var reason: String {
         let days = answers.leadTime.daysBefore
         return answers.tracksDoses
-            ? "We’ll tell you \(days) days before a medicine runs out, and when it’s time for each dose."
-            : "We’ll tell you \(days) days before a medicine runs out, in time to refill."
+            ? "Get a reminder at each dose time, and \(days) days before a medicine runs out."
+            : "Get a reminder \(days) days before a medicine runs out, in time to refill."
     }
 
-    /// Looks like the system alert, so the real one that follows is expected.
+    /// Drawn like the iOS alert, so the real one that follows is expected:
+    /// Allow highlighted on the right, with the hand under it.
     private var permissionCard: some View {
         VStack(spacing: 0) {
-            Text("“\(Bundle.main.appName)” would like to send you notifications")
-                .font(.system(size: 16, weight: .semibold))
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 24)
+            VStack(spacing: 4) {
+                Text("“\(Bundle.main.appName)” Would Like to Send You Notifications")
+                    .font(.system(size: 17, weight: .semibold))
+                Text("Notifications may include alerts, sounds and icon badges. These can be configured in Settings.")
+                    .font(.system(size: 13))
+            }
+            .multilineTextAlignment(.center)
+            .foregroundStyle(AppTheme.ColorToken.primaryText)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 16)
+
+            Rectangle().fill(AppTheme.ColorToken.separator).frame(height: 0.5)
 
             HStack(spacing: 0) {
                 Button {
@@ -75,12 +109,14 @@ struct NotificationsStep: View {
                     onFinish()
                 } label: {
                     Text("Don’t Allow")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(AppTheme.ColorToken.primaryText)
-                        .frame(maxWidth: .infinity, minHeight: 52)
+                        .font(.system(size: 17))
+                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                        .frame(maxWidth: .infinity, minHeight: 50)
                         .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
+
+                Rectangle().fill(AppTheme.ColorToken.separator).frame(width: 0.5, height: 50)
 
                 Button(action: requestPermission) {
                     Group {
@@ -88,27 +124,22 @@ struct NotificationsStep: View {
                             ProgressView().tint(.white)
                         } else {
                             Text("Allow")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 17, weight: .semibold))
                         }
                     }
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: 52)
+                    .frame(maxWidth: .infinity, minHeight: 50)
                     .background(AppTheme.ColorToken.accent)
                     .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
                 .disabled(isRequesting)
             }
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(AppTheme.ColorToken.separator)
-                    .frame(height: 0.5)
-            }
         }
-        .background(AppTheme.ColorToken.cardBackground)
-        .clipShape(.rect(cornerRadius: 18, style: .continuous))
-        .shadow(color: Color(hex: 0x28185A, opacity: 0.08), radius: 16, y: 10)
-        .padding(.horizontal, 16)
+        .frame(width: 270)
+        .background(.regularMaterial, in: .rect(cornerRadius: 14, style: .continuous))
+        .clipShape(.rect(cornerRadius: 14, style: .continuous))
+        .shadow(color: .black.opacity(0.12), radius: 24, y: 12)
     }
 
     /// Shows the system prompt (a no-op if it was already answered, e.g. on

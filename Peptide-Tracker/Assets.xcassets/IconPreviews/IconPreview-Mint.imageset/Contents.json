@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "IconPreview-Mint.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

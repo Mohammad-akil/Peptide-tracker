@@ -1,9 +1,11 @@
+import Charts
 import SwiftUI
 
-/// "Pills on hand" over three months for one example medicine — 60-pill
-/// packs at two a day. Without reminders the supply hits zero and waits
-/// three days for the next pack; with them, the heads-up comes `daysBefore`
-/// days early and the pack lands before the last pill.
+/// "Pills on hand" over the next three months for one example medicine —
+/// 60-pill packs at two a day. Without reminders the supply hits zero and
+/// waits three days for the next pack; with them, the heads-up comes
+/// `daysBefore` days early and the pack lands before the last pill.
+/// The takeaway sits on top as two numbers, so it reads before the chart.
 struct BenefitChart: View {
     let daysBefore: Int
 
@@ -14,46 +16,81 @@ struct BenefitChart: View {
     private static let gapDays = 3
     private static let packDays = pack / perDay
 
+    private static let withoutColor = Color(light: 0xA9A4B8, dark: 0x7D7890)
+    private static let gridColor = Color(light: 0xECEAF3, dark: 0x2C2A36)
+    private static let gapColor = Color(hex: 0xC8372D, opacity: 0.13)
+
     @State private var drawn: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// The chart starts today, so the months are the user's own.
+    private let start = Calendar.current.startOfDay(for: .now)
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Pills on hand").font(.system(size: 17, weight: .bold))
                 Spacer()
-                Text("Example · 3 months")
+                Text("Example · next 3 months")
                     .font(.system(size: 13))
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
             }
-            .padding(.bottom, 6)
 
-            HStack(spacing: 16) {
-                legend("Without reminders") { DashLine().stroke(Self.withoutColor, style: StrokeStyle(lineWidth: 2.5, dash: [4, 3])).frame(width: 18, height: 3) }
-                legend("With reminders") { Capsule().fill(AppTheme.ColorToken.accent).frame(width: 18, height: 3) }
-                legend("Reminder") { Circle().fill(AppTheme.ColorToken.accent).frame(width: 10, height: 10) }
+            HStack(spacing: 10) {
+                stat(value: Self.daysWithoutMedicine, label: "days with nothing to take, no reminders", tint: Urgency.critical.tint)
+                stat(value: 0, label: "days with nothing to take, with reminders", tint: AppTheme.ColorToken.accent)
             }
-            .font(.system(size: 13))
-            .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            .padding(.bottom, 8)
 
-            plot
-                .frame(height: 200)
+            chart
+                .frame(height: 190)
+
+            HStack(spacing: 14) {
+                legend("No reminders") {
+                    DashLine()
+                        .stroke(Self.withoutColor, style: StrokeStyle(lineWidth: 2.5, dash: [4, 3]))
+                        .frame(width: 18, height: 3)
+                }
+                legend("With reminders") {
+                    Capsule().fill(AppTheme.ColorToken.accent).frame(width: 18, height: 4)
+                }
+                legend("Reminder") { reminderDot(size: 14) }
+            }
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(AppTheme.ColorToken.secondaryText)
         }
-        .padding(EdgeInsets(top: 14, leading: 16, bottom: 10, trailing: 16))
+        .padding(16)
         .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 22, style: .continuous))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Example supply over three months. Without reminders the supply hits zero twice, for three days each time. With reminders a refill arrives before it runs out.")
+        .accessibilityLabel("Example supply over the next three months. Without reminders the supply runs out twice, \(Self.daysWithoutMedicine) days with nothing to take. With a reminder \(daysBefore) days ahead, each refill arrives before it runs out.")
         .onAppear {
             if reduceMotion { drawn = 1 } else {
-                withAnimation(.easeInOut(duration: 1.4).delay(0.2)) { drawn = 1 }
+                withAnimation(.easeInOut(duration: 1.3).delay(0.2)) { drawn = 1 }
             }
         }
     }
 
-    private static let withoutColor = Color(hex: 0xA9A4B8)
-    private static let gridColor = Color(light: 0xECEAF3, dark: 0x2C2A36)
-    private static let gapColor = Color(hex: 0xC8372D, opacity: 0.14)
+    // MARK: Summary
+
+    private func stat(value: Int, label: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("\(value)")
+                    .font(.system(size: 28, weight: .heavy))
+                    .monospacedDigit()
+                    .foregroundStyle(tint)
+                Text(value == 1 ? "day" : "days")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(tint)
+            }
+            Text(label)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(tint.opacity(0.1), in: .rect(cornerRadius: 16, style: .continuous))
+    }
 
     private func legend<Swatch: View>(_ label: String, @ViewBuilder swatch: () -> Swatch) -> some View {
         HStack(spacing: 6) {
@@ -62,80 +99,118 @@ struct BenefitChart: View {
         }
     }
 
-    // MARK: Plot
+    private func reminderDot(size: CGFloat) -> some View {
+        Image(systemName: "bell.fill")
+            .font(.system(size: size * 0.5, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(AppTheme.ColorToken.accent, in: .circle)
+            .overlay(Circle().stroke(AppTheme.ColorToken.cardBackground, lineWidth: 2))
+    }
 
-    private var plot: some View {
-        GeometryReader { proxy in
-            let frame = PlotFrame(size: proxy.size, days: Self.days, maxValue: Self.pack)
-            let without = Self.withoutPoints()
-            let with = withPoints()
+    // MARK: Chart
 
-            ZStack(alignment: .topLeading) {
-                // Grid and axis labels
-                ForEach([0, 30, 60], id: \.self) { value in
-                    Path { path in
-                        path.move(to: frame.point(day: 0, value: value))
-                        path.addLine(to: frame.point(day: Self.days, value: value))
-                    }
-                    .stroke(Self.gridColor, lineWidth: 1)
-                    Text("\(value)")
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.ColorToken.tertiaryText)
-                        .frame(width: 22, alignment: .trailing)
-                        .position(x: frame.left - 15, y: frame.y(value))
+    private var chart: some View {
+        let with = withPoints()
+        return Chart {
+            ForEach(Self.gapStarts, id: \.self) { gapStart in
+                RectangleMark(
+                    xStart: .value("Day", date(gapStart)),
+                    xEnd: .value("Day", date(min(gapStart + Self.gapDays, Self.days)))
+                )
+                .foregroundStyle(Self.gapColor)
+                .annotation(position: .top, alignment: .center, spacing: 2) {
+                    Text("Out \(Self.gapDays)d")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Urgency.critical.ink)
+                        .fixedSize()
                 }
-                ForEach(Array(["Oct", "Nov", "Dec", "Jan"].enumerated()), id: \.offset) { index, month in
-                    Text(month)
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.ColorToken.tertiaryText)
-                        .position(x: frame.x(index * 30) + (index == 0 ? 10 : index == 3 ? -10 : 0), y: frame.bottom + 16)
-                }
+            }
 
-                // Days without medicine
-                ForEach(1...2, id: \.self) { cycle in
-                    let start = cycle * Self.packDays + (cycle - 1) * Self.gapDays
-                    Rectangle()
-                        .fill(Self.gapColor)
-                        .frame(width: frame.x(start + Self.gapDays) - frame.x(start), height: frame.bottom - frame.top)
-                        .position(x: (frame.x(start) + frame.x(start + Self.gapDays)) / 2, y: (frame.top + frame.bottom) / 2)
-                        .opacity(drawn)
-                }
-                Text("\(Self.gapDays) days without")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Urgency.critical.ink)
-                    .fixedSize()
-                    .position(x: frame.x(Self.packDays + 1), y: frame.top - 12)
-                    .opacity(drawn)
+            ForEach(Array(with.enumerated()), id: \.offset) { _, point in
+                AreaMark(x: .value("Day", date(point.day)), y: .value("Pills", point.pills))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [AppTheme.ColorToken.accent.opacity(0.22), AppTheme.ColorToken.accent.opacity(0.02)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
 
-                // Lines
-                Self.path(without, in: frame)
-                    .trim(from: 0, to: drawn)
-                    .stroke(Self.withoutColor, style: StrokeStyle(lineWidth: 2.5, lineJoin: .round, dash: [5, 5]))
-                area(with, in: frame)
-                    .fill(AppTheme.ColorToken.accent.opacity(0.12))
-                    .opacity(drawn)
-                Self.path(with, in: frame)
-                    .trim(from: 0, to: drawn)
-                    .stroke(AppTheme.ColorToken.accent, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+            ForEach(Array(Self.withoutPoints.enumerated()), id: \.offset) { _, point in
+                LineMark(x: .value("Day", date(point.day)), y: .value("Pills", point.pills), series: .value("Plan", "No reminders"))
+                    .foregroundStyle(Self.withoutColor)
+                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineJoin: .round, dash: [5, 5]))
+            }
 
-                // Reminder dots
-                ForEach(reminderDays, id: \.self) { day in
-                    Circle()
-                        .fill(AppTheme.ColorToken.accent)
-                        .frame(width: 14, height: 14)
-                        .overlay(Circle().stroke(AppTheme.ColorToken.cardBackground, lineWidth: 2))
-                        .position(frame.point(day: day, value: stock(onDay: day)))
-                        .scaleEffect(drawn)
-                }
+            ForEach(Array(with.enumerated()), id: \.offset) { _, point in
+                LineMark(x: .value("Day", date(point.day)), y: .value("Pills", point.pills), series: .value("Plan", "With reminders"))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+            }
+
+            ForEach(reminderDays, id: \.self) { day in
+                PointMark(x: .value("Day", date(day)), y: .value("Pills", stock(onDay: day)))
+                    .symbol { reminderDot(size: 20) }
+            }
+        }
+        .chartYScale(domain: 0...yMax(with))
+        .chartXScale(domain: date(0)...date(Self.days))
+        .chartYAxis {
+            AxisMarks(position: .leading, values: [0, 30, 60]) { _ in
+                AxisGridLine().foregroundStyle(Self.gridColor)
+                AxisValueLabel()
+                    .font(.system(size: 11))
+                    .foregroundStyle(AppTheme.ColorToken.tertiaryText)
+            }
+        }
+        .chartXAxis {
+            AxisMarks(values: .stride(by: .month)) { _ in
+                AxisValueLabel(format: .dateTime.month(.abbreviated))
+                    .font(.system(size: 11))
+                    .foregroundStyle(AppTheme.ColorToken.tertiaryText)
+            }
+        }
+        .chartLegend(.hidden)
+        // Draws in from the left.
+        .mask {
+            GeometryReader { proxy in
+                Rectangle().frame(width: proxy.size.width * drawn)
             }
         }
     }
 
+    private func date(_ day: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: day, to: start) ?? start
+    }
+
+    private func yMax(_ points: [(day: Int, pills: Int)]) -> Int {
+        max(Self.pack, points.map(\.pills).max() ?? Self.pack) + 8
+    }
+
     // MARK: Data
 
+    /// Where each run-out starts, without reminders.
+    private static var gapStarts: [Int] {
+        var starts: [Int] = []
+        var cycle = 1
+        while true {
+            let gapStart = cycle * packDays + (cycle - 1) * gapDays
+            guard gapStart < days else { break }
+            starts.append(gapStart)
+            cycle += 1
+        }
+        return starts
+    }
+
+    private static var daysWithoutMedicine: Int {
+        gapStarts.reduce(0) { $0 + min(gapDays, days - $1) }
+    }
+
     /// Supply drops to zero, sits there for the gap, then a full pack.
-    private static func withoutPoints() -> [(Int, Int)] {
-        var points = [(0, pack)]
+    private static var withoutPoints: [(day: Int, pills: Int)] {
+        var points: [(day: Int, pills: Int)] = [(0, pack)]
         var day = 0
         while day < days {
             let out = min(day + packDays, days)
@@ -170,8 +245,8 @@ struct BenefitChart: View {
         return Self.pack + added - day * Self.perDay
     }
 
-    private func withPoints() -> [(Int, Int)] {
-        var points = [(0, Self.pack)]
+    private func withPoints() -> [(day: Int, pills: Int)] {
+        var points: [(day: Int, pills: Int)] = [(0, Self.pack)]
         for day in refillDays {
             points.append((day, stock(onDay: day) - Self.pack))
             points.append((day, stock(onDay: day)))
@@ -179,41 +254,6 @@ struct BenefitChart: View {
         points.append((Self.days, stock(onDay: Self.days)))
         return points
     }
-
-    private static func path(_ points: [(Int, Int)], in frame: PlotFrame) -> Path {
-        Path { path in
-            for (index, point) in points.enumerated() {
-                let location = frame.point(day: point.0, value: point.1)
-                if index == 0 { path.move(to: location) } else { path.addLine(to: location) }
-            }
-        }
-    }
-
-    private func area(_ points: [(Int, Int)], in frame: PlotFrame) -> Path {
-        var path = Self.path(points, in: frame)
-        path.addLine(to: frame.point(day: Self.days, value: 0))
-        path.addLine(to: frame.point(day: 0, value: 0))
-        path.closeSubpath()
-        return path
-    }
-}
-
-/// Maps days and pill counts into the plot, leaving room for axis labels.
-private struct PlotFrame {
-    let size: CGSize
-    let days: Int
-    let maxValue: Int
-
-    var left: CGFloat { 30 }
-    var right: CGFloat { size.width - 4 }
-    var top: CGFloat { 30 }
-    var bottom: CGFloat { size.height - 28 }
-
-    func x(_ day: Int) -> CGFloat { left + (right - left) * CGFloat(day) / CGFloat(days) }
-    /// The top pack sits a little under the plot's top so a refill above a
-    /// full pack still fits.
-    func y(_ value: Int) -> CGFloat { bottom - (bottom - top - 20) * CGFloat(value) / CGFloat(maxValue) }
-    func point(day: Int, value: Int) -> CGPoint { CGPoint(x: x(day), y: y(value)) }
 }
 
 private struct DashLine: Shape {

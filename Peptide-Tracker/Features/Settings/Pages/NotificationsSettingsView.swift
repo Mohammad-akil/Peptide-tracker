@@ -56,6 +56,14 @@ struct NotificationsSettingsView: View {
                 }
             }
 
+            GroupedSection(footer: "A notification at each dose time, only on the days each medicine is taken.") {
+                ControlRow(symbol: "pills.fill", tint: AppTheme.ColorToken.accent, title: "Dose reminders", showsDivider: false) {
+                    Toggle("Dose reminders", isOn: $store.settings.doseReminders.animation(.snappy))
+                        .labelsHidden()
+                        .tint(AppTheme.ColorToken.accent)
+                }
+            }
+
             GroupedSection(title: "Daily reminders", footer: "A nudge each day to check your doses, on top of refill reminders.") {
                 dailyRow(
                     title: "Morning",
@@ -73,10 +81,6 @@ struct NotificationsSettingsView: View {
                     time: $store.settings.sleepTime,
                     showsDivider: false
                 )
-            }
-
-            GroupedSection {
-                SettingsRowLabel(symbol: "speaker.wave.2.fill", tint: Color(hex: 0xFF375F), title: "Sound", value: "Coming soon", valueTint: AppTheme.ColorToken.tertiaryText)
             }
 
             GroupedSection(footer: "Plans every reminder again from scratch. Handy after travelling or changing the time.") {

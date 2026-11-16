@@ -71,6 +71,15 @@ struct AppSettings: Codable, Hashable {
     var showsMedicineName = true
     /// How long "Remind me later" on a notification waits.
     var snooze = SnoozeOption.tomorrow
+    /// A notification at each dose time, on the medicine's dose days.
+    var doseReminders = true
+    /// How weights are shown and entered; also picks metric or US units
+    /// in the calculators.
+    var weightUnit = WeightUnit.kg
+    /// Remembered from the calculators so they open filled in.
+    var heightCm: Double?
+    var birthYear: Int?
+    var sex: BodySex?
     /// A daily nudge to check the day's doses.
     var morningReminder = false
     var morningTime = TimeOfDay(hour: 8, minute: 0)
@@ -106,6 +115,8 @@ struct AppSettings: Codable, Hashable {
         case trackingFor, personName, pharmacyKind, userName
         case reminderMessage, showsMedicineName, snooze
         case morningReminder, morningTime, sleepReminder, sleepTime
+        case doseReminders
+        case weightUnit, heightCm, birthYear, sex
     }
 
     /// Tolerates keys added in later versions, so an older save still loads.
@@ -130,6 +141,11 @@ struct AppSettings: Codable, Hashable {
         morningTime = try c.decodeIfPresent(TimeOfDay.self, forKey: .morningTime) ?? defaults.morningTime
         sleepReminder = try c.decodeIfPresent(Bool.self, forKey: .sleepReminder) ?? defaults.sleepReminder
         sleepTime = try c.decodeIfPresent(TimeOfDay.self, forKey: .sleepTime) ?? defaults.sleepTime
+        doseReminders = try c.decodeIfPresent(Bool.self, forKey: .doseReminders) ?? defaults.doseReminders
+        weightUnit = try c.decodeIfPresent(WeightUnit.self, forKey: .weightUnit) ?? defaults.weightUnit
+        heightCm = try c.decodeIfPresent(Double.self, forKey: .heightCm)
+        birthYear = try c.decodeIfPresent(Int.self, forKey: .birthYear)
+        sex = try c.decodeIfPresent(BodySex.self, forKey: .sex)
     }
 }
 

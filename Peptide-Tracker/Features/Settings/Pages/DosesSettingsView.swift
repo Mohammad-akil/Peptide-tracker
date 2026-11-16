@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Dose tracking on Today: whether doses are ticked off at all, and
-/// whether the day shows as a list or a timeline.
+/// which of the four layouts Today uses, each shown as a small preview.
 struct DosesSettingsView: View {
     @Environment(MedicineStore.self) private var store
     @AppStorage(DoseLayout.storageKey) private var doseLayout: DoseLayout = .list
@@ -22,16 +22,7 @@ struct DosesSettingsView: View {
             }
 
             if store.settings.tracksDoses {
-                GroupedSection(title: "Home style") {
-                    ForEach(Array(DoseLayout.allCases.enumerated()), id: \.element) { index, layout in
-                        CheckRow(
-                            title: layout.title,
-                            detail: layout.detail,
-                            isSelected: doseLayout == layout,
-                            showsDivider: index < DoseLayout.allCases.count - 1
-                        ) { doseLayout = layout }
-                    }
-                }
+                DoseLayoutPicker(selection: $doseLayout)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }

@@ -5,26 +5,53 @@ import SwiftUI
 /// time, and each medicine's rate. Shares as a PDF for the doctor.
 struct ReportSettingsView: View {
     @Environment(MedicineStore.self) private var store
+    @Environment(PurchaseStore.self) private var purchases
     @AppStorage("report.period") private var period: AdherenceReport.Period = .month
     @AppStorage("report.byMedicineIsList") private var byMedicineIsList = true
+    @State private var showsShare = false
 
     var body: some View {
-        let report = AdherenceReport(store: store, period: period)
+        let report = store.adherenceReport(period)
 
         SettingsPageScaffold(page: .report) {
             SectionPicker(selection: $period.animation(.snappy), title: \.title)
 
             if report.due == 0 {
                 EmptyStateCard(period: period)
+                dataCard
             } else {
-                headline(report)
-                stats(report)
-                AdherenceChart(report: report)
-                byMedicine(report)
+                VStack(alignment: .leading, spacing: 22) {
+                    headline(report)
+                    stats(report)
+                    AdherenceChart(report: report)
+                    shareRow
+                    byMedicine(report)
+                }
+                // The last 7 days are free; 30 and 90 days are Pro.
+                .proLocked(
+                    "See the bigger picture",
+                    message: "Your last 7 days are free. Pro shows 30 and 90 days, each medicine’s rate, and shares it as a PDF for your doctor.",
+                    when: period != .week
+                )
+                dataCard
             }
         }
         .toolbar {
-            if report.due > 0 {
+            // Everything the app keeps, as CSV files — free, it's their data.
+            if !store.medicines.isEmpty || !store.doseLogs.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    ShareLink(
+                        items: DataExportFile.all(from: store),
+                        subject: Text("Doseday data"),
+                        preview: { file in SharePreview(file.kind.fileName, image: Image(systemName: "tablecells")) }
+                    ) {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .tint(AppTheme.ColorToken.primaryText)
+                    .accessibilityLabel("Download all your data")
+                }
+            }
+            if report.due > 0 && purchases.isPro {
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(
                         item: AdherenceReportPDF(report: report, personName: personName),
@@ -32,11 +59,69 @@ struct ReportSettingsView: View {
                     ) {
                         Image(systemName: "square.and.arrow.up")
                     }
+                    .tint(AppTheme.ColorToken.primaryText)
                     .accessibilityLabel("Share report as PDF")
                 }
             }
         }
         .animation(.snappy, value: period)
+    }
+
+    /// Turns the numbers into an image for stories and chats. No medicine
+    /// names, just the rates.
+    private var shareRow: some View {
+        Button {
+            HapticFeedback.selection()
+            showsShare = true
+        } label: {
+            HStack(spacing: 14) {
+                SettingsTile(symbol: "photo.on.rectangle.angled", tint: AppTheme.ColorToken.accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Share your progress")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                    Text("A card for stories and chats, without medicine names")
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+            }
+            .padding(16)
+            .groupedCard()
+            .contentShape(.rect)
+        }
+        .buttonStyle(.pressable)
+        .shareMoments(isPresented: $showsShare, start: .week)
+    }
+
+    /// Everything the app keeps, as spreadsheets — the same files as the
+    /// download button at the top, made easy to find.
+    private var dataCard: some View {
+        VStack(spacing: 10) {
+            IllustrationView(.dataDownload, width: 160)
+            Text("Your data, anytime")
+                .font(.system(size: 18, weight: .bold))
+            Text("Download every dose, medicine, refill, mood and weight as spreadsheets for Numbers, Excel or Google Sheets.")
+                .font(.system(size: 14))
+                .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            ShareLink(
+                items: DataExportFile.all(from: store),
+                subject: Text("Doseday data"),
+                preview: { file in SharePreview(file.kind.fileName, image: Image(systemName: "tablecells")) }
+            ) {
+                Label("Download data", systemImage: "square.and.arrow.down")
+            }
+            .buttonStyle(.primary(height: 46))
+            .padding(.top, 4)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity)
+        .groupedCard()
     }
 
     private var personName: String? {
@@ -253,4 +338,6 @@ private struct EmptyStateCard: View {
 #Preview {
     NavigationStack { ReportSettingsView() }
         .environment(MedicineStore.preview())
+        .environment(PurchaseStore())
+        .environment(AppRouter())
 }

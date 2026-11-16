@@ -56,6 +56,12 @@ enum Illustration: String {
     case addPerson = "add-person"
     case exportList = "export-list"
     case setupComplete = "setup-complete"
+    case weightEmpty = "weight-empty"
+    case calendarInsights = "calendar-insights"
+    case calculators
+    case noDosesDay = "no-doses-day"
+    case proUnlock = "pro-unlock"
+    case dataDownload = "data-download"
 
     var image: Image { Image("illo-\(rawValue)") }
 }

@@ -20,6 +20,16 @@ struct AboutSettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
+            GroupedSection(title: "Not medical advice") {
+                Label("\(Bundle.main.appName) is a personal log and reminder. It doesn’t give medical advice or recommend doses. Always follow your doctor’s or pharmacist’s instructions.", systemImage: "stethoscope")
+                    .font(.system(size: 15))
+                    .lineSpacing(2)
+                    .foregroundStyle(AppTheme.ColorToken.primaryText)
+                    .labelStyle(PrivacyPointStyle())
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             GroupedSection {
                 linkRow("Privacy Policy", symbol: "hand.raised.fill", tint: Color(hex: 0x0A84FF), url: AppLinks.privacyPolicy)
                 linkRow("Terms of Use", symbol: "doc.text.fill", tint: Color(hex: 0x8E8E93), url: AppLinks.termsOfUse)
@@ -27,8 +37,6 @@ struct AboutSettingsView: View {
             }
 
             GroupedSection {
-                SettingsRowLabel(symbol: "globe", tint: Color(hex: 0x0A84FF), title: "Language", value: "Coming soon", valueTint: AppTheme.ColorToken.tertiaryText)
-                    .rowDivider(true, inset: 58)
                 SettingsRowLabel(symbol: "app.badge.fill", tint: AppTheme.ColorToken.accent, title: "Version", value: Self.version)
             }
         }

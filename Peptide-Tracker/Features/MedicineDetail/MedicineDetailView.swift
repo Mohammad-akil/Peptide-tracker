@@ -56,15 +56,20 @@ struct MedicineDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
+                // Black in light mode, white in dark — not the accent purple.
                 Button { router.sheet = .editMedicine(medicine.id) } label: {
                     Icon(.edit, size: 20)
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
                 }
+                .tint(AppTheme.ColorToken.primaryText)
                 .accessibilityLabel("Edit")
                 Menu {
                     moreMenu(medicine)
                 } label: {
                     Icon(.more, size: 22)
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
                 }
+                .tint(AppTheme.ColorToken.primaryText)
                 .accessibilityLabel("More options")
             }
         }

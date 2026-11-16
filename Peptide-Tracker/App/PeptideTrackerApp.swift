@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct PeptideTrackerApp: App {
+    @AppStorage(AppearanceMode.storageKey) private var appearanceModeRaw = AppearanceMode.system.rawValue
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
 
@@ -40,9 +41,22 @@ struct PeptideTrackerApp: App {
             // SF Pro Rounded everywhere: every `.system` font picks it up.
             .fontDesign(.rounded)
             .task { await runSplashSequence() }
+            // doseday:// links, from the widgets and elsewhere.
+            .onChange(of: appearanceModeRaw, initial: true) { _, raw in
+                (AppearanceMode(rawValue: raw) ?? .system).apply()
+            }
+            .onOpenURL { url in
+                appDelegate.router.handle(url, medicineCount: appDelegate.store.medicines.count, purchases: appDelegate.purchases)
+            }
             .onChange(of: scenePhase) { _, phase in
                 // Days may have ended while the app was in the background.
-                if phase == .active { appDelegate.store.runDailyCountdown() }
+                if phase == .active {
+                    // A new day may have started; refetch what depends on it.
+                    QueryClient.shared.invalidate(.day)
+                    // Doses and moods logged from a widget while away.
+                    appDelegate.store.reloadFromDisk()
+                    appDelegate.store.runDailyCountdown()
+                }
             }
         }
     }
@@ -53,6 +67,8 @@ struct PeptideTrackerApp: App {
     /// done, lets the icon exit, then crossfades into the first screen.
     private func runSplashSequence() async {
         let needsOnboarding = RootView.needsOnboarding(store: appDelegate.store)
+        // Warm the query cache while the splash is up.
+        appDelegate.store.preload()
         try? await Task.sleep(for: Self.minimumSplashDuration)
         guard !Task.isCancelled else { return }
 

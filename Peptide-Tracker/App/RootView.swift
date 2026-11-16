@@ -61,7 +61,7 @@ struct RootView: View {
                 }
         }
         .fullScreenCover(isPresented: $showsSetupPaywall, onDismiss: openAddAfterSetup) {
-            PaywallView()
+            PaywallFlowView()
         }
         .onAppear {
             #if DEBUG

@@ -25,6 +25,7 @@ struct HealthContactsSettingsView: View {
                 Button { editing = HealthContact() } label: {
                     Image(systemName: "plus")
                 }
+                .tint(AppTheme.ColorToken.primaryText)
                 .accessibilityLabel("Add contact")
             }
         }
@@ -173,6 +174,7 @@ private struct HealthContactEditor: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .tint(AppTheme.ColorToken.primaryText)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {

@@ -14,11 +14,11 @@ struct PlanSummary: View {
                 reason: "Here’s how reminders will work. Tap a line to change it."
             )
             VStack(spacing: 0) {
-                row(.user, "Tracking for", trackingValue, step: .who)
-                row(.bell, "Heads-up", "\(answers.leadTime.daysBefore) days before", step: .refill)
-                row(.clock, "Reminder time", answers.reminderTime.label, step: .time)
-                row(.check, "Dose reminders", answers.tracksDoses ? "On" : "Off", step: .doses)
-                row(.store, "Pharmacy", pharmacyValue, step: .pharmacy, showsDivider: false)
+                row(.user, Color(hex: 0x0A84FF), "Tracking for", trackingValue, step: .who)
+                row(.bell, Color(hex: 0xFF453A), "Heads-up", "\(answers.leadTime.daysBefore) days before", step: .refill)
+                row(.clock, Color(hex: 0x30B0C7), "Reminder time", answers.reminderTime.label, step: .time)
+                row(.check, AppTheme.ColorToken.accent, "Dose reminders", answers.tracksDoses ? "On" : "Off", step: .doses)
+                row(.store, Color(hex: 0xFF9F0A), "Pharmacy", pharmacyValue, step: .pharmacy, showsDivider: false)
             }
             .groupedCard()
         }
@@ -34,13 +34,15 @@ struct PlanSummary: View {
         return answers.pharmacyKind == .one && !name.isEmpty ? name : answers.pharmacyKind.title
     }
 
-    private func row(_ icon: AppIcon, _ title: String, _ value: String, step: OnboardingStep, showsDivider: Bool = true) -> some View {
+    /// Each row's own colour behind a white icon, the same in light and dark
+    /// mode, like iOS Settings.
+    private func row(_ icon: AppIcon, _ tint: Color, _ title: String, _ value: String, step: OnboardingStep, showsDivider: Bool = true) -> some View {
         Button { onEdit(step) } label: {
             HStack(spacing: 12) {
                 FilledIcon(icon, size: 18)
-                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .foregroundStyle(.white)
                     .frame(width: 34, height: 34)
-                    .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 10, style: .continuous))
+                    .background(tint, in: .rect(cornerRadius: 10, style: .continuous))
                 Text(title)
                     .font(.system(size: 17))
                     .foregroundStyle(AppTheme.ColorToken.primaryText)

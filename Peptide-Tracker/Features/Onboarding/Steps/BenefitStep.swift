@@ -23,10 +23,11 @@ struct BenefitStep: View {
 
     private func point(_ icon: AppIcon, _ text: String) -> some View {
         HStack(spacing: 12) {
+            // Purple tile, white icon — the same in light and dark mode.
             FilledIcon(icon, size: 17)
-                .foregroundStyle(AppTheme.ColorToken.accent)
+                .foregroundStyle(.white)
                 .frame(width: 32, height: 32)
-                .background(AppTheme.ColorToken.accentSoft, in: .rect(cornerRadius: 10, style: .continuous))
+                .background(AppTheme.ColorToken.accent, in: .rect(cornerRadius: 10, style: .continuous))
             Text(text).font(.system(size: 16, weight: .medium))
         }
         .accessibilityElement(children: .combine)

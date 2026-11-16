@@ -1,7 +1,10 @@
 import SwiftUI
 
-/// The pages Settings opens, pushed onto the app's navigation stack.
+/// The pages Settings opens, pushed onto the app's navigation stack. The
+/// main list shows the five sections (`remindersGroup` … `appearance`);
+/// each section's page lists the pages inside it.
 enum SettingsPage: Hashable {
+    case remindersGroup, health, careTeam, data, appearance
     case reminders, notifications, doses, pharmacy, contacts, tracking, report, help, about
     #if DEBUG
     case developer
@@ -9,6 +12,11 @@ enum SettingsPage: Hashable {
 
     var title: String {
         switch self {
+        case .remindersGroup: "Reminders & doses"
+        case .health: "Health"
+        case .careTeam: "Care team"
+        case .data: "Reports & data"
+        case .appearance: "Appearance"
         case .reminders: "Reminders"
         case .notifications: "Notifications"
         case .doses: "Doses"
@@ -26,6 +34,11 @@ enum SettingsPage: Hashable {
 
     var symbol: String {
         switch self {
+        case .remindersGroup: "bell.fill"
+        case .health: "heart.fill"
+        case .careTeam: "stethoscope"
+        case .data: "chart.bar.doc.horizontal.fill"
+        case .appearance: "paintbrush.fill"
         case .reminders: "bell.fill"
         case .notifications: "bell.badge.fill"
         case .doses: "checklist"
@@ -44,6 +57,11 @@ enum SettingsPage: Hashable {
     /// Each page's Apple system colour, for its tile.
     var tint: Color {
         switch self {
+        case .remindersGroup: Color(hex: 0xFF453A) // red
+        case .health: Color(hex: 0xFF375F)     // pink
+        case .careTeam: Color(hex: 0x30B0C7)   // teal
+        case .data: Color(hex: 0xBF5AF2)       // purple
+        case .appearance: Color(hex: 0x5E5CE6) // indigo
         case .reminders: Color(hex: 0xFF453A)  // red
         case .notifications: Color(hex: 0xFF9F0A) // orange
         case .doses: Color(hex: 0x30D158)      // green
@@ -62,6 +80,11 @@ enum SettingsPage: Hashable {
     @ViewBuilder
     var destination: some View {
         switch self {
+        case .remindersGroup: RemindersGroupView()
+        case .health: HealthGroupView()
+        case .careTeam: CareTeamGroupView()
+        case .data: DataGroupView()
+        case .appearance: AppearanceGroupView()
         case .reminders: RemindersSettingsView()
         case .notifications: NotificationsSettingsView()
         case .doses: DosesSettingsView()

@@ -24,6 +24,10 @@ struct MedicineDraft {
     var doseTimes: [TimeOfDay] = []
     /// Off saves the medicine with its refill reminder paused.
     var remindersOn = true
+    /// Which days it's taken on.
+    var frequency: DoseFrequency = .daily
+    /// The day weekly, every-few-days and cycle schedules count from.
+    var scheduleStart: Date = .now
 
     /// The medicine being edited, if any — keeps its id, capacity and
     /// schedule.
@@ -49,6 +53,8 @@ struct MedicineDraft {
         instructions = medicine.instructions
         customTypeName = medicine.customTypeName
         remindersOn = !medicine.remindersPaused
+        frequency = medicine.frequency
+        scheduleStart = medicine.scheduleStart ?? medicine.createdAt
     }
 
     var isEditing: Bool { original != nil }
@@ -102,7 +108,9 @@ struct MedicineDraft {
             brandName: trimmed(brandName),
             reason: trimmed(reason),
             instructions: trimmed(instructions),
-            customTypeName: type == .other ? trimmed(customTypeName) : ""
+            customTypeName: type == .other ? trimmed(customTypeName) : "",
+            frequency: frequency,
+            scheduleStart: frequency.isDaily ? nil : scheduleStart.startOfDay
         )
     }
 }

@@ -1,66 +1,10 @@
-# Peptides
-BPC-157;injection;250 mcg,500 mcg,5 mg vial,10 mg vial;
-BPC-157 Oral;capsule;250 mcg,500 mcg;
-TB-500;injection;2 mg,5 mg vial,10 mg vial;
-Thymosin Beta-4;injection;2 mg,5 mg vial;
-Thymosin Alpha-1;injection;1.5 mg,5 mg vial;Zadaxin
-Ipamorelin;injection;100 mcg,200 mcg,5 mg vial;
-CJC-1295;injection;100 mcg,2 mg vial,5 mg vial;
-CJC-1295 with DAC;injection;2 mg vial,5 mg vial;
-CJC-1295 / Ipamorelin;injection;100 mcg / 100 mcg,5 mg / 5 mg vial;
-Sermorelin;injection;200 mcg,9 mg vial,15 mg vial;
+# Hormone & fertility injections
 Tesamorelin;injection;1 mg,2 mg vial,10 mg vial;Egrifta
-GHRP-2;injection;100 mcg,5 mg vial;
-GHRP-6;injection;100 mcg,5 mg vial;
-Hexarelin;injection;100 mcg,2 mg vial;
-MK-677 (Ibutamoren);capsule;10 mg,25 mg;
-AOD-9604;injection;300 mcg,5 mg vial;
-HGH Fragment 176-191;injection;250 mcg,5 mg vial;
-GHK-Cu;injection;1 mg,50 mg vial,100 mg vial;
-GHK-Cu Topical;cream;1%,2%;
-Melanotan II;injection;250 mcg,10 mg vial;
 PT-141 (Bremelanotide);injection;1.75 mg,10 mg vial;Vyleesi
-Kisspeptin-10;injection;100 mcg,5 mg vial;
-Selank;drops;250 mcg,5 mg vial;
-Semax;drops;300 mcg,5 mg vial;
-N-Acetyl Semax;drops;300 mcg,5 mg vial;
-DSIP;injection;100 mcg,5 mg vial;
-Epitalon;injection;5 mg,10 mg vial,50 mg vial;
-MOTS-c;injection;5 mg,10 mg vial;
-Humanin;injection;2 mg,10 mg vial;
-SS-31 (Elamipretide);injection;10 mg,50 mg vial;
-LL-37;injection;100 mcg,5 mg vial;
-KPV;capsule;500 mcg;
-KPV Injection;injection;500 mcg,10 mg vial;
-Larazotide;capsule;0.5 mg;
-VIP (Vasoactive Intestinal Peptide);drops;50 mcg,6 mg vial;
-Dihexa;capsule;10 mg,20 mg;
-Cerebrolysin;injection;5 ml,10 ml;
-P21;capsule;1 mg;
-NAD+;injection;100 mg,500 mg vial,1000 mg vial;
-NAD+ Nasal Spray;drops;25 mg/spray;
-Glutathione Injection;injection;200 mg,1000 mg vial;
 Oxytocin;injection;10 IU,2 mg vial;Pitocin
-Gonadorelin;injection;100 mcg,2 mg vial;
 hCG (Human Chorionic Gonadotropin);injection;5000 IU,10000 IU vial;Pregnyl,Novarel
 HMG (Menotropins);injection;75 IU;Menopur
 FSH (Follitropin);injection;75 IU,300 IU pen;Gonal-f,Follistim
-IGF-1 LR3;injection;20 mcg,1 mg vial;
-PEG-MGF;injection;200 mcg,2 mg vial;
-Follistatin 344;injection;100 mcg,1 mg vial;
-ARA-290;injection;4 mg,16 mg vial;
-Pinealon;injection;5 mg,20 mg vial;
-Thymalin;injection;10 mg vial;
-Snap-8 Topical;cream;10%;
-Matrixyl Topical;cream;3%;
-Cagrilintide;injection;0.25 mg,2.4 mg,5 mg vial;
-Mazdutide;injection;3 mg,6 mg,10 mg vial;
-Survodutide;injection;0.6 mg,3.6 mg,6 mg;
-Retatrutide;injection;1 mg,4 mg,12 mg,10 mg vial;
-Orforglipron;tablet;3 mg,12 mg,36 mg;
-5-Amino-1MQ;capsule;50 mg,100 mg;
-Tesofensine;capsule;0.5 mg,1 mg;
-SLU-PP-332;capsule;250 mcg;
 Bacteriostatic Water;liquid;30 ml;
 
 # Weight & GLP-1

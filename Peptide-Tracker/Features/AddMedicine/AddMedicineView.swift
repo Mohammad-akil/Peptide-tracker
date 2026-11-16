@@ -33,6 +33,7 @@ struct AddMedicineView: View {
                     typeSection
                     medicineSection
                     supplySection
+                    FrequencyPicker(frequency: $draft.frequency, start: $draft.scheduleStart)
                     reminderSection
                     VStack(alignment: .leading, spacing: 8) {
                         SectionLabel(title: "Your reminder")
@@ -57,6 +58,7 @@ struct AddMedicineView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .cancel) { dismiss() }
+                        .tint(AppTheme.ColorToken.primaryText)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(role: .confirm, action: save)

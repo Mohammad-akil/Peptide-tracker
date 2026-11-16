@@ -55,7 +55,16 @@ final class AppRouter {
         }
     }
 
+    /// Something Today should open as soon as it's on screen — from a
+    /// deep link, a widget or a notification.
+    enum TodayRequest: Equatable {
+        case mood, calendar
+        /// Show this day's doses.
+        case day(Date)
+    }
+
     var selectedTab: Tab = .today
+    var todayRequest: TodayRequest?
     var path: [Route] = []
     var sheet: Sheet?
     /// The message at the top of the screen, drawn by `OverlayWindow` above
@@ -83,6 +92,48 @@ final class AppRouter {
         } else {
             sheet = .addMedicine
         }
+    }
+
+    // MARK: Deep links
+
+    /// Opens what a `doseday://` link points at — from the widgets and
+    /// anywhere else that links into the app:
+    /// `doseday://today`, `doseday://day/<yyyy-MM-dd>`, `doseday://medicine/<id>`,
+    /// `doseday://mood`, `doseday://calendar`, `doseday://add`, `doseday://pro`.
+    func handle(_ url: URL, medicineCount: Int, purchases: PurchaseStore) {
+        guard url.scheme == "doseday" else { return }
+        let argument = url.pathComponents.dropFirst().first
+        switch url.host() {
+        case "today":
+            showToday(nil)
+        case "day":
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "yyyy-MM-dd"
+            showToday(argument.flatMap { formatter.date(from: $0) }.map { .day($0) })
+        case "medicine":
+            if let id = argument.flatMap(UUID.init(uuidString:)) { openMedicine(id) }
+        case "mood":
+            showToday(.mood)
+        case "calendar":
+            showToday(.calendar)
+        case "add":
+            showToday(nil)
+            requestAddMedicine(count: medicineCount, purchases: purchases)
+        case "pro":
+            showToday(nil)
+            if !purchases.isPro { sheet = .paywall(reason: nil) }
+        default:
+            break
+        }
+    }
+
+    /// Today, on top, with an optional thing to open there.
+    func showToday(_ request: TodayRequest?) {
+        sheet = nil
+        path = []
+        selectedTab = .today
+        todayRequest = request
     }
 
     func push(_ route: Route) {

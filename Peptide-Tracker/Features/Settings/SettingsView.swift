@@ -1,17 +1,16 @@
 import SwiftUI
 
-/// The Settings tab, in the same frame as Today and Medicines: the pinned
-/// panel up top, the user's profile, then iOS Settings–style rows that each open their own page
-/// (Reminders, Doses, Pharmacy, Tracking for, About). Each row shows what's
-/// set now, so most visits never need to open one.
+/// The Settings tab, organised like iOS Settings: the profile, today's
+/// check-in and Pro up top, then five sections — Reminders & doses, Health,
+/// Care team, Reports & data, Appearance — each opening a page of its
+/// options, then Help and About. Rows show what's set now.
 struct SettingsView: View {
     @Environment(MedicineStore.self) private var store
     @Environment(PurchaseStore.self) private var purchases
     @Environment(AppRouter.self) private var router
-    @AppStorage(DoseLayout.storageKey) private var doseLayout: DoseLayout = .list
-    @State private var confirmsErase = false
-    /// Bumped after erasing, so the profile reloads its (now gone) photo.
-    @State private var profileVersion = 0
+    /// Bumped after erasing (Reports & data), so the profile reloads its
+    /// (now gone) photo.
+    @AppStorage("settings.profileVersion") private var profileVersion = 0
 
     var body: some View {
         ScrollView {
@@ -22,24 +21,11 @@ struct SettingsView: View {
                 proCard
 
                 GroupedSection {
-                    SettingsLinkRow(page: .reminders, value: remindersValue)
-                    SettingsLinkRow(page: .notifications, value: store.settings.showsMedicineName ? nil : "Names hidden")
-                    SettingsLinkRow(page: .doses, value: dosesValue)
-                    SettingsLinkRow(page: .pharmacy, value: pharmacyValue)
-                    SettingsLinkRow(page: .contacts, value: store.contacts.isEmpty ? "Add" : "\(store.contacts.count)")
-                    SettingsLinkRow(page: .tracking, value: trackingValue, showsDivider: false)
-                }
-
-                GroupedSection(footer: "PDFs of your medicines and how you’re doing, handy for doctor visits.") {
-                    SettingsLinkRow(page: .report, value: reportValue)
-                    ShareLink(
-                        item: MedicineListPDF(medicines: store.medicinesByUrgency, pharmacyName: store.settings.pharmacyName, date: .now),
-                        preview: SharePreview("Medicine list", image: Image(systemName: "doc.text"))
-                    ) {
-                        SettingsRowLabel(symbol: "square.and.arrow.up.fill", tint: Color(hex: 0xFF9F0A), title: "Export medicine list", showsChevron: true)
-                    }
-                    .buttonStyle(RowPressStyle())
-                    .disabled(store.medicines.isEmpty)
+                    SettingsLinkRow(page: .remindersGroup, value: store.settings.notificationsEnabled ? nil : "Off")
+                    SettingsLinkRow(page: .health, value: store.latestWeight.map { store.settings.weightUnit.format($0.kilograms) })
+                    SettingsLinkRow(page: .careTeam, value: store.trackingSummary)
+                    SettingsLinkRow(page: .data, value: store.reportSummary)
+                    SettingsLinkRow(page: .appearance, value: AppIconOption.current.title, showsDivider: false)
                 }
 
                 GroupedSection {
@@ -51,13 +37,6 @@ struct SettingsView: View {
                     SettingsLinkRow(page: .about, value: AboutSettingsView.version, showsDivider: false)
                     #endif
                 }
-
-                GroupedSection(footer: "Deletes every medicine, dose, refill, contact and setting on this iPhone. You can’t undo this.") {
-                    Button { confirmsErase = true } label: {
-                        SettingsRowLabel(symbol: "trash.fill", tint: AppTheme.ColorToken.destructive, title: "Delete all data")
-                    }
-                    .buttonStyle(RowPressStyle())
-                }
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
             .padding(.top, 20)
@@ -67,15 +46,6 @@ struct SettingsView: View {
         // Pinned, as on the other tabs: the title stays while rows scroll under.
         .safeAreaInset(edge: .top, spacing: 0) {
             TopPanel(title: "Settings") { shareButton } controls: { EmptyView() }
-        }
-        .confirmationDialog("Delete all your data?", isPresented: $confirmsErase, titleVisibility: .visible) {
-            Button("Delete all data", role: .destructive) {
-                store.eraseEverything()
-                profileVersion += 1
-                router.showToast("All data deleted")
-            }
-        } message: {
-            Text("Every medicine, dose, refill, contact and setting is removed from this iPhone. You can’t undo this.")
         }
     }
 
@@ -138,36 +108,6 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: Row values
-
-    /// "9:00 · 5d before", or "Off".
-    private var remindersValue: String {
-        let settings = store.settings
-        guard settings.notificationsEnabled else { return "Off" }
-        return "\(settings.defaultReminderTime.label) · \(settings.defaultDaysBefore)d before"
-    }
-
-    /// The last 30 days' rate ("92%"), once anything was due.
-    private var reportValue: String? {
-        AdherenceReport(store: store, period: .month).rate?.percentLabel
-    }
-
-    /// "List", "Timeline", or "Off".
-    private var dosesValue: String {
-        store.settings.tracksDoses ? doseLayout.title : "Off"
-    }
-
-    private var pharmacyValue: String {
-        let name = store.settings.pharmacyName.trimmingCharacters(in: .whitespaces)
-        return name.isEmpty ? "Add" : name
-    }
-
-    /// "Just me", or the person's name.
-    private var trackingValue: String {
-        let name = store.settings.personName.trimmingCharacters(in: .whitespaces)
-        if store.settings.trackingFor != .me, !name.isEmpty { return name }
-        return store.settings.trackingFor == .me ? "Just me" : "Someone else"
-    }
 }
 
 #Preview {

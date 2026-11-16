@@ -13,17 +13,27 @@ struct SettingUpStep: View {
     @Environment(AppRouter.self) private var router
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var progress: Double = 0
+    /// Rows slide in one after another when the screen appears.
+    @State private var shownRows = 0
+
+    private struct Item {
+        let title: String
+        let status: String
+        let symbol: String
+        let tint: Color
+    }
 
     /// Each item ticks once `progress` passes its threshold; the status line
     /// shows the first unticked one.
-    private var items: [(title: String, status: String)] {
+    private var items: [Item] {
         [
-            ("Who you’re tracking for", "Setting up \(trackingName)…"),
-            ("Refill heads-up", "Timing reminders \(answers.leadTime.daysBefore) days ahead…"),
-            (answers.tracksDoses ? "Dose reminders" : "Supply countdown",
-             answers.tracksDoses ? "Turning on dose reminders…" : "Starting your supply countdown…"),
-            ("Reminder time", "Scheduling reminders for \(answers.reminderTime.label)…"),
-            ("Pharmacy", pharmacyStatus),
+            Item(title: "Who you’re tracking for", status: "Setting up \(trackingName)…", symbol: "person.fill", tint: Color(hex: 0x0A84FF)),
+            Item(title: "Refill heads-up", status: "Timing reminders \(answers.leadTime.daysBefore) days ahead…", symbol: "bell.fill", tint: Color(hex: 0xFF453A)),
+            answers.tracksDoses
+                ? Item(title: "Dose reminders", status: "Turning on dose reminders…", symbol: "pills.fill", tint: AppTheme.ColorToken.accent)
+                : Item(title: "Supply countdown", status: "Starting your supply countdown…", symbol: "hourglass", tint: AppTheme.ColorToken.accent),
+            Item(title: "Reminder time", status: "Scheduling reminders for \(answers.reminderTime.label)…", symbol: "clock.fill", tint: Color(hex: 0x30B0C7)),
+            Item(title: "Pharmacy", status: pharmacyStatus, symbol: "cross.case.fill", tint: Color(hex: 0xFF9F0A)),
         ]
     }
 
@@ -110,16 +120,34 @@ struct SettingUpStep: View {
 
             ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                 let isDone = progress >= threshold(for: index)
-                HStack {
-                    Text("•  \(item.title)")
+                let isCurrent = !isDone && (index == 0 || progress >= threshold(for: index - 1))
+                HStack(spacing: 12) {
+                    // Coloured tile, white icon — greyed until its step is done.
+                    SettingsTile(symbol: item.symbol, tint: item.tint)
+                        .saturation(isDone ? 1 : 0)
+                        .opacity(isDone ? 1 : 0.45)
+                        .scaleEffect(isDone ? 1 : 0.9)
+                        .symbolEffect(.bounce, value: isDone)
+                    Text(item.title)
                         .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(isDone || isCurrent ? AppTheme.ColorToken.primaryText : AppTheme.ColorToken.secondaryText)
                     Spacer(minLength: 0)
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(AppTheme.ColorToken.accent)
-                        .scaleEffect(isDone ? 1 : 0.3)
-                        .opacity(isDone ? 1 : 0)
+                    ZStack {
+                        if isCurrent {
+                            ProgressView()
+                                .controlSize(.small)
+                                .transition(.opacity)
+                        }
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(AppTheme.ColorToken.accent)
+                            .scaleEffect(isDone ? 1 : 0.3)
+                            .opacity(isDone ? 1 : 0)
+                    }
+                    .frame(width: 22, height: 22)
                 }
+                .opacity(index < shownRows ? 1 : 0)
+                .offset(y: index < shownRows ? 0 : 10)
             }
         }
         .padding(16)
@@ -130,6 +158,10 @@ struct SettingUpStep: View {
     /// About 4 seconds end to end (quicker with Reduce Motion), with a tick
     /// of haptic feedback as each checklist item completes.
     private func run() async {
+        for row in 1...items.count {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { shownRows = row }
+            if !reduceMotion { try? await Task.sleep(for: .milliseconds(70)) }
+        }
         let steps = 50
         let stepDuration: Duration = reduceMotion ? .milliseconds(30) : .milliseconds(80)
         for step in 1...steps {

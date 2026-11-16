@@ -76,7 +76,6 @@ POPULAR = {
     "Creatine Monohydrate", "Whey Protein", "Collagen Peptides", "Ashwagandha", "Magnesium Glycinate",
     "Vitamin D3", "Vitamin C", "Vitamin B12 (Cyanocobalamin)", "Omega-3 Fish Oil", "Multivitamin",
     "Zinc", "Iron (Ferrous Sulfate)", "Folic Acid", "Melatonin", "Probiotic", "Coenzyme Q10",
-    "BPC-157", "TB-500", "Ipamorelin", "CJC-1295 / Ipamorelin", "NAD+", "GHK-Cu", "Retatrutide",
     "Semaglutide", "Tirzepatide", "Liraglutide", "Metformin", "Insulin Glargine",
     "Testosterone Cypionate", "Levothyroxine", "Finasteride", "Minoxidil Topical", "Tadalafil", "Sildenafil",
     "Atorvastatin", "Rosuvastatin", "Simvastatin", "Lisinopril", "Losartan", "Amlodipine",
@@ -107,7 +106,7 @@ def default_serving(name, type_, category):
     if type_ == "drops":
         if "Ear" in name:
             return "3 drops", 3
-        if "Nasal" in name or "Spray" in name or category in ("Peptides", "Respiratory & allergy"):
+        if "Nasal" in name or "Spray" in name or category in ("Hormone & fertility injections", "Respiratory & allergy"):
             return "1 spray", 1
         if category == "Eyes & ears":
             return "1 drop", 1

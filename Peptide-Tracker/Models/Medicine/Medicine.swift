@@ -33,6 +33,11 @@ struct Medicine: Identifiable, Codable, Hashable {
     var instructions = ""
     /// The user's own word for the type, when it's `.other` ("Patch").
     var customTypeName = ""
+    /// Which days it's taken on; daily unless the user picked otherwise.
+    var frequency: DoseFrequency = .daily
+    /// The day weekly, every-few-days and cycle schedules count from.
+    /// `nil` counts from the day it was added.
+    var scheduleStart: Date?
     /// Units ticked off today. Not saved — the store derives it from the
     /// dose logs — but kept here so days left stays put while today's doses
     /// are taken, instead of dropping a day every evening.
@@ -42,6 +47,7 @@ struct Medicine: Identifiable, Codable, Hashable {
         case id, name, strength, type, color, stock, capacity, perDay, intakeTimes
         case reminderDaysBefore, reminderTime, remindersPaused, orderedAt, createdAt
         case brandName, reason, instructions, customTypeName
+        case frequency, scheduleStart
     }
 
     var unit: MedicineUnit { type.unit }
@@ -55,8 +61,20 @@ struct Medicine: Identifiable, Codable, Hashable {
     var unitsPerIntake: Int { max(1, perDay / max(intakeTimes.count, 1)) }
 
     /// Days covered counting from the start of today: the stock this morning
-    /// divided by the daily amount.
-    var daysLeft: Int { perDay > 0 ? (stock + unitsTakenToday) / perDay : 0 }
+    /// divided by the average daily use (a weekly dose spreads over 7 days).
+    var daysLeft: Int {
+        guard perDay > 0 else { return 0 }
+        let perCalendarDay = Double(perDay) * frequency.doseDayFraction
+        return Int(Double(stock + unitsTakenToday) / perCalendarDay)
+    }
+
+    /// Whether `day` has doses on this medicine's schedule.
+    func isScheduled(on day: Date) -> Bool {
+        frequency.isDoseDay(day, start: scheduleStart ?? createdAt)
+    }
+
+    /// "a day", or "each dose day" for weekly and custom schedules.
+    private var perDayPhrase: String { frequency.isDaily ? "a day" : "each dose day" }
 
     /// Out when there isn't enough left for the next dose.
     var urgency: Urgency { Urgency(daysLeft: daysLeft, isOut: stock < unitsPerIntake) }
@@ -84,17 +102,19 @@ struct Medicine: Identifiable, Codable, Hashable {
 
     /// "500 mg · 2 a day"
     var cardSubtitle: String {
-        [strength, "\(perDay) a day"].filter { !$0.isEmpty }.joined(separator: " · ")
+        let amount = frequency.isDaily ? "\(perDay) a day" : "\(perDay) · \(frequency.title)"
+        return [strength, amount].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     /// "500 mg · 2 pills a day"
     var detailSubtitle: String {
-        [strength, "\(unit.format(perDay)) a day"].filter { !$0.isEmpty }.joined(separator: " · ")
+        [strength, "\(unit.format(perDay)) \(perDayPhrase)"].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     /// "Twice daily"
     var scheduleTitle: String {
-        switch intakeTimes.count {
+        if !frequency.isDaily { return frequency.title }
+        return switch intakeTimes.count {
         case 0, 1: "Once daily"
         case 2: "Twice daily"
         default: "\(intakeTimes.count) times daily"
@@ -142,6 +162,8 @@ extension Medicine {
         reason = try c.decodeIfPresent(String.self, forKey: .reason) ?? ""
         instructions = try c.decodeIfPresent(String.self, forKey: .instructions) ?? ""
         customTypeName = try c.decodeIfPresent(String.self, forKey: .customTypeName) ?? ""
+        frequency = try c.decodeIfPresent(DoseFrequency.self, forKey: .frequency) ?? .daily
+        scheduleStart = try c.decodeIfPresent(Date.self, forKey: .scheduleStart)
     }
 }
 

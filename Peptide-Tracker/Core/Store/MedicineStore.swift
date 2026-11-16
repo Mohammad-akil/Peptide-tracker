@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import WidgetKit
 
 /// App-scoped store for medicines, dose logs and refills — created once at
 /// the app root and read from the environment by every tab, the same shape
@@ -15,11 +16,18 @@ final class MedicineStore {
     private(set) var contacts: [HealthContact]
     /// One per day the user checked in, oldest first.
     private(set) var checkIns: [DailyCheckIn]
+    /// Weigh-ins, oldest first, one per day.
+    private(set) var weights: [WeightEntry]
+    /// Saved calculator answers, oldest first.
+    private(set) var calculatorResults: [CalculatorResult]
     var settings: AppSettings {
         didSet { didChange() }
     }
 
     private var lastCountdownDay: Date?
+    /// The last snapshot written, to tell which data changed on each save
+    /// and invalidate only the queries that depend on it.
+    @ObservationIgnored private var lastSaved: MedicineSnapshot?
     private let repository: MedicineRepository
     let scheduler: ReminderScheduler
 
@@ -32,8 +40,11 @@ final class MedicineStore {
         refills = snapshot.refills
         contacts = snapshot.contacts
         checkIns = snapshot.checkIns
+        weights = snapshot.weights.sorted { $0.day < $1.day }
+        calculatorResults = snapshot.calculatorResults.sorted { $0.day < $1.day }
         settings = snapshot.settings
         lastCountdownDay = snapshot.lastCountdownDay
+        lastSaved = snapshot
         refreshTodayUsage()
     }
 
@@ -135,7 +146,7 @@ final class MedicineStore {
             uniquingKeysWith: { first, _ in first }
         )
         return medicines
-            .filter { $0.createdAt.startOfDay <= day }
+            .filter { $0.createdAt.startOfDay <= day && $0.isScheduled(on: day) }
             .flatMap { medicine in
                 medicine.intakeTimes.compactMap { time -> ScheduledDose? in
                     let log = logs["\(medicine.id)-\(time.minutesSinceMidnight)"]
@@ -323,6 +334,56 @@ final class MedicineStore {
         return streak
     }
 
+    // MARK: - Weight
+
+    var latestWeight: WeightEntry? { weights.last }
+
+    func weight(on day: Date) -> WeightEntry? {
+        weights.last { $0.day == day.startOfDay }
+    }
+
+    /// Saves a weigh-in for `day`, replacing that day's earlier one.
+    func logWeight(kilograms: Double, on day: Date = .now) {
+        let day = day.startOfDay
+        if let index = weights.firstIndex(where: { $0.day == day }) {
+            weights[index].kilograms = kilograms
+        } else {
+            weights.append(WeightEntry(day: day, kilograms: kilograms))
+            weights.sort { $0.day < $1.day }
+        }
+        persist()
+    }
+
+    func deleteWeight(id: UUID) {
+        weights.removeAll { $0.id == id }
+        persist()
+    }
+
+    // MARK: - Calculator history
+
+    func calculatorResults(for kind: HealthCalculator) -> [CalculatorResult] {
+        calculatorResults.filter { $0.kind == kind }
+    }
+
+    /// Keeps a calculator answer for today, replacing today's earlier one.
+    func saveCalculatorResult(_ result: CalculatorResult) {
+        var result = result
+        result.day = result.day.startOfDay
+        if let index = calculatorResults.firstIndex(where: { $0.kind == result.kind && $0.day == result.day }) {
+            result.id = calculatorResults[index].id
+            calculatorResults[index] = result
+        } else {
+            calculatorResults.append(result)
+            calculatorResults.sort { $0.day < $1.day }
+        }
+        persist()
+    }
+
+    func deleteCalculatorResult(id: UUID) {
+        calculatorResults.removeAll { $0.id == id }
+        persist()
+    }
+
     // MARK: - Data management
 
     func loadSampleData(now: Date = .now) {
@@ -348,8 +409,34 @@ final class MedicineStore {
         refills = []
         contacts = []
         checkIns = []
+        weights = []
+        calculatorResults = []
         lastCountdownDay = nil
         didChange()
+    }
+
+    /// "Taken" on a dose reminder: ticks that dose if it isn't already.
+    func markTaken(medicineID: UUID, day: Date, minutes: Int) {
+        guard let dose = doses(on: day).first(where: {
+            $0.medicine.id == medicineID && $0.time.minutesSinceMidnight == minutes
+        }), !dose.isTaken else { return }
+        toggle(dose)
+    }
+
+    // MARK: - Shared with widgets
+
+    /// Picks up doses and moods logged from a widget while the app was in
+    /// the background. Runs whenever the app comes to the foreground.
+    func reloadFromDisk() {
+        let snapshot = repository.load()
+        guard snapshot.doseLogs != doseLogs || snapshot.checkIns != checkIns || snapshot.medicines.map(\.stock) != medicines.map(\.stock) else { return }
+        medicines = snapshot.medicines
+        doseLogs = snapshot.doseLogs
+        checkIns = snapshot.checkIns
+        lastSaved = snapshot
+        refreshTodayUsage()
+        rescheduleReminders()
+        QueryClient.shared.invalidate([.medicines, .doses, .moods])
     }
 
     // MARK: - Plumbing
@@ -379,15 +466,36 @@ final class MedicineStore {
     }
 
     private func persist() {
-        repository.save(MedicineSnapshot(
+        let snapshot = MedicineSnapshot(
             medicines: medicines,
             doseLogs: doseLogs,
             refills: refills,
             settings: settings,
             lastCountdownDay: lastCountdownDay,
             contacts: contacts,
-            checkIns: checkIns
-        ))
+            checkIns: checkIns,
+            weights: weights,
+            calculatorResults: calculatorResults
+        )
+        QueryClient.shared.invalidate(changedTags(from: lastSaved, to: snapshot))
+        lastSaved = snapshot
+        repository.save(snapshot)
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    /// Which kinds of data differ between two saves.
+    private func changedTags(from old: MedicineSnapshot?, to new: MedicineSnapshot) -> Set<QueryTag> {
+        guard let old else { return Set(QueryTag.allCases) }
+        var tags = Set<QueryTag>()
+        if old.medicines != new.medicines { tags.insert(.medicines) }
+        if old.doseLogs != new.doseLogs { tags.insert(.doses) }
+        if old.refills != new.refills { tags.insert(.refills) }
+        if old.settings != new.settings { tags.insert(.settings) }
+        if old.contacts != new.contacts { tags.insert(.contacts) }
+        if old.checkIns != new.checkIns { tags.insert(.moods) }
+        if old.weights != new.weights { tags.insert(.weights) }
+        if old.calculatorResults != new.calculatorResults { tags.insert(.calculators) }
+        return tags
     }
 
     private var rescheduleTask: Task<Void, Never>?
@@ -396,7 +504,15 @@ final class MedicineStore {
     /// the usual short wait.
     func refreshReminders() async {
         rescheduleTask?.cancel()
-        await scheduler.reschedule(medicines: medicines, settings: settings)
+        await scheduler.reschedule(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs)
+    }
+
+    /// Doses already ticked off from today on, so they get no reminder.
+    var takenDoseIDs: Set<String> {
+        let today = Date.now.startOfDay
+        return Set(doseLogs.filter { $0.isTaken && $0.day >= today }.map {
+            "\($0.medicineID)-\($0.day.timeIntervalSince1970)-\($0.time.minutesSinceMidnight)"
+        })
     }
 
     /// Coalesces bursts of changes (e.g. "Take all 3") into one re-plan.
@@ -404,10 +520,11 @@ final class MedicineStore {
         rescheduleTask?.cancel()
         let medicines = medicines
         let settings = settings
+        let takenDoseIDs = takenDoseIDs
         rescheduleTask = Task {
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
-            await scheduler.reschedule(medicines: medicines, settings: settings)
+            await scheduler.reschedule(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs)
         }
     }
 }

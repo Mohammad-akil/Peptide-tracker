@@ -17,6 +17,13 @@ struct TodayView: View {
     @State private var viewportHeight: CGFloat = 0
     /// The day whose doses show; today unless another is picked.
     @State private var selectedDay = Date.now.startOfDay
+    /// The calendar (full screen) and mood (sheet) zoom out of their header
+    /// buttons; one namespace serves both.
+    @State private var showsCalendar = false
+    /// The mood sheet zooms out of the mood button the same way.
+    @State private var showsMood = false
+    @State private var showsShare = false
+    @Namespace private var calendarZoom
     /// Which way the last day change went, so the doses slide that way.
     @State private var dayMovesForward = true
 
@@ -36,6 +43,7 @@ struct TodayView: View {
                         alerts(now: now)
                         if store.settings.tracksDoses {
                             dayDoses(now: now)
+                            dayDoneCard(now: now)
                         } else {
                             CompactNote(symbol: "checklist", tint: AppTheme.ColorToken.accent, title: "Dose tracking is off", action: "Turn on") {
                                 router.selectedTab = .settings
@@ -52,6 +60,9 @@ struct TodayView: View {
             .scrollIndicators(.hidden)
             // Pinned: the week stays put while the doses slide under it.
             .safeAreaInset(edge: .top, spacing: 0) { topPanel(now: now) }
+            // Deep links and notifications ask Today to open something.
+            .onAppear { consume(router.todayRequest) }
+            .onChange(of: router.todayRequest) { _, request in consume(request) }
             .onChange(of: now.startOfDay) { oldDay, newDay in
                 store.runDailyCountdown(now: now)
                 // Still looking at "today" when midnight passes: follow it.
@@ -86,6 +97,8 @@ struct TodayView: View {
                     .glassEffect(.regular.interactive(), in: .capsule)
                     .transition(.scale(scale: 0.6).combined(with: .opacity))
                 }
+                moodButton(now: now)
+                calendarButton
                 RemindersMenu(now: now)
             }
             .animation(.spring(response: 0.35, dampingFraction: 0.75), value: selectedDay == now.startOfDay)
@@ -169,6 +182,46 @@ struct TodayView: View {
         )
     }
 
+    /// Once every one of today's doses is ticked off: a small celebration
+    /// with a way to share the moment.
+    @ViewBuilder
+    private func dayDoneCard(now: Date) -> some View {
+        let doses = store.doses(on: now.startOfDay)
+        if selectedDay == now.startOfDay, !doses.isEmpty, doses.allSatisfy(\.isTaken) {
+            Button {
+                HapticFeedback.impact()
+                showsShare = true
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "party.popper.fill")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(AppTheme.ColorToken.accent, in: .circle)
+                        .symbolEffect(.bounce, value: doses.count)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("All done for today")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(AppTheme.ColorToken.primaryText)
+                        Text("Share your progress")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.accent)
+                }
+                .padding(14)
+                .groupedCard()
+                .contentShape(.rect)
+            }
+            .buttonStyle(.pressable)
+            .transition(.scale(scale: 0.92).combined(with: .opacity))
+            .shareMoments(isPresented: $showsShare, start: .today)
+        }
+    }
+
     private func turnOn() {
         Task {
             switch await store.scheduler.authorizationStatus() {
@@ -181,6 +234,79 @@ struct TodayView: View {
             }
         }
     }
+
+    private func consume(_ request: AppRouter.TodayRequest?) {
+        guard let request else { return }
+        router.todayRequest = nil
+        switch request {
+        case .mood: showsMood = true
+        case .calendar: showsCalendar = true
+        case .day(let day):
+            withAnimation(.snappy) { selectedDay = day.startOfDay }
+        }
+    }
+
+    /// Today's mood: its face once logged, a smiley until then. Opens the
+    /// mood sheet. Styled like the reminders bell.
+    private func moodButton(now: Date) -> some View {
+        Button {
+            HapticFeedback.selection()
+            showsMood = true
+        } label: {
+            Group {
+                if let mood = store.checkIn(on: now)?.mood {
+                    mood.illustration
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 26, height: 26)
+                } else {
+                    Image(systemName: "face.smiling")
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                }
+            }
+            .frame(width: 44, height: 44)
+            .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .matchedTransitionSource(id: Self.moodZoomID, in: calendarZoom)
+        .accessibilityLabel(store.checkIn(on: now).map { "Mood: \($0.mood.title)" } ?? "Log your mood")
+        .sheet(isPresented: $showsMood) {
+            MoodSheet()
+                .presentationDetents([.large])
+                .navigationTransition(.zoom(sourceID: Self.moodZoomID, in: calendarZoom))
+        }
+    }
+
+    private static let moodZoomID = "mood"
+
+    /// Opens the dose calendar full screen, zooming out of this button
+    /// (and back into it on close or swipe down). Styled like the bell.
+    private var calendarButton: some View {
+        Button {
+            HapticFeedback.selection()
+            showsCalendar = true
+        } label: {
+            Image(systemName: "calendar")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(AppTheme.ColorToken.primaryText)
+                .frame(width: 44, height: 44)
+                .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .matchedTransitionSource(id: Self.calendarZoomID, in: calendarZoom)
+        .accessibilityLabel("Calendar")
+        .fullScreenCover(isPresented: $showsCalendar) {
+            CalendarView()
+                .background(AppTheme.ColorToken.background.ignoresSafeArea())
+                .navigationTransition(.zoom(sourceID: Self.calendarZoomID, in: calendarZoom))
+        }
+    }
+
+    private static let calendarZoomID = "calendar"
+
 }
 
 // MARK: - Rows
@@ -265,22 +391,14 @@ private struct CompactNote: View {
 /// the menu lists the reminders coming up.
 private struct RemindersMenu: View {
     @Environment(MedicineStore.self) private var store
-    @Environment(AppRouter.self) private var router
     let now: Date
 
+    @State private var isOpen = false
+
     var body: some View {
-        Menu {
-            let medicines = store.medicinesByUrgency.filter { !$0.remindersPaused }
-            if medicines.isEmpty {
-                Text("No reminders yet")
-            }
-            ForEach(medicines) { medicine in
-                Button {
-                    router.push(.medicine(medicine.id))
-                } label: {
-                    Label(reminderLabel(medicine), systemImage: medicine.isOrdered ? "shippingbox" : medicine.urgency <= .critical ? "exclamationmark.circle" : "bell")
-                }
-            }
+        Button {
+            HapticFeedback.selection()
+            isOpen = true
         } label: {
             Icon(.bell, size: 20)
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
@@ -294,15 +412,139 @@ private struct RemindersMenu: View {
                             .offset(x: -9, y: 9)
                     }
                 }
+                .contentShape(.circle)
         }
+        .buttonStyle(.plain)
         .glassEffect(.regular.interactive(), in: .circle)
         .accessibilityLabel("Reminders")
+        .popover(isPresented: $isOpen, arrowEdge: .top) {
+            RemindersList(now: now) { isOpen = false }
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+}
+
+/// What kind of reminder a medicine has, each with its own colour, so the
+/// list reads at a glance: run out and running out in red, low in amber,
+/// ordered in blue, the rest in the app's purple.
+private enum ReminderKind {
+    case out, critical, low, ordered, scheduled
+
+    init(_ medicine: Medicine) {
+        if medicine.isOrdered { self = .ordered; return }
+        switch medicine.urgency {
+        case .out: self = .out
+        case .critical: self = .critical
+        case .low: self = .low
+        case .healthy: self = .scheduled
+        }
     }
 
-    private func reminderLabel(_ medicine: Medicine) -> String {
-        if medicine.isOrdered { return "\(medicine.name) · ordered" }
+    var symbol: String {
+        switch self {
+        case .out: "exclamationmark.triangle.fill"
+        case .critical: "exclamationmark.circle.fill"
+        case .low: "hourglass"
+        case .ordered: "shippingbox.fill"
+        case .scheduled: "bell.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .out, .critical: Urgency.critical.tint
+        case .low: Color(hex: 0xFF9F0A)
+        case .ordered: Color(hex: 0x0A84FF)
+        case .scheduled: AppTheme.ColorToken.accent
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .out: "Run out"
+        case .critical: "Running out"
+        case .low: "Getting low"
+        case .ordered: "Ordered"
+        case .scheduled: "Reminder set"
+        }
+    }
+}
+
+/// The bell's popover: every refill reminder, most urgent first, each
+/// with a coloured icon for its kind. Tapping one opens the medicine.
+private struct RemindersList: View {
+    @Environment(MedicineStore.self) private var store
+    @Environment(AppRouter.self) private var router
+    let now: Date
+    let close: () -> Void
+
+    var body: some View {
+        let medicines = store.medicinesByUrgency.filter { !$0.remindersPaused }
+
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Reminders")
+                .font(.system(size: 17, weight: .bold))
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
+
+            if medicines.isEmpty {
+                Text("No reminders yet")
+                    .font(.system(size: 15))
+                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            } else {
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(Array(medicines.enumerated()), id: \.element.id) { index, medicine in
+                            row(medicine, showsDivider: index < medicines.count - 1)
+                        }
+                    }
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .frame(maxHeight: 380)
+            }
+        }
+        .frame(width: 330)
+    }
+
+    private func row(_ medicine: Medicine, showsDivider: Bool) -> some View {
+        let kind = ReminderKind(medicine)
+        return Button {
+            close()
+            router.push(.medicine(medicine.id))
+        } label: {
+            HStack(spacing: 12) {
+                SettingsTile(symbol: kind.symbol, tint: kind.tint)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(medicine.name)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(AppTheme.ColorToken.primaryText)
+                        .lineLimit(1)
+                    Text(detail(medicine, kind: kind))
+                        .font(.system(size: 13))
+                        .foregroundStyle(kind == .scheduled ? AppTheme.ColorToken.secondaryText : kind.tint)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                Chevron()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .contentShape(.rect)
+            .rowDivider(showsDivider, inset: 58)
+        }
+        .buttonStyle(RowPressStyle())
+        .accessibilityLabel("\(medicine.name), \(detail(medicine, kind: kind))")
+    }
+
+    /// "Running out · reminder sent 12 Nov", "Ordered · waiting for pickup"
+    private func detail(_ medicine: Medicine, kind: ReminderKind) -> String {
+        if kind == .ordered { return "Ordered · waiting to be picked up" }
+        if kind == .out { return "Run out · refill now" }
         let date = medicine.reminderDate(now: now)
-        return "\(medicine.name) · \(date <= now ? "sent" : "on") \(date.dayMonth)"
+        return "\(kind.title) · reminder \(date <= now ? "sent" : "on") \(date.dayMonth)"
     }
 }
 
