@@ -90,8 +90,9 @@ struct SuggestionChips: View {
                         .padding(.horizontal, 16)
                         .frame(height: 38)
                         // Glass capsules, the picked one filled with accent glass.
-                        .glassEffect(
-                            isSelected ? .regular.tint(AppTheme.ColorToken.accent).interactive() : .regular.interactive(),
+                        .compatGlass(
+                            tint: isSelected ? AppTheme.ColorToken.accent : nil,
+                            interactive: true,
                             in: .capsule
                         )
                 }

@@ -232,7 +232,7 @@ struct AppearanceToggleButton: View {
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .compatGlass(interactive: true, in: .circle)
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame = $0 }
         .accessibilityLabel(isDark ? "Switch to Light Mode" : "Switch to Dark Mode")
     }

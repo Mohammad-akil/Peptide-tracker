@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class AppRouter {
-    enum Tab: Hashable, CaseIterable {
+    enum Tab: String, Hashable, CaseIterable {
         case today, medicines, settings
 
         var title: String {

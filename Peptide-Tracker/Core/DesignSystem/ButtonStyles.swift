@@ -44,7 +44,7 @@ struct GlassPrimaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .frame(height: height)
             .contentShape(.capsule)
-            .glassEffect(.regular.tint(tint).interactive(), in: .capsule)
+            .compatGlass(tint: tint, interactive: true, in: .capsule)
     }
 }
 

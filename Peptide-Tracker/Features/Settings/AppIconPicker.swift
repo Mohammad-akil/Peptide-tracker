@@ -99,7 +99,7 @@ struct AppIconPicker: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .close) { dismiss() }
+                    CompatToolbarRoleButton(role: .close) { dismiss() }
                         .tint(AppTheme.ColorToken.primaryText)
                 }
             }

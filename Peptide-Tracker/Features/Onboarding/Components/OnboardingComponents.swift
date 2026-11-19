@@ -18,7 +18,7 @@ struct OnboardingTopBar: View {
                     .contentShape(.circle)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .compatGlass(interactive: true, in: .circle)
             .accessibilityLabel("Back")
 
             HStack(spacing: 5) {

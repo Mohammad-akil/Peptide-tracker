@@ -96,7 +96,7 @@ struct AddMedicineFlow: View {
                     .contentShape(.circle)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .compatGlass(interactive: true, in: .circle)
             .accessibilityLabel("Back")
             .opacity(step == .name ? 0 : 1)
             .disabled(step == .name)
@@ -122,12 +122,7 @@ struct AddMedicineFlow: View {
             }
 
             // The system close button: glass circle, xmark, "Close" for VoiceOver.
-            Button(role: .close) { dismiss() } label: {
-                Image(systemName: "xmark")
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .controlSize(.large)
+            CompatCloseButton { dismiss() }
         }
         .padding(.horizontal, 16)
         .animation(.snappy, value: step.isOptional)
@@ -673,7 +668,7 @@ private struct InputCard<Content: View>: View {
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
             .contentShape(.rect)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .compatGlass(interactive: true, in: .capsule)
     }
 }
 

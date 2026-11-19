@@ -85,7 +85,7 @@ struct CalendarView: View {
                     .contentShape(.circle)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .compatGlass(interactive: true, in: .circle)
             .accessibilityLabel("Share progress")
             .shareMoments(isPresented: $showsShare, start: .month)
             Button { dismiss() } label: {
@@ -96,7 +96,7 @@ struct CalendarView: View {
                     .contentShape(.circle)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .compatGlass(interactive: true, in: .circle)
             .accessibilityLabel("Close")
         } controls: {
             calendarControls

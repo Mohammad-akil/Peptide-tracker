@@ -3,6 +3,10 @@ import SwiftUI
 /// The tab shell: the system tab bar with the four tabs, and "+" for adding
 /// a medicine in the separate round slot beside it. "+" opens Add (or the
 /// paywall) instead of becoming a tab.
+///
+/// On iOS 18–25 the native bar is the old flat one, without Liquid Glass or
+/// the separate "+" circle, so it's hidden and a floating capsule with a
+/// round "+" beside it stands in (`MainTabLayout`, as in Plates).
 struct MainTabView: View {
     @Environment(AppRouter.self) private var router
     @Environment(MedicineStore.self) private var store
@@ -15,6 +19,18 @@ struct MainTabView: View {
     }
 
     var body: some View {
+        if MainTabLayout.usesCustomTabBar {
+            tabView
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    LegacyTabBar(selection: tabSelection, onAdd: requestAdd)
+                }
+                .ignoresSafeArea(.keyboard, edges: .bottom)
+        } else {
+            tabView
+        }
+    }
+
+    private var tabView: some View {
         TabView(selection: selection) {
             ForEach(AppRouter.Tab.allCases, id: \.self) { tab in
                 Tab(value: Item.tab(tab)) {
@@ -24,6 +40,7 @@ struct MainTabView: View {
                         // stand out from the page (the system default is white).
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(AppTheme.ColorToken.background.ignoresSafeArea())
+                        .toolbar(MainTabLayout.usesCustomTabBar ? .hidden : .automatic, for: .tabBar)
                 } label: {
                     Label {
                         Text(tab.title)
@@ -34,13 +51,16 @@ struct MainTabView: View {
             }
 
             // The search role puts "+" in its own circle, apart from the tabs.
-            Tab(value: Item.add, role: .search) {
-                Color.clear
-            } label: {
-                Label {
-                    Text("Add medicine")
-                } icon: {
-                    Image("icon-plus")
+            // The floating bar before iOS 26 has its own "+".
+            if !MainTabLayout.usesCustomTabBar {
+                Tab(value: Item.add, role: .search) {
+                    Color.clear
+                } label: {
+                    Label {
+                        Text("Add medicine")
+                    } icon: {
+                        Image("icon-plus")
+                    }
                 }
             }
         }
@@ -59,10 +79,24 @@ struct MainTabView: View {
                 HapticFeedback.selection()
                 router.selectedTab = tab
             case .add:
-                HapticFeedback.impact(.medium)
-                router.requestAddMedicine(count: store.medicines.count, purchases: purchases)
+                requestAdd()
             }
         }
+    }
+
+    /// The selected tab for the floating bar.
+    private var tabSelection: Binding<AppRouter.Tab> {
+        Binding {
+            router.selectedTab
+        } set: { tab in
+            guard tab != router.selectedTab else { return }
+            router.selectedTab = tab
+        }
+    }
+
+    private func requestAdd() {
+        HapticFeedback.impact(.medium)
+        router.requestAddMedicine(count: store.medicines.count, purchases: purchases)
     }
 
     @ViewBuilder

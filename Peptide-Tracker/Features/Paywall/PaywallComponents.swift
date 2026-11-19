@@ -497,7 +497,7 @@ struct PaywallBackButton: View {
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
                 .frame(width: 44, height: 44)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatGlass(interactive: true, in: .circle)
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)

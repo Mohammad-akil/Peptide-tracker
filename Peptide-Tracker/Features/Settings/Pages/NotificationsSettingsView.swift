@@ -184,7 +184,7 @@ private struct ReminderBannerPreview: View {
             }
         }
         .padding(14)
-        .glassEffect(.regular, in: .rect(cornerRadius: 22, style: .continuous))
+        .compatGlass(in: .rect(cornerRadius: 22, style: .continuous))
         .contentTransition(.opacity)
         .animation(.snappy, value: title + message)
         .accessibilityElement(children: .combine)

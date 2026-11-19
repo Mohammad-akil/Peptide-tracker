@@ -89,8 +89,15 @@ final class ReminderScheduler {
     // MARK: Scheduling
 
     /// `takenDoseIDs` (`ScheduledDose.id`s) are already ticked off, so they
-    /// get no dose-time reminder.
-    func reschedule(medicines: [Medicine], settings: AppSettings, takenDoseIDs: Set<String> = [], now: Date = .now) async {
+    /// get no dose-time reminder. `siteLastUsed` lets injection reminders
+    /// name the site to use next.
+    func reschedule(
+        medicines: [Medicine],
+        settings: AppSettings,
+        takenDoseIDs: Set<String> = [],
+        siteLastUsed: [InjectionSite: Date] = [:],
+        now: Date = .now
+    ) async {
         registerCategories(snooze: settings.snooze)
         let pending = await center.pendingNotificationRequests()
         // Older builds also scheduled daily dose check-ins under "dose.".
@@ -116,7 +123,7 @@ final class ReminderScheduler {
         }
 
         if settings.doseReminders {
-            for request in doseRequests(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs, now: now) {
+            for request in doseRequests(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs, siteLastUsed: siteLastUsed, now: now) {
                 try? await center.add(request)
             }
         }
@@ -195,8 +202,15 @@ final class ReminderScheduler {
     private static let maxDoseReminders = 40
 
     /// One notification per upcoming dose on each medicine's dose days,
-    /// soonest first.
-    private func doseRequests(medicines: [Medicine], settings: AppSettings, takenDoseIDs: Set<String>, now: Date) -> [UNNotificationRequest] {
+    /// soonest first. Injections name the site to use, following the
+    /// rotation forward from one injection to the next.
+    private func doseRequests(
+        medicines: [Medicine],
+        settings: AppSettings,
+        takenDoseIDs: Set<String>,
+        siteLastUsed: [InjectionSite: Date],
+        now: Date
+    ) -> [UNNotificationRequest] {
         var doses: [(date: Date, medicine: Medicine, id: String)] = []
         for offset in 0..<Self.doseDaysAhead {
             let day = now.startOfDay.adding(days: offset)
@@ -210,14 +224,22 @@ final class ReminderScheduler {
                 }
             }
         }
-        return doses
+        let upcoming = doses
             .sorted { $0.date < $1.date }
             .prefix(Self.maxDoseReminders)
+        let injectionCount = upcoming.filter { $0.medicine.type == .injection }.count
+        var sites = InjectionSite.upcoming(injectionCount, lastUsed: siteLastUsed, skipping: settings.skippedSiteAreas)
+            .makeIterator()
+        return upcoming
             .map { dose in
                 let content = UNMutableNotificationContent()
                 content.title = "Time for \(settings.notificationName(for: dose.medicine))"
                 let amount = dose.medicine.unit.format(dose.medicine.unitsPerIntake)
-                content.body = "\(amount) · Tap to tick it off."
+                if dose.medicine.type == .injection, settings.tracksDoses, let site = sites.next() {
+                    content.body = "\(amount) · Next site: \(site.title.lowercased()). Tap to log it."
+                } else {
+                    content.body = "\(amount) · Tap to tick it off."
+                }
                 content.sound = .default
                 content.threadIdentifier = dose.medicine.id.uuidString
                 content.categoryIdentifier = Category.dose

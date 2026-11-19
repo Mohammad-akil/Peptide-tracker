@@ -63,7 +63,7 @@ struct SettingsView: View {
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
                 .frame(width: 44, height: 44)
         }
-        .glassEffect(.regular.interactive(), in: .circle)
+        .compatGlass(interactive: true, in: .circle)
         .accessibilityLabel("Share \(Bundle.main.appName)")
     }
 

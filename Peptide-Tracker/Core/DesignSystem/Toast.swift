@@ -109,7 +109,7 @@ struct ToastView: View {
         // Untinted, so the icon alone carries the colour.
         .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 23, style: .continuous))
         .padding(3)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26, style: .continuous))
+        .compatGlass(in: .rect(cornerRadius: 26, style: .continuous))
         .shadow(color: Color(hex: 0x28185A, opacity: 0.12), radius: 18, y: 10)
         .animation(.spring(response: 0.4, dampingFraction: 0.75), value: toast)
         .accessibilityElement(children: .combine)

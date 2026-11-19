@@ -50,7 +50,7 @@ struct FeatureTourView: View {
                         .foregroundStyle(AppTheme.ColorToken.primaryText)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .glassEffect(.regular, in: .capsule)
+                        .compatGlass(in: .capsule)
                         .padding(.trailing, 20)
                         .opacity(isLastPage ? 0 : 1)
                 }

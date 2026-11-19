@@ -28,12 +28,7 @@ struct InjectionSiteSheet: View {
                 }
                 Spacer()
                 // The system close button: glass circle, xmark, "Close" for VoiceOver.
-                Button(role: .close) { dismiss() } label: {
-                    Image(systemName: "xmark")
-                }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-                .controlSize(.large)
+                CompatCloseButton { dismiss() }
             }
             .padding(.top, 24)
             .padding(.bottom, 16)
@@ -83,8 +78,12 @@ struct InjectionSiteSheet: View {
                 Label("Used \(lastUsed.relativeDay(now: now)). Try another site to let it rest.", systemImage: "exclamationmark.circle.fill")
                     .foregroundStyle(Urgency.low.ink)
             } else if site == suggested {
-                Label("Suggested next in your rotation", systemImage: "arrow.triangle.2.circlepath")
-                    .foregroundStyle(AppTheme.ColorToken.accentInk)
+                Label(
+                    lastUsed.map { "Suggested next · last used \($0.relativeDay(now: now))" }
+                        ?? "Suggested next · not used yet",
+                    systemImage: "arrow.triangle.2.circlepath"
+                )
+                .foregroundStyle(AppTheme.ColorToken.accentInk)
             } else if let lastUsed {
                 Label("Last used \(lastUsed.relativeDay(now: now))", systemImage: "clock")
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)

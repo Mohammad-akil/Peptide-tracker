@@ -364,11 +364,11 @@ struct WeightLogSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .cancel) { dismiss() }
+                    CompatToolbarRoleButton(role: .cancel) { dismiss() }
                         .tint(AppTheme.ColorToken.primaryText)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(role: .confirm, action: save)
+                    CompatToolbarRoleButton(role: .confirm, action: save)
                         .tint(AppTheme.ColorToken.accent)
                         .disabled(!isValid)
                         .accessibilityLabel("Save")
@@ -408,7 +408,7 @@ struct WeightSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .close) { dismiss() }
+                    CompatToolbarRoleButton(role: .close) { dismiss() }
                         .tint(AppTheme.ColorToken.primaryText)
                 }
             }

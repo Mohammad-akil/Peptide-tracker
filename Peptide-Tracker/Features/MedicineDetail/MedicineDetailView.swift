@@ -200,7 +200,7 @@ struct MedicineDetailView: View {
     /// ordered. Healthy, run out or already ordered: just Refilled.
     private func bottomBar(_ medicine: Medicine) -> some View {
         let offersOrdered = !medicine.isOrdered && (medicine.urgency == .critical || medicine.urgency == .low)
-        return GlassEffectContainer(spacing: 10) {
+        return AppGlassEffectContainer(spacing: 10) {
             HStack(spacing: 10) {
                 if offersOrdered {
                     Button {
@@ -216,7 +216,7 @@ struct MedicineDetailView: View {
                             .contentShape(.capsule)
                     }
                     .buttonStyle(.plain)
-                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .compatGlass(interactive: true, in: .capsule)
                 }
                 Button { router.sheet = .refill(medicine.id) } label: {
                     Label { Text("Refilled") } icon: { Icon(.up, size: 20) }

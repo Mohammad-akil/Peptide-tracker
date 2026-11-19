@@ -70,7 +70,7 @@ struct NotificationPreview: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .compatGlass(in: .rect(cornerRadius: 24))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Example notification: \(title). Tap to refill.")
     }

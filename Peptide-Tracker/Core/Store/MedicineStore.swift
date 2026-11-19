@@ -192,6 +192,12 @@ final class MedicineStore {
         }
         HapticFeedback.impact()
         didChange()
+
+        // Every dose of today taken: a moment to ask for a rating.
+        if isToday, logIndex(for: dose).map({ doseLogs[$0].isTaken }) == true,
+           doses(on: dose.day).allSatisfy(\.isTaken) {
+            ReviewPrompter.dayCompleted(dose.day)
+        }
     }
 
     /// "Take all 3" on a timeline slot.
@@ -208,18 +214,11 @@ final class MedicineStore {
             .sorted { $0.takenAt! > $1.takenAt! }
     }
 
-    /// Where the next injection should go: the site after the last one in
-    /// the rotation, across every injection medicine, so two pens don't
-    /// share a spot.
+    /// Where the next injection should go, across every injection
+    /// medicine so two pens don't share a spot: the site in an area the
+    /// user injects that has rested longest (`InjectionSite.next`).
     func suggestedSite() -> InjectionSite {
-        let last = doseLogs
-            .filter { $0.site != nil && $0.takenAt != nil }
-            .max { $0.takenAt! < $1.takenAt! }?
-            .site
-        guard let last, let index = InjectionSite.rotation.firstIndex(of: last) else {
-            return InjectionSite.rotation[0]
-        }
-        return InjectionSite.rotation[(index + 1) % InjectionSite.rotation.count]
+        InjectionSite.next(lastUsed: lastUsed(), skipping: settings.skippedSiteAreas)
     }
 
     /// When each site was last used, for fading recent sites on the map.
@@ -504,7 +503,7 @@ final class MedicineStore {
     /// the usual short wait.
     func refreshReminders() async {
         rescheduleTask?.cancel()
-        await scheduler.reschedule(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs)
+        await scheduler.reschedule(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs, siteLastUsed: lastUsed())
     }
 
     /// Doses already ticked off from today on, so they get no reminder.
@@ -521,10 +520,11 @@ final class MedicineStore {
         let medicines = medicines
         let settings = settings
         let takenDoseIDs = takenDoseIDs
+        let siteLastUsed = lastUsed()
         rescheduleTask = Task {
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
-            await scheduler.reschedule(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs)
+            await scheduler.reschedule(medicines: medicines, settings: settings, takenDoseIDs: takenDoseIDs, siteLastUsed: siteLastUsed)
         }
     }
 }

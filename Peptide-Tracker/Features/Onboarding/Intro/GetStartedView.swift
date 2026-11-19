@@ -124,7 +124,7 @@ struct GetStartedView: View {
         .padding(.leading, 10)
         .padding(.trailing, 14)
         .padding(.vertical, 9)
-        .glassEffect(.regular, in: .rect(cornerRadius: 20))
+        .compatGlass(in: .rect(cornerRadius: 20))
         .opacity(showsChip ? 1 : 0)
         .offset(y: showsChip ? 0 : -14)
         .scaleEffect(showsChip ? 1 : 0.9)

@@ -4,7 +4,8 @@ import SwiftUI
 /// Plates (`CustomTabBar`, itself from Formly's `Create` category picker).
 /// Renders `tabItemView` to an image per segment so the control keeps native
 /// touch/selection behavior (and, on iOS 26+, its built-in press bounce)
-/// while looking like any other SwiftUI control.
+/// while looking like any other SwiftUI control. Also drives the floating
+/// tab bar before iOS 26 (`LegacyTabBar`).
 struct CustomTabBar<Tab, TabItemView>: UIViewRepresentable
 where
     Tab: Hashable & CaseIterable & RawRepresentable,
@@ -29,15 +30,31 @@ where
     }
 
     func makeUIView(context: Context) -> UISegmentedControl {
-        let control = UISegmentedControl(items: tabs.map(\.rawValue))
+        let control = CapsuleSegmentedControl(items: tabs.map(\.rawValue))
         control.selectedSegmentIndex = tabs.firstIndex(of: activeTab) ?? 0
 
-        updateSegmentImages(control)
+        let key = renderKey(context.environment.colorScheme)
+        updateSegmentImages(control, colorScheme: key.colorScheme)
+        context.coordinator.renderedKey = key
 
-        DispatchQueue.main.async {
-            for subview in control.subviews {
-                if subview is UIImageView && subview !== control.subviews.last {
-                    subview.alpha = 0
+        if #available(iOS 26, *) {
+            // Hides the control's own background and dividers, keeping only
+            // the selection indicator (the last image view).
+            DispatchQueue.main.async {
+                for subview in control.subviews {
+                    if subview is UIImageView && subview !== control.subviews.last {
+                        subview.alpha = 0
+                    }
+                }
+            }
+        } else {
+            // Before iOS 26 the control lays out its image views differently,
+            // and the trick above also hid the unselected tabs' icons. Remove
+            // only the dividers, through the public API;
+            // `CapsuleSegmentedControl` handles the rest.
+            for left in [UIControl.State.normal, .selected] {
+                for right in [UIControl.State.normal, .selected] {
+                    control.setDividerImage(UIImage(), forLeftSegmentState: left, rightSegmentState: right, barMetrics: .default)
                 }
             }
         }
@@ -63,8 +80,20 @@ where
 
     func updateUIView(_ uiView: UISegmentedControl, context: Context) {
         context.coordinator.parent = self
-        updateSegmentImages(uiView)
-        applyColors(to: uiView)
+
+        // SwiftUI calls this for unrelated reasons too, a pager starting to
+        // scroll is one. Swapping every segment's image each time makes the
+        // control re-lay out its labels, which shows as a jiggle, so they're
+        // only redone when something they depend on changed.
+        let key = renderKey(context.environment.colorScheme)
+        if context.coordinator.renderedKey != key {
+            UIView.performWithoutAnimation {
+                updateSegmentImages(uiView, colorScheme: key.colorScheme)
+                applyColors(to: uiView)
+                uiView.layoutIfNeeded()
+            }
+            context.coordinator.renderedKey = key
+        }
 
         let index = tabs.firstIndex(of: activeTab) ?? 0
         if uiView.selectedSegmentIndex != index {
@@ -91,7 +120,19 @@ where
         size
     }
 
-    private func updateSegmentImages(_ control: UISegmentedControl) {
+    /// What the segment images depend on: the active tab, the size, and
+    /// Light or Dark Mode, since the labels are baked into bitmaps.
+    private func renderKey(_ colorScheme: ColorScheme) -> RenderKey {
+        RenderKey(activeIndex: tabs.firstIndex(of: activeTab) ?? 0, size: size, colorScheme: colorScheme)
+    }
+
+    struct RenderKey: Equatable {
+        let activeIndex: Int
+        let size: CGSize
+        let colorScheme: ColorScheme
+    }
+
+    private func updateSegmentImages(_ control: UISegmentedControl, colorScheme: ColorScheme) {
         // `ImageRenderer` has no view hierarchy of its own to inherit a
         // trait collection from, so it defaults to light appearance and any
         // dynamic `Color` (like `inactiveTint`'s dark-mode branch) resolves
@@ -105,6 +146,7 @@ where
                 let renderer = ImageRenderer(
                     content: tabItemView(tab)
                         .foregroundStyle(tint)
+                        .environment(\.colorScheme, colorScheme)
                 )
                 renderer.scale = 2
 
@@ -126,6 +168,8 @@ where
 
     final class Coordinator: NSObject {
         var parent: CustomTabBar
+        /// The state the segment images were last drawn for.
+        var renderedKey: RenderKey?
 
         init(parent: CustomTabBar) {
             self.parent = parent
@@ -138,6 +182,15 @@ where
             guard selected != parent.activeTab else { return }
             HapticFeedback.selection()
             parent.activeTab = selected
+            // The binding can refuse a tab (a locked range opens the paywall
+            // instead), and then nothing else moves the control back.
+            DispatchQueue.main.async { [weak control, weak self] in
+                guard let control, let self else { return }
+                let tabs = self.parent.tabs
+                if let index = tabs.firstIndex(of: self.parent.activeTab), control.selectedSegmentIndex != index {
+                    control.selectedSegmentIndex = index
+                }
+            }
         }
 
         @objc func tabPressed(_ control: UISegmentedControl) {
@@ -169,5 +222,46 @@ where
                 control.transform = .identity
             }
         }
+    }
+}
+
+/// Before iOS 26 the segmented control draws its background and its sliding
+/// selection as rounded rectangles; inside the capsule bars both should be
+/// capsules. iOS 26 already draws them that way, so it's left alone there.
+private final class CapsuleSegmentedControl: UISegmentedControl {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard #unavailable(iOS 26) else { return }
+
+        // Clipped to a capsule. The control's own translucent gray
+        // background and dividers are plain image views; hiding them lets
+        // `backgroundColor`, the bar's color, show through.
+        layer.cornerRadius = bounds.height / 2
+        layer.cornerCurve = .continuous
+        layer.masksToBounds = true
+        // The background, the dividers and the selection indicator are plain
+        // `UIImageView`s (the segments are `UISegment`s). UIKit reorders the
+        // subviews as the selection moves, so the indicator is found by what
+        // it is, never by index: painting by index can land on a segment and
+        // leave it filled with the accent. It's the one already repainted
+        // below, or on the first pass the last image view.
+        let imageViews = subviews.compactMap { type(of: $0) == UIImageView.self ? $0 as? UIImageView : nil }
+        guard let indicator = imageViews.first(where: { $0.image == nil && $0.backgroundColor != nil }) ?? imageViews.last
+        else { return }
+        for subview in subviews where !(subview is UIImageView) {
+            subview.backgroundColor = nil
+        }
+        for imageView in imageViews where imageView !== indicator {
+            imageView.alpha = 0
+        }
+
+        // Swap the indicator's rounded-rect image for a plain fill rounded
+        // into a capsule, inset a little like the system's.
+        indicator.image = nil
+        indicator.backgroundColor = selectedSegmentTintColor
+        indicator.layer.cornerRadius = (bounds.height - 4) / 2
+        indicator.layer.cornerCurve = .continuous
+        indicator.layer.masksToBounds = true
+        indicator.frame = indicator.frame.insetBy(dx: 0, dy: (indicator.frame.height - (bounds.height - 4)) / 2)
     }
 }

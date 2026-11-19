@@ -108,7 +108,7 @@ struct MedicinesView: View {
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
                 .frame(width: 44, height: 44)
         }
-        .glassEffect(.regular.interactive(), in: .circle)
+        .compatGlass(interactive: true, in: .circle)
         .accessibilityLabel("Share refill list")
     }
 
@@ -126,7 +126,7 @@ struct MedicinesView: View {
                     .overlay(alignment: .topTrailing) { ProCrownBadge(size: 16).offset(x: 2, y: -2) }
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .compatGlass(interactive: true, in: .circle)
             .accessibilityLabel("Share medicine list, Pro feature")
         }
     }
@@ -140,7 +140,7 @@ struct MedicinesView: View {
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
                 .frame(width: 44, height: 44)
         }
-        .glassEffect(.regular.interactive(), in: .circle)
+        .compatGlass(interactive: true, in: .circle)
         .accessibilityLabel("Share medicine list")
     }
 
@@ -155,7 +155,7 @@ struct MedicinesView: View {
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
                 .frame(width: 44, height: 44)
         }
-        .glassEffect(.regular.interactive(), in: .circle)
+        .compatGlass(interactive: true, in: .circle)
         .accessibilityLabel("Sort")
     }
 
@@ -417,7 +417,7 @@ struct LayoutToggle: View {
             option(isList: false, symbol: "square.grid.2x2", name: "Grid")
         }
         .padding(3)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .compatGlass(interactive: true, in: .capsule)
     }
 
     private func option(isList: Bool, symbol: String, name: String) -> some View {
@@ -547,6 +547,6 @@ private struct SearchField: View {
         }
         .padding(.horizontal, 14)
         .frame(height: 44)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .compatGlass(interactive: true, in: .capsule)
     }
 }

@@ -36,12 +36,7 @@ struct RefillSheet: View {
                 }
                 Spacer()
                 // The system close button: glass circle, xmark, "Close" for VoiceOver.
-                Button(role: .close) { dismiss() } label: {
-                    Image(systemName: "xmark")
-                }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-                .controlSize(.large)
+                CompatCloseButton { dismiss() }
             }
             .padding(.top, 24)
 
@@ -108,6 +103,7 @@ struct RefillSheet: View {
                 store.refill(medicineID, adding: amount)
                 router.showToast("Refilled. Next reminder \(after.reminderDate(now: now).weekdayDayMonth).")
                 router.celebrate()
+                ReviewPrompter.happyMoment(.refillLogged)
                 dismiss()
             } label: {
                 Text("Confirm · \(after.unit.format(after.stock))")

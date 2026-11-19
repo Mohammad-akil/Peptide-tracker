@@ -31,6 +31,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         #endif
         store.runDailyCountdown()
         store.rescheduleReminders()
+        ReviewPrompter.noteLaunch()
         return true
     }
 
@@ -83,12 +84,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             // This can run with the app in the background, where the store's
             // debounced re-plan may never get to fire — move the reminder now.
             await store.scheduler.clear(medicine)
-            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings, takenDoseIDs: store.takenDoseIDs)
+            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings, takenDoseIDs: store.takenDoseIDs, siteLastUsed: store.lastUsed())
         case ReminderScheduler.Action.markOrdered:
             // Reminders pause until the refill is picked up.
             store.markOrdered(medicineID)
             await store.scheduler.clear(medicine)
-            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings, takenDoseIDs: store.takenDoseIDs)
+            await store.scheduler.reschedule(medicines: store.medicines, settings: store.settings, takenDoseIDs: store.takenDoseIDs, siteLastUsed: store.lastUsed())
         case ReminderScheduler.Action.remindTomorrow:
             await store.scheduler.snooze(medicine, settings: store.settings)
         default:

@@ -73,6 +73,9 @@ struct AppSettings: Codable, Hashable {
     var snooze = SnoozeOption.tomorrow
     /// A notification at each dose time, on the medicine's dose days.
     var doseReminders = true
+    /// Injection areas left out of site rotation (e.g. no glutes when
+    /// injecting yourself). Never every area; see `InjectionSite.next`.
+    var skippedSiteAreas: Set<InjectionSite.Area> = []
     /// How weights are shown and entered; also picks metric or US units
     /// in the calculators.
     var weightUnit = WeightUnit.kg
@@ -115,7 +118,7 @@ struct AppSettings: Codable, Hashable {
         case trackingFor, personName, pharmacyKind, userName
         case reminderMessage, showsMedicineName, snooze
         case morningReminder, morningTime, sleepReminder, sleepTime
-        case doseReminders
+        case doseReminders, skippedSiteAreas
         case weightUnit, heightCm, birthYear, sex
     }
 
@@ -142,6 +145,7 @@ struct AppSettings: Codable, Hashable {
         sleepReminder = try c.decodeIfPresent(Bool.self, forKey: .sleepReminder) ?? defaults.sleepReminder
         sleepTime = try c.decodeIfPresent(TimeOfDay.self, forKey: .sleepTime) ?? defaults.sleepTime
         doseReminders = try c.decodeIfPresent(Bool.self, forKey: .doseReminders) ?? defaults.doseReminders
+        skippedSiteAreas = try c.decodeIfPresent(Set<InjectionSite.Area>.self, forKey: .skippedSiteAreas) ?? defaults.skippedSiteAreas
         weightUnit = try c.decodeIfPresent(WeightUnit.self, forKey: .weightUnit) ?? defaults.weightUnit
         heightCm = try c.decodeIfPresent(Double.self, forKey: .heightCm)
         birthYear = try c.decodeIfPresent(Int.self, forKey: .birthYear)

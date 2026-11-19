@@ -94,7 +94,7 @@ struct TodayView: View {
                     .foregroundStyle(AppTheme.ColorToken.accent)
                     .padding(.horizontal, 16)
                     .frame(height: 44)
-                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .compatGlass(interactive: true, in: .capsule)
                     .transition(.scale(scale: 0.6).combined(with: .opacity))
                 }
                 moodButton(now: now)
@@ -269,8 +269,8 @@ struct TodayView: View {
             .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
-        .matchedTransitionSource(id: Self.moodZoomID, in: calendarZoom)
+        .compatGlass(interactive: true, in: .circle)
+        .matchedTransitionSource(id: Self.moodZoomID, in: calendarZoom) { $0.background(.clear).clipShape(RoundedRectangle(cornerRadius: 22)) }
         .accessibilityLabel(store.checkIn(on: now).map { "Mood: \($0.mood.title)" } ?? "Log your mood")
         .sheet(isPresented: $showsMood) {
             MoodSheet()
@@ -295,8 +295,8 @@ struct TodayView: View {
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
-        .matchedTransitionSource(id: Self.calendarZoomID, in: calendarZoom)
+        .compatGlass(interactive: true, in: .circle)
+        .matchedTransitionSource(id: Self.calendarZoomID, in: calendarZoom) { $0.background(.clear).clipShape(RoundedRectangle(cornerRadius: 22)) }
         .accessibilityLabel("Calendar")
         .fullScreenCover(isPresented: $showsCalendar) {
             CalendarView()
@@ -415,7 +415,7 @@ private struct RemindersMenu: View {
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .compatGlass(interactive: true, in: .circle)
         .accessibilityLabel("Reminders")
         .popover(isPresented: $isOpen, arrowEdge: .top) {
             RemindersList(now: now) { isOpen = false }

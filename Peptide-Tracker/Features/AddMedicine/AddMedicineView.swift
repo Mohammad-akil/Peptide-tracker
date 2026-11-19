@@ -57,11 +57,11 @@ struct AddMedicineView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .cancel) { dismiss() }
+                    CompatToolbarRoleButton(role: .cancel) { dismiss() }
                         .tint(AppTheme.ColorToken.primaryText)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(role: .confirm, action: save)
+                    CompatToolbarRoleButton(role: .confirm, action: save)
                         .tint(AppTheme.ColorToken.accent)
                         .accessibilityLabel("Save")
                 }

@@ -59,7 +59,7 @@ struct ShareCardSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .close) { dismiss() }
+                    CompatToolbarRoleButton(role: .close) { dismiss() }
                         .tint(AppTheme.ColorToken.primaryText)
                 }
                 ToolbarItem(placement: .topBarTrailing) { formatButton }
@@ -161,7 +161,7 @@ struct ShareCardSheet: View {
                     .animation(.smooth(duration: 0.3), value: saveState)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .compatGlass(interactive: true, in: .capsule)
             .allowsHitTesting(saveState != .saving)
 
             Group {
@@ -177,7 +177,7 @@ struct ShareCardSheet: View {
                 }
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.tint(AppTheme.ColorToken.accent).interactive(), in: .capsule)
+            .compatGlass(tint: AppTheme.ColorToken.accent, interactive: true, in: .capsule)
             .allowsHitTesting(renderedImage != nil && !isRenderStale)
         }
     }
@@ -284,6 +284,7 @@ struct ShareCardSheet: View {
             }
             HapticFeedback.notification(.success)
             withAnimation { saveState = .saved }
+            ReviewPrompter.happyMoment(.shareCardSaved)
         } catch {
             HapticFeedback.notification(.error)
             saveState = .failed
