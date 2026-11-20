@@ -10,6 +10,8 @@ struct DosedayWidgets: WidgetBundle {
         TodayWidget()
         MoodWidget()
         SupplyWidget()
+        DoseLiveActivity()
+        LogNextDoseControl()
     }
 }
 

@@ -38,6 +38,14 @@ struct Medicine: Identifiable, Codable, Hashable {
     /// The day weekly, every-few-days and cycle schedules count from.
     /// `nil` counts from the day it was added.
     var scheduleStart: Date?
+    /// When the pen, vial or bottle in use was opened. Nil when not tracked.
+    var openedAt: Date?
+    /// How many days it can be used once opened (from the leaflet).
+    /// Nil or 0: no in-use limit is tracked.
+    var usableDaysAfterOpening: Int?
+    /// Minutes before each dose to send a "take it out of the fridge"
+    /// nudge. Nil or 0: off.
+    var prepMinutes: Int?
     /// Units ticked off today. Not saved — the store derives it from the
     /// dose logs — but kept here so days left stays put while today's doses
     /// are taken, instead of dropping a day every evening.
@@ -48,6 +56,7 @@ struct Medicine: Identifiable, Codable, Hashable {
         case reminderDaysBefore, reminderTime, remindersPaused, orderedAt, createdAt
         case brandName, reason, instructions, customTypeName
         case frequency, scheduleStart
+        case openedAt, usableDaysAfterOpening, prepMinutes
     }
 
     var unit: MedicineUnit { type.unit }
@@ -80,6 +89,22 @@ struct Medicine: Identifiable, Codable, Hashable {
     var urgency: Urgency { Urgency(daysLeft: daysLeft, isOut: stock < unitsPerIntake) }
 
     var isOrdered: Bool { orderedAt != nil }
+
+    // MARK: In-use life
+
+    /// The last day the opened pen or vial can be used, when tracked.
+    var discardDate: Date? {
+        guard let openedAt, let days = usableDaysAfterOpening, days > 0 else { return nil }
+        return openedAt.startOfDay.adding(days: days)
+    }
+
+    /// Whole days until `discardDate` (negative once past).
+    func daysUntilDiscard(now: Date = .now) -> Int? {
+        discardDate.map { Calendar.current.days(from: now.startOfDay, to: $0) }
+    }
+
+    /// Whether a fridge nudge goes out before each dose.
+    var hasPrepReminder: Bool { (prepMinutes ?? 0) > 0 }
 
     /// Whether to send the heads-up at all: not while paused, ordered or out.
     var wantsReminder: Bool { !remindersPaused && !isOrdered && stock > 0 }
@@ -164,6 +189,9 @@ extension Medicine {
         customTypeName = try c.decodeIfPresent(String.self, forKey: .customTypeName) ?? ""
         frequency = try c.decodeIfPresent(DoseFrequency.self, forKey: .frequency) ?? .daily
         scheduleStart = try c.decodeIfPresent(Date.self, forKey: .scheduleStart)
+        openedAt = try c.decodeIfPresent(Date.self, forKey: .openedAt)
+        usableDaysAfterOpening = try c.decodeIfPresent(Int.self, forKey: .usableDaysAfterOpening)
+        prepMinutes = try c.decodeIfPresent(Int.self, forKey: .prepMinutes)
     }
 }
 

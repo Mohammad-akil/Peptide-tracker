@@ -21,6 +21,7 @@ struct OnboardingFlow: View {
         ZStack {
             AppTheme.ColorToken.background.ignoresSafeArea()
 
+            Group {
             switch step {
             case .getStarted:
                 GetStartedView { go(to: .tour) }
@@ -40,6 +41,9 @@ struct OnboardingFlow: View {
                 questionFrame
                     .transition(.opacity)
             }
+            }
+            // One column on iPad, like a phone-sized card in the middle.
+            .readableWidth(AppTheme.Layout.narrow)
         }
         .animation(.snappy(duration: 0.35), value: step)
     }

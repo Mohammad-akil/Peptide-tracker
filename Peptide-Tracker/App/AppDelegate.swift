@@ -5,7 +5,7 @@ import UserNotifications
 /// arrive here, outside SwiftUI — can act on the same instances the views
 /// read.
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    let store = MedicineStore()
+    let store = MedicineStore.shared
     let router = AppRouter()
     let purchases = PurchaseStore()
 
@@ -28,7 +28,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
            let match = AppRouter.Tab.allCases.first(where: { $0.title.lowercased() == tab }) {
             router.selectedTab = match
         }
+        // `-open doseday://calendar` follows a link at launch, for screenshots.
+        if let link = UserDefaults.standard.string(forKey: "open"), let url = URL(string: link) {
+            router.handle(url, medicineCount: store.medicines.count, purchases: purchases)
+        }
         #endif
+        // Privacy mode: locked until Face ID or the passcode.
+        AppLock.shared.launch(enabled: store.settings.appLock)
         store.runDailyCountdown()
         store.rescheduleReminders()
         ReviewPrompter.noteLaunch()

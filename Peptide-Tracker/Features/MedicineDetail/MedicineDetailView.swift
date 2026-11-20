@@ -45,9 +45,13 @@ struct MedicineDetailView: View {
                 if medicine.type == .injection {
                     InjectionSitesCard(medicine: medicine, now: now)
                 }
+                if PenLifeCard.applies(to: medicine.type) {
+                    PenLifeCard(medicine: medicine, now: now)
+                }
                 StockForecastCard(medicine: medicine, refills: store.refills(for: medicine.id), now: now)
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
+            .readableWidth()
             .padding(.bottom, 24)
             .animation(.snappy, value: medicine)
         }
@@ -225,6 +229,7 @@ struct MedicineDetailView: View {
             }
         }
         .padding(.horizontal, 20)
+        .readableWidth(560)
         .padding(.top, 8)
         .padding(.bottom, 4)
         .animation(.snappy, value: offersOrdered)

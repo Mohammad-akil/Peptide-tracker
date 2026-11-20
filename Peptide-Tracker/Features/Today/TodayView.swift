@@ -23,6 +23,9 @@ struct TodayView: View {
     /// The mood sheet zooms out of the mood button the same way.
     @State private var showsMood = false
     @State private var showsShare = false
+    /// Whether the next-dose Live Activity is up (ActivityKit isn't observable).
+    @State private var isPinned = DoseActivityController.isRunning
+    @State private var showsSharps = false
     @Namespace private var calendarZoom
     /// Which way the last day change went, so the doses slide that way.
     @State private var dayMovesForward = true
@@ -43,6 +46,7 @@ struct TodayView: View {
                         alerts(now: now)
                         if store.settings.tracksDoses {
                             dayDoses(now: now)
+                            pinNextDose(now: now)
                             dayDoneCard(now: now)
                         } else {
                             CompactNote(symbol: "checklist", tint: AppTheme.ColorToken.accent, title: "Dose tracking is off", action: "Turn on") {
@@ -52,6 +56,7 @@ struct TodayView: View {
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.medium)
+                .readableWidth()
                 .padding(.top, 20)
                 .padding(.bottom, AppTheme.Spacing.tabBarClearance)
                 .fillsViewport(store.medicines.isEmpty, height: viewportHeight)
@@ -125,6 +130,27 @@ struct TodayView: View {
         if notificationsOff {
             CompactNote(symbol: "bell.slash.fill", tint: Urgency.low.tint, title: "Reminders are off", action: "Turn on", onAction: turnOn)
         }
+        ForEach(store.medicinesNearDiscard(now: now)) { medicine in
+            let days = medicine.daysUntilDiscard(now: now) ?? 0
+            CompactNote(
+                symbol: "calendar.badge.exclamationmark",
+                tint: Urgency.low.tint,
+                title: days < 0 ? "\(medicine.name) is past its use-by" : days == 0 ? "Last day for this \(medicine.name)" : "\(medicine.name): \(days) \(days == 1 ? "day" : "days") left once opened",
+                action: "New one"
+            ) {
+                store.markOpened(medicine.id)
+                router.showToast("New \(medicine.name) opened today")
+            }
+        }
+        if store.settings.tracksSharps, store.sharpsFraction >= 0.9 {
+            CompactNote(
+                symbol: "trash.square.fill",
+                tint: Urgency.critical.tint,
+                title: store.sharpsFraction >= 1 ? "Sharps container is full" : "Sharps container nearly full",
+                action: "View"
+            ) { showsSharps = true }
+            .sheet(isPresented: $showsSharps) { SharpsSheet() }
+        }
         if !needing.isEmpty {
             GroupedSection(title: "Needs refill", trailing: "\(needing.count)") {
                 ForEach(Array(needing.enumerated()), id: \.element.id) { index, medicine in
@@ -180,6 +206,34 @@ struct TodayView: View {
                 withAnimation(.snappy) { selectedDay = target }
             }
         )
+    }
+
+    /// A quiet link to put today's next dose on the Lock Screen and in the
+    /// Dynamic Island, while there's one still to take.
+    @ViewBuilder
+    private func pinNextDose(now: Date) -> some View {
+        if selectedDay == now.startOfDay, DoseActivityController.isAvailable, store.nextDueDose(now: now) != nil {
+            Button {
+                HapticFeedback.selection()
+                if isPinned {
+                    DoseActivityController.end()
+                    isPinned = false
+                } else {
+                    DoseActivityController.start(store: store)
+                    isPinned = true
+                    router.showToast("Next dose pinned to Lock Screen")
+                }
+            } label: {
+                Label(isPinned ? "Unpin from Lock Screen" : "Pin next dose to Lock Screen", systemImage: isPinned ? "pin.slash" : "pin.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .onAppear { isPinned = DoseActivityController.isRunning }
+        }
     }
 
     /// Once every one of today's doses is ticked off: a small celebration
@@ -427,7 +481,7 @@ private struct RemindersMenu: View {
 /// What kind of reminder a medicine has, each with its own colour, so the
 /// list reads at a glance: run out and running out in red, low in amber,
 /// ordered in blue, the rest in the app's purple.
-private enum ReminderKind {
+enum ReminderKind {
     case out, critical, low, ordered, scheduled
 
     init(_ medicine: Medicine) {
@@ -504,6 +558,30 @@ private struct RemindersList: View {
                 }
                 .scrollBounceBehavior(.basedOnSize)
                 .frame(maxHeight: 380)
+            }
+
+            if !store.medicines.isEmpty {
+                Button {
+                    close()
+                    router.push(.reminders)
+                } label: {
+                    HStack {
+                        Text("See all")
+                            .font(.system(size: 16, weight: .semibold))
+                        Spacer()
+                        Image(systemName: "chevron.forward")
+                            .font(.system(size: 13, weight: .bold))
+                    }
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .padding(.horizontal, 16)
+                    .frame(height: 48)
+                    .contentShape(.rect)
+                    .overlay(alignment: .top) {
+                        Rectangle().fill(AppTheme.ColorToken.separator).frame(height: 0.5)
+                    }
+                }
+                .buttonStyle(RowPressStyle())
+                .accessibilityLabel("See all reminders")
             }
         }
         .frame(width: 330)

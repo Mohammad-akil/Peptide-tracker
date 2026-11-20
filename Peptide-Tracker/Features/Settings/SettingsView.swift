@@ -23,6 +23,7 @@ struct SettingsView: View {
                 GroupedSection {
                     SettingsLinkRow(page: .remindersGroup, value: store.settings.notificationsEnabled ? nil : "Off")
                     SettingsLinkRow(page: .health, value: store.latestWeight.map { store.settings.weightUnit.format($0.kilograms) })
+                    SettingsLinkRow(page: .privacy, value: store.settings.appLock ? "Locked" : nil)
                     SettingsLinkRow(page: .careTeam, value: store.trackingSummary)
                     SettingsLinkRow(page: .data, value: store.reportSummary)
                     SettingsLinkRow(page: .appearance, value: AppIconOption.current.title, showsDivider: false)
@@ -39,6 +40,7 @@ struct SettingsView: View {
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
+            .readableWidth()
             .padding(.top, 20)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }

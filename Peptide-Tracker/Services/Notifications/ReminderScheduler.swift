@@ -38,6 +38,8 @@ final class ReminderScheduler {
         static let refill = "refill."
         static let snooze = "snooze."
         static let daily = "daily."
+        static let prep = "prep."
+        static let discard = "discard."
     }
 
     private let center: UNUserNotificationCenter
@@ -103,6 +105,7 @@ final class ReminderScheduler {
         // Older builds also scheduled daily dose check-ins under "dose.".
         let stale = pending.map(\.identifier).filter {
             $0.hasPrefix(Prefix.refill) || $0.hasPrefix(Prefix.daily) || $0.hasPrefix("dose.")
+                || $0.hasPrefix(Prefix.prep) || $0.hasPrefix(Prefix.discard)
         }
         center.removePendingNotificationRequests(withIdentifiers: stale)
 
@@ -119,6 +122,12 @@ final class ReminderScheduler {
                 guard fireDate > now else { continue }
                 let id = Prefix.refill + medicine.id.uuidString + (day == 0 ? "" : ".\(day)")
                 try? await center.add(refillRequest(for: medicine, settings: settings, at: fireDate, id: id))
+            }
+        }
+
+        for medicine in medicines {
+            if let request = discardRequest(for: medicine, settings: settings, now: now) {
+                try? await center.add(request)
             }
         }
 
@@ -211,16 +220,25 @@ final class ReminderScheduler {
         siteLastUsed: [InjectionSite: Date],
         now: Date
     ) -> [UNNotificationRequest] {
-        var doses: [(date: Date, medicine: Medicine, id: String)] = []
+        // Doses are planned on the dose clock: local time, or home time
+        // while travelling with "Keep home time" on.
+        var doseCalendar = Calendar.current
+        doseCalendar.timeZone = settings.doseTimeZone
+        let firstDay = doseCalendar.startOfDay(for: now)
+
+        var doses: [(date: Date, day: Date, time: TimeOfDay, medicine: Medicine, id: String)] = []
         for offset in 0..<Self.doseDaysAhead {
-            let day = now.startOfDay.adding(days: offset)
+            guard let dayInZone = doseCalendar.date(byAdding: .day, value: offset, to: firstDay) else { continue }
+            // The same calendar day as a local date, which is how the store
+            // keys doses.
+            let day = Self.localDay(matching: dayInZone, in: doseCalendar)
             for medicine in medicines where medicine.createdAt.startOfDay <= day && medicine.isScheduled(on: day) {
                 for time in medicine.intakeTimes {
-                    let date = time.on(day)
+                    let date = time.on(dayInZone, calendar: doseCalendar)
                     guard date > now else { continue }
                     let doseID = "\(medicine.id)-\(day.timeIntervalSince1970)-\(time.minutesSinceMidnight)"
                     guard !takenDoseIDs.contains(doseID) else { continue }
-                    doses.append((date, medicine, doseID))
+                    doses.append((date, day, time, medicine, doseID))
                 }
             }
         }
@@ -230,28 +248,79 @@ final class ReminderScheduler {
         let injectionCount = upcoming.filter { $0.medicine.type == .injection }.count
         var sites = InjectionSite.upcoming(injectionCount, lastUsed: siteLastUsed, skipping: settings.skippedSiteAreas)
             .makeIterator()
-        return upcoming
-            .map { dose in
-                let content = UNMutableNotificationContent()
-                content.title = "Time for \(settings.notificationName(for: dose.medicine))"
-                let amount = dose.medicine.unit.format(dose.medicine.unitsPerIntake)
-                if dose.medicine.type == .injection, settings.tracksDoses, let site = sites.next() {
-                    content.body = "\(amount) · Next site: \(site.title.lowercased()). Tap to log it."
-                } else {
-                    content.body = "\(amount) · Tap to tick it off."
-                }
-                content.sound = .default
-                content.threadIdentifier = dose.medicine.id.uuidString
-                content.categoryIdentifier = Category.dose
-                content.userInfo = [
-                    Self.medicineIDKey: dose.medicine.id.uuidString,
-                    DoseKey.day: dose.date.startOfDay.timeIntervalSince1970,
-                    DoseKey.minutes: Calendar.current.component(.hour, from: dose.date) * 60 + Calendar.current.component(.minute, from: dose.date),
-                ]
-                let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: dose.date)
-                let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-                return UNNotificationRequest(identifier: "dose." + dose.id, content: content, trigger: trigger)
+
+        var requests: [UNNotificationRequest] = upcoming.map { dose in
+            let content = UNMutableNotificationContent()
+            content.title = "Time for \(settings.notificationName(for: dose.medicine))"
+            let amount = dose.medicine.unit.format(dose.medicine.unitsPerIntake)
+            if dose.medicine.type == .injection, settings.tracksDoses, let site = sites.next() {
+                content.body = "\(amount) · Next site: \(site.title.lowercased()). Tap to log it."
+            } else {
+                content.body = "\(amount) · Tap to tick it off."
             }
+            content.sound = .default
+            content.threadIdentifier = dose.medicine.id.uuidString
+            content.categoryIdentifier = Category.dose
+            content.userInfo = [
+                Self.medicineIDKey: dose.medicine.id.uuidString,
+                DoseKey.day: dose.day.timeIntervalSince1970,
+                DoseKey.minutes: dose.time.minutesSinceMidnight,
+            ]
+            return UNNotificationRequest(identifier: "dose." + dose.id, content: content, trigger: Self.trigger(at: dose.date, in: doseCalendar))
+        }
+
+        // "Take it out of the fridge" ahead of injections that want it.
+        let prepped = upcoming.filter { $0.medicine.hasPrepReminder }.prefix(Self.maxPrepReminders)
+        for dose in prepped {
+            let minutes = dose.medicine.prepMinutes ?? 0
+            let fireDate = dose.date.addingTimeInterval(-Double(minutes) * 60)
+            guard fireDate > now else { continue }
+            let content = UNMutableNotificationContent()
+            content.title = "Out of the fridge"
+            content.body = "Take \(settings.notificationName(for: dose.medicine)) out now. Dose at \(dose.time.label)."
+            content.sound = .default
+            content.threadIdentifier = dose.medicine.id.uuidString
+            content.userInfo = [Self.medicineIDKey: dose.medicine.id.uuidString]
+            requests.append(UNNotificationRequest(identifier: Prefix.prep + dose.id, content: content, trigger: Self.trigger(at: fireDate, in: doseCalendar)))
+        }
+        return requests
+    }
+
+    /// Fridge nudges planned at most; they share iOS's 64-notification cap.
+    private static let maxPrepReminders = 8
+
+    /// The local start of the day with the same year, month and day as
+    /// `date` has in `calendar`.
+    private static func localDay(matching date: Date, in calendar: Calendar) -> Date {
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        return Calendar.current.date(from: parts)?.startOfDay ?? date.startOfDay
+    }
+
+    /// A one-off trigger at `date`, pinned to `calendar`'s time zone so it
+    /// fires at that moment even if the phone's time zone changes.
+    private static func trigger(at date: Date, in calendar: Calendar) -> UNCalendarNotificationTrigger {
+        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        components.timeZone = calendar.timeZone
+        return UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+    }
+
+    // MARK: In-use life
+
+    /// The day before an opened pen or vial is due to be thrown away (or
+    /// that day, if it's already the day before), at the refill time.
+    private func discardRequest(for medicine: Medicine, settings: AppSettings, now: Date) -> UNNotificationRequest? {
+        guard let discard = medicine.discardDate else { return nil }
+        var fireDate = medicine.reminderTime.on(discard.adding(days: -1))
+        if fireDate <= now { fireDate = medicine.reminderTime.on(discard) }
+        guard fireDate > now else { return nil }
+        let content = UNMutableNotificationContent()
+        let name = settings.notificationName(for: medicine)
+        content.title = Calendar.current.isDate(fireDate, inSameDayAs: discard) ? "\(name): last day of use" : "\(name): last day tomorrow"
+        content.body = "It’s been open since \(medicine.openedAt?.dayMonth ?? "a while"). Have a new one ready."
+        content.sound = .default
+        content.threadIdentifier = medicine.id.uuidString
+        content.userInfo = [Self.medicineIDKey: medicine.id.uuidString]
+        return UNNotificationRequest(identifier: Prefix.discard + medicine.id.uuidString, content: content, trigger: Self.trigger(at: fireDate, in: .current))
     }
 
     /// A nudge that repeats every day at `time`.

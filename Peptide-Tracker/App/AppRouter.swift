@@ -28,6 +28,8 @@ final class AppRouter {
     enum Route: Hashable {
         case medicine(UUID)
         case settings(SettingsPage)
+        /// Every refill reminder, from "See all" under Today's bell.
+        case reminders
     }
 
     enum Sheet: Identifiable {

@@ -8,7 +8,7 @@ import UniformTypeIdentifiers
 /// everyone: it's the user's own data. Built only when the share sheet asks.
 struct DataExportFile: Transferable {
     enum Kind: CaseIterable {
-        case doses, medicines, refills, health, calculators
+        case doses, medicines, refills, health, calculators, sideEffects
 
         var fileName: String {
             switch self {
@@ -17,6 +17,7 @@ struct DataExportFile: Transferable {
             case .refills: "Doseday – refills.csv"
             case .health: "Doseday – mood and weight.csv"
             case .calculators: "Doseday – calculator history.csv"
+            case .sideEffects: "Doseday – side effects.csv"
             }
         }
     }
@@ -29,6 +30,7 @@ struct DataExportFile: Transferable {
     var weights: [WeightEntry] = []
     var weightUnit = WeightUnit.kg
     var calculatorResults: [CalculatorResult] = []
+    var sideEffects: [SideEffectEntry] = []
 
     /// One file per kind, from a snapshot of the store.
     @MainActor
@@ -37,7 +39,7 @@ struct DataExportFile: Transferable {
             DataExportFile(
                 kind: $0, medicines: store.medicines, doseLogs: store.doseLogs, refills: store.refills,
                 checkIns: store.checkIns, weights: store.weights, weightUnit: store.settings.weightUnit,
-                calculatorResults: store.calculatorResults
+                calculatorResults: store.calculatorResults, sideEffects: store.sideEffects
             )
         }
     }
@@ -67,6 +69,7 @@ struct DataExportFile: Transferable {
         case .refills: refillsCSV()
         case .health: healthCSV()
         case .calculators: calculatorsCSV()
+        case .sideEffects: sideEffectsCSV()
         }
     }
 
@@ -150,6 +153,21 @@ struct DataExportFile: Transferable {
             ]
         }
         return Self.table(header: ["Date", "Calculator", "Result", "Unit", "Weight (\(weightUnit.rawValue))", "Protein (g)", "Carbs (g)", "Fat (g)"], rows: rows)
+    }
+
+    private func sideEffectsCSV() -> String {
+        let names = Dictionary(medicines.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        let rows = sideEffects.sorted { $0.date > $1.date }.map { entry -> [String] in
+            [
+                Self.dateTime(entry.date),
+                entry.kind.title,
+                entry.severity.title,
+                entry.medicineID.flatMap { names[$0] } ?? "",
+                entry.site?.title ?? "",
+                entry.note,
+            ]
+        }
+        return Self.table(header: ["Date", "Side effect", "Severity", "Medicine", "Injection site", "Note"], rows: rows)
     }
 
     // MARK: Formatting

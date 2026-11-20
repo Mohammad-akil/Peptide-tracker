@@ -79,11 +79,11 @@ struct HealthContactsSettingsView: View {
 
             HStack(spacing: 8) {
                 if !contact.dialablePhone.isEmpty {
-                    quickAction("message.fill", label: "Message \(contact.name)", url: "sms:\(contact.dialablePhone)")
-                    quickAction("phone.fill", label: "Call \(contact.name)", url: "tel:\(contact.dialablePhone)")
+                    quickAction("message.fill", tint: Color(hex: 0x30D158), label: "Message \(contact.name)", url: "sms:\(contact.dialablePhone)")
+                    quickAction("phone.fill", tint: Color(hex: 0x0A84FF), label: "Call \(contact.name)", url: "tel:\(contact.dialablePhone)")
                 }
                 if !contact.trimmedEmail.isEmpty {
-                    quickAction("envelope.fill", label: "Email \(contact.name)", url: "mailto:\(contact.trimmedEmail)")
+                    quickAction("envelope.fill", tint: Color(hex: 0xFF9F0A), label: "Email \(contact.name)", url: "mailto:\(contact.trimmedEmail)")
                 }
             }
         }
@@ -96,15 +96,17 @@ struct HealthContactsSettingsView: View {
         }
     }
 
-    private func quickAction(_ symbol: String, label: String, url: String) -> some View {
+    /// A round quick action in its own colour, like Phone, Messages and
+    /// Mail: a soft wash of the colour with the glyph in full colour.
+    private func quickAction(_ symbol: String, tint: Color, label: String, url: String) -> some View {
         Button {
             if let url = URL(string: url) { openURL(url) }
         } label: {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(AppTheme.ColorToken.accent)
+                .foregroundStyle(tint)
                 .frame(width: 34, height: 34)
-                .background(AppTheme.ColorToken.accentSoft, in: .circle)
+                .background(tint.opacity(0.15), in: .circle)
         }
         .buttonStyle(.pressable)
         .accessibilityLabel(label)

@@ -9,6 +9,10 @@ import WidgetKit
 @MainActor
 @Observable
 final class MedicineStore {
+    /// The app's one store. Siri, Shortcuts and Live Activity buttons act on
+    /// this same instance as the screens, so nothing writes the file twice.
+    static let shared = MedicineStore()
+
     private(set) var medicines: [Medicine]
     private(set) var doseLogs: [DoseLog]
     private(set) var refills: [RefillEvent]
@@ -20,6 +24,8 @@ final class MedicineStore {
     private(set) var weights: [WeightEntry]
     /// Saved calculator answers, oldest first.
     private(set) var calculatorResults: [CalculatorResult]
+    /// Logged side effects, oldest first.
+    private(set) var sideEffects: [SideEffectEntry]
     var settings: AppSettings {
         didSet { didChange() }
     }
@@ -42,6 +48,7 @@ final class MedicineStore {
         checkIns = snapshot.checkIns
         weights = snapshot.weights.sorted { $0.day < $1.day }
         calculatorResults = snapshot.calculatorResults.sorted { $0.day < $1.day }
+        sideEffects = snapshot.sideEffects.sorted { $0.date < $1.date }
         settings = snapshot.settings
         lastCountdownDay = snapshot.lastCountdownDay
         lastSaved = snapshot
@@ -383,6 +390,120 @@ final class MedicineStore {
         persist()
     }
 
+    // MARK: - Side effects
+
+    /// Adds the entry, or updates it if it's already saved.
+    func save(_ entry: SideEffectEntry) {
+        if let index = sideEffects.firstIndex(where: { $0.id == entry.id }) {
+            sideEffects[index] = entry
+        } else {
+            sideEffects.append(entry)
+        }
+        sideEffects.sort { $0.date < $1.date }
+        HapticFeedback.selection()
+        persist()
+    }
+
+    func deleteSideEffect(id: UUID) {
+        sideEffects.removeAll { $0.id == id }
+        persist()
+    }
+
+    /// Side effects logged in the last `days` days, newest first.
+    func sideEffects(lastDays days: Int, now: Date = .now) -> [SideEffectEntry] {
+        let start = now.startOfDay.adding(days: -(days - 1))
+        return sideEffects.filter { $0.day >= start && $0.date <= now }.reversed()
+    }
+
+    /// Patterns across every logged side effect.
+    func sideEffectPatterns() -> [SideEffectPattern] {
+        var doseDays: [UUID: [Date]] = [:]
+        for log in doseLogs where log.isTaken {
+            doseDays[log.medicineID, default: []].append(log.day)
+        }
+        doseDays = doseDays.mapValues { Array(Set($0)) }
+        let names = Dictionary(uniqueKeysWithValues: medicines.map { ($0.id, $0.name) })
+        return SideEffectPattern.patterns(entries: sideEffects, doseDays: doseDays, medicineNames: names)
+    }
+
+    // MARK: - Sharps container
+
+    /// Injections ticked off since the container was last emptied.
+    var sharpsUsed: Int {
+        let since = settings.sharpsEmptiedAt ?? .distantPast
+        let injections = Set(medicines.filter { $0.type == .injection }.map(\.id))
+        return doseLogs.filter { log in
+            guard let takenAt = log.takenAt else { return false }
+            return takenAt >= since && injections.contains(log.medicineID)
+        }.count
+    }
+
+    /// How full the container is, 0–1.
+    var sharpsFraction: Double {
+        min(1, Double(sharpsUsed) / Double(max(settings.sharpsCapacity, 1)))
+    }
+
+    func emptySharps(now: Date = .now) {
+        settings.sharpsEmptiedAt = now
+    }
+
+    // MARK: - In-use life
+
+    /// A new pen, vial or bottle was opened today.
+    func markOpened(_ id: UUID, at date: Date = .now) {
+        mutate(id) { $0.openedAt = date }
+    }
+
+    func setUsableDays(_ days: Int?, for id: UUID) {
+        mutate(id) {
+            $0.usableDaysAfterOpening = days
+            if days != nil, $0.openedAt == nil { $0.openedAt = .now }
+        }
+    }
+
+    func setPrepMinutes(_ minutes: Int?, for id: UUID) {
+        mutate(id) { $0.prepMinutes = minutes }
+    }
+
+    /// Opened medicines past or near their in-use limit, soonest first.
+    func medicinesNearDiscard(within days: Int = 2, now: Date = .now) -> [Medicine] {
+        medicines
+            .filter { ($0.daysUntilDiscard(now: now) ?? .max) <= days }
+            .sorted { ($0.daysUntilDiscard(now: now) ?? 0) < ($1.daysUntilDiscard(now: now) ?? 0) }
+    }
+
+    // MARK: - Trip planner
+
+    /// What to pack for a trip from `start` to `end` (inclusive): each
+    /// scheduled medicine's doses and units, plus `spareDays` extra, and
+    /// whether what's on hand by `start` covers it. Counting only.
+    func tripSupply(from start: Date, to end: Date, spareDays: Int = 2, now: Date = .now) -> [TripSupplyLine] {
+        let first = start.startOfDay
+        let last = max(end.startOfDay, first)
+        let tripDays = Calendar.current.days(from: first, to: last) + 1
+        return medicines.compactMap { medicine in
+            var doses = 0
+            var day = first
+            while day <= last.adding(days: spareDays) {
+                if medicine.isScheduled(on: day) { doses += medicine.intakeTimes.count }
+                day = day.adding(days: 1)
+            }
+            guard doses > 0 else { return nil }
+            let units = doses * medicine.unitsPerIntake
+            // Use between now and the trip comes out of what's on hand.
+            var usedBefore = 0
+            var d = now.startOfDay
+            while d < first {
+                if medicine.isScheduled(on: d) { usedBefore += medicine.perDay }
+                d = d.adding(days: 1)
+            }
+            // Counted from this morning's supply, like days left.
+            let onHandAtStart = max(0, medicine.stock + medicine.unitsTakenToday - usedBefore)
+            return TripSupplyLine(medicine: medicine, tripDays: tripDays, doses: doses, units: units, onHandAtStart: onHandAtStart)
+        }
+        .sorted { ($0.isShort ? 0 : 1, $0.medicine.name) < ($1.isShort ? 0 : 1, $1.medicine.name) }
+    }
+
     // MARK: - Data management
 
     func loadSampleData(now: Date = .now) {
@@ -410,6 +531,7 @@ final class MedicineStore {
         checkIns = []
         weights = []
         calculatorResults = []
+        sideEffects = []
         lastCountdownDay = nil
         didChange()
     }
@@ -435,6 +557,7 @@ final class MedicineStore {
         lastSaved = snapshot
         refreshTodayUsage()
         rescheduleReminders()
+        DoseActivityController.refresh(store: self)
         QueryClient.shared.invalidate([.medicines, .doses, .moods])
     }
 
@@ -450,6 +573,7 @@ final class MedicineStore {
         refreshTodayUsage()
         persist()
         rescheduleReminders()
+        DoseActivityController.refresh(store: self)
     }
 
     private func refreshTodayUsage(now: Date = .now) {
@@ -474,7 +598,8 @@ final class MedicineStore {
             contacts: contacts,
             checkIns: checkIns,
             weights: weights,
-            calculatorResults: calculatorResults
+            calculatorResults: calculatorResults,
+            sideEffects: sideEffects
         )
         QueryClient.shared.invalidate(changedTags(from: lastSaved, to: snapshot))
         lastSaved = snapshot
@@ -494,6 +619,7 @@ final class MedicineStore {
         if old.checkIns != new.checkIns { tags.insert(.moods) }
         if old.weights != new.weights { tags.insert(.weights) }
         if old.calculatorResults != new.calculatorResults { tags.insert(.calculators) }
+        if old.sideEffects != new.sideEffects { tags.insert(.sideEffects) }
         return tags
     }
 

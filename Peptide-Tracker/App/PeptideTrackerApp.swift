@@ -49,6 +49,7 @@ struct PeptideTrackerApp: App {
                 appDelegate.router.handle(url, medicineCount: appDelegate.store.medicines.count, purchases: appDelegate.purchases)
             }
             .onChange(of: scenePhase) { _, phase in
+                AppLock.shared.scenePhaseChanged(phase, enabled: appDelegate.store.settings.appLock)
                 // Days may have ended while the app was in the background.
                 if phase == .active {
                     // A new day may have started; refetch what depends on it.

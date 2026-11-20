@@ -6,6 +6,7 @@ import SwiftUI
 enum SettingsPage: Hashable {
     case remindersGroup, health, careTeam, data, appearance
     case reminders, notifications, doses, pharmacy, contacts, tracking, report, help, about
+    case privacy, travel
     #if DEBUG
     case developer
     #endif
@@ -26,6 +27,8 @@ enum SettingsPage: Hashable {
         case .report: "Report"
         case .help: "Help"
         case .about: "About"
+        case .privacy: "Privacy"
+        case .travel: "Travel"
         #if DEBUG
         case .developer: "Developer"
         #endif
@@ -48,6 +51,8 @@ enum SettingsPage: Hashable {
         case .report: "chart.bar.fill"
         case .help: "questionmark.circle.fill"
         case .about: "info.circle.fill"
+        case .privacy: "hand.raised.fill"
+        case .travel: "airplane"
         #if DEBUG
         case .developer: "hammer.fill"
         #endif
@@ -71,6 +76,8 @@ enum SettingsPage: Hashable {
         case .report: Color(hex: 0xBF5AF2)     // purple
         case .help: Color(hex: 0x0A84FF)       // blue
         case .about: Color(hex: 0x8E8E93)      // grey
+        case .privacy: Color(hex: 0x0A84FF)    // blue
+        case .travel: Color(hex: 0xFF9F0A)     // orange
         #if DEBUG
         case .developer: Color(hex: 0x5E5CE6)  // indigo
         #endif
@@ -94,6 +101,8 @@ enum SettingsPage: Hashable {
         case .report: ReportSettingsView()
         case .help: HelpSettingsView()
         case .about: AboutSettingsView()
+        case .privacy: PrivacySettingsView()
+        case .travel: TravelSettingsView()
         #if DEBUG
         case .developer: DeveloperSettingsView()
         #endif
@@ -165,6 +174,7 @@ struct SettingsPageScaffold<Content: View>: View {
                 content
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
+            .readableWidth()
             .padding(.top, 8)
             .padding(.bottom, AppTheme.Spacing.large)
         }

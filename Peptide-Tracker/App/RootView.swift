@@ -43,7 +43,11 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.4), value: showsOnboarding)
         // Toasts and confetti draw in their own window above every sheet.
-        .onAppear { OverlayWindow.install(router: router) }
+        .onAppear {
+            OverlayWindow.install(router: router)
+            // Privacy mode's lock screen, above the toasts.
+            LockWindow.install()
+        }
     }
 
     private var app: some View {
@@ -57,6 +61,8 @@ struct RootView: View {
                         MedicineDetailView(medicineID: id)
                     case .settings(let page):
                         page.destination
+                    case .reminders:
+                        AllRemindersView()
                     }
                 }
         }

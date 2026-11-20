@@ -14,6 +14,7 @@ struct MedicineSnapshot: Codable {
     var checkIns: [DailyCheckIn] = []
     var weights: [WeightEntry] = []
     var calculatorResults: [CalculatorResult] = []
+    var sideEffects: [SideEffectEntry] = []
 
     init(
         medicines: [Medicine] = [],
@@ -24,7 +25,8 @@ struct MedicineSnapshot: Codable {
         contacts: [HealthContact] = [],
         checkIns: [DailyCheckIn] = [],
         weights: [WeightEntry] = [],
-        calculatorResults: [CalculatorResult] = []
+        calculatorResults: [CalculatorResult] = [],
+        sideEffects: [SideEffectEntry] = []
     ) {
         self.medicines = medicines
         self.doseLogs = doseLogs
@@ -35,10 +37,11 @@ struct MedicineSnapshot: Codable {
         self.checkIns = checkIns
         self.weights = weights
         self.calculatorResults = calculatorResults
+        self.sideEffects = sideEffects
     }
 
     private enum CodingKeys: String, CodingKey {
-        case medicines, doseLogs, refills, settings, lastCountdownDay, contacts, checkIns, weights, calculatorResults
+        case medicines, doseLogs, refills, settings, lastCountdownDay, contacts, checkIns, weights, calculatorResults, sideEffects
     }
 
     /// Tolerates keys added in later versions (`contacts`, `checkIns`), so an older
@@ -54,6 +57,7 @@ struct MedicineSnapshot: Codable {
         checkIns = try c.decodeIfPresent([DailyCheckIn].self, forKey: .checkIns) ?? []
         weights = try c.decodeIfPresent([WeightEntry].self, forKey: .weights) ?? []
         calculatorResults = try c.decodeIfPresent([CalculatorResult].self, forKey: .calculatorResults) ?? []
+        sideEffects = try c.decodeIfPresent([SideEffectEntry].self, forKey: .sideEffects) ?? []
     }
 }
 

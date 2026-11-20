@@ -54,8 +54,8 @@ struct ReportSettingsView: View {
             if report.due > 0 && purchases.isPro {
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(
-                        item: AdherenceReportPDF(report: report, personName: personName),
-                        preview: SharePreview("Adherence report", image: Image(systemName: "chart.bar.doc.horizontal"))
+                        item: AdherenceReportPDF(report: report, personName: personName, health: VisitHealthSummary(store: store, days: period.days)),
+                        preview: SharePreview("Doctor visit report", image: Image(systemName: "chart.bar.doc.horizontal"))
                     ) {
                         Image(systemName: "square.and.arrow.up")
                     }

@@ -35,9 +35,23 @@ enum SharedData {
             medicines = (try? c.decodeIfPresent([Medicine].self, forKey: .medicines)) ?? []
             doseLogs = (try? c.decodeIfPresent([DoseLog].self, forKey: .doseLogs)) ?? []
             checkIns = (try? c.decodeIfPresent([CheckIn].self, forKey: .checkIns)) ?? []
+            // Privacy: with names hidden in the app, widgets on the Lock and
+            // Home Screen show the type ("Injection") instead.
+            let settings = try? c.decodeIfPresent(Settings.self, forKey: .settings)
+            if settings?.showsMedicineName == false {
+                medicines = medicines.map { medicine in
+                    var medicine = medicine
+                    medicine.name = medicine.type == "other" ? "Medicine" : medicine.type.capitalized
+                    return medicine
+                }
+            }
         }
 
-        private enum Keys: String, CodingKey { case medicines, doseLogs, checkIns }
+        private enum Keys: String, CodingKey { case medicines, doseLogs, checkIns, settings }
+
+        private struct Settings: Decodable {
+            var showsMedicineName: Bool?
+        }
 
         /// Today's doses, in time order, the same way the app lists them.
         func doses(on day: Date = .now) -> [Dose] {
@@ -204,6 +218,14 @@ enum SharedData {
             json["doseLogs"] = logs
             json["medicines"] = medicines
         }
+    }
+
+    /// Ticks off today's first dose not yet taken. Returns whether one was.
+    @discardableResult
+    static func toggleNextDose(now: Date = .now) throws -> Bool {
+        guard let next = load().doses(on: now).first(where: { !$0.isTaken }) else { return false }
+        try toggleDose(medicineID: next.medicine.id.uuidString, minutes: next.time.minutes, now: now)
+        return true
     }
 
     /// Saves today's mood, replacing an earlier pick.

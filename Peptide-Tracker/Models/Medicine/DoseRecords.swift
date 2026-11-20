@@ -89,8 +89,27 @@ struct AppSettings: Codable, Hashable {
     /// A daily nudge before bed for any doses left.
     var sleepReminder = false
     var sleepTime = TimeOfDay(hour: 22, minute: 0)
+    /// Privacy: Face ID (or the passcode) to open the app, and a blank
+    /// screen in the app switcher.
+    var appLock = false
+    /// Travel: dose reminders stay at home time instead of following the
+    /// clock of wherever the phone is.
+    var keepsHomeTime = false
+    /// The time zone doses are planned in while `keepsHomeTime` is on.
+    var homeTimeZoneID: String?
+    /// Sharps: count used needles toward a full container.
+    var tracksSharps = false
+    var sharpsCapacity = 100
+    /// When the container was last emptied (or started); counting starts here.
+    var sharpsEmptiedAt: Date?
 
     init() {}
+
+    /// The time zone dose reminders are planned in.
+    var doseTimeZone: TimeZone {
+        guard keepsHomeTime, let id = homeTimeZoneID, let zone = TimeZone(identifier: id) else { return .current }
+        return zone
+    }
 
     /// What a reminder calls the medicine: its name (with whose it is), or
     /// "A medicine" when names are hidden from the lock screen.
@@ -120,6 +139,8 @@ struct AppSettings: Codable, Hashable {
         case morningReminder, morningTime, sleepReminder, sleepTime
         case doseReminders, skippedSiteAreas
         case weightUnit, heightCm, birthYear, sex
+        case appLock, keepsHomeTime, homeTimeZoneID
+        case tracksSharps, sharpsCapacity, sharpsEmptiedAt
     }
 
     /// Tolerates keys added in later versions, so an older save still loads.
@@ -150,6 +171,12 @@ struct AppSettings: Codable, Hashable {
         heightCm = try c.decodeIfPresent(Double.self, forKey: .heightCm)
         birthYear = try c.decodeIfPresent(Int.self, forKey: .birthYear)
         sex = try c.decodeIfPresent(BodySex.self, forKey: .sex)
+        appLock = try c.decodeIfPresent(Bool.self, forKey: .appLock) ?? defaults.appLock
+        keepsHomeTime = try c.decodeIfPresent(Bool.self, forKey: .keepsHomeTime) ?? defaults.keepsHomeTime
+        homeTimeZoneID = try c.decodeIfPresent(String.self, forKey: .homeTimeZoneID)
+        tracksSharps = try c.decodeIfPresent(Bool.self, forKey: .tracksSharps) ?? defaults.tracksSharps
+        sharpsCapacity = try c.decodeIfPresent(Int.self, forKey: .sharpsCapacity) ?? defaults.sharpsCapacity
+        sharpsEmptiedAt = try c.decodeIfPresent(Date.self, forKey: .sharpsEmptiedAt)
     }
 }
 

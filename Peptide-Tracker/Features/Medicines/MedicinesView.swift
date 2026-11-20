@@ -28,6 +28,12 @@ struct MedicinesView: View {
     @State private var pendingDelete: Medicine?
     @State private var query = ""
     @State private var viewportHeight: CGFloat = 0
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    /// Two tiles across on iPhone, three on iPad.
+    private var gridColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 12), count: sizeClass == .regular ? 3 : 2)
+    }
 
     var body: some View {
         let now = Date.now
@@ -50,6 +56,7 @@ struct MedicinesView: View {
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
+            .readableWidth(isListView || showsStock ? AppTheme.Layout.readable : AppTheme.Layout.wide)
             .padding(.top, 20)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
             .fillsViewport(showsEmptyState, height: viewportHeight)
@@ -227,7 +234,7 @@ struct MedicinesView: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityAddTraits(.isHeader)
 
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())], spacing: 12) {
+                    LazyVGrid(columns: gridColumns, spacing: 12) {
                         ForEach(medicines) { medicine in
                             Button { router.push(.medicine(medicine.id)) } label: {
                                 MedicineTile(medicine: medicine, layout: layout)

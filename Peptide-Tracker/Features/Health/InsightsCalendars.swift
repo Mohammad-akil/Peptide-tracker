@@ -8,32 +8,74 @@ struct MiniMonth: View {
     let month: Date
     let summaries: [Date: DaySummary]
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
     private let calendar = Calendar.current
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 1), count: 7)
+
+    /// iPad's cards are three times as wide, so everything in them grows.
+    private var isLarge: Bool { sizeClass == .regular }
+    private var columns: [GridItem] { Array(repeating: GridItem(.flexible(), spacing: isLarge ? 4 : 1), count: 7) }
 
     var body: some View {
         let isThisMonth = calendar.isDate(.now, equalTo: month, toGranularity: .month)
-        VStack(alignment: .leading, spacing: 6) {
-            Text(month.formatted(.dateTime.month(.abbreviated)))
-                .font(.system(size: 15, weight: .bold))
+        VStack(alignment: .leading, spacing: isLarge ? 12 : 6) {
+            Text(month.formatted(.dateTime.month(isLarge ? .wide : .abbreviated)))
+                .font(.system(size: isLarge ? 22 : 15, weight: .bold))
                 .foregroundStyle(isThisMonth ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
-            LazyVGrid(columns: columns, spacing: 2) {
+            if isLarge {
+                // Weekday letters, as there's room for them on iPad.
+                LazyVGrid(columns: columns, spacing: 0) {
+                    ForEach(Array(calendar.orderedVeryShortWeekdays.enumerated()), id: \.offset) { _, symbol in
+                        Text(symbol)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(AppTheme.ColorToken.tertiaryText)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            LazyVGrid(columns: columns, spacing: isLarge ? 6 : 2) {
                 ForEach(Array(calendar.gridDays(of: month).enumerated()), id: \.offset) { _, day in
                     if let day {
                         cell(day)
+                    } else if isLarge {
+                        Color.clear.frame(height: Self.largeCell)
                     } else {
                         Color.clear.aspectRatio(1, contentMode: .fit)
                     }
                 }
             }
         }
-        .padding(8)
+        .padding(isLarge ? 18 : 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 16, style: .continuous))
-        .contentShape(.rect(cornerRadius: 16))
+        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: isLarge ? 24 : 16, style: .continuous))
+        .contentShape(.rect(cornerRadius: isLarge ? 24 : 16))
     }
 
+    /// The day circle on iPad: a fixed size, so every row and every month
+    /// card is the same height.
+    private static let largeCell: CGFloat = 34
+
+    @ViewBuilder
     private func cell(_ day: Date) -> some View {
+        if isLarge { largeCell(day) } else { smallCell(day) }
+    }
+
+    private func largeCell(_ day: Date) -> some View {
+        let status = summaries[day]?.status
+        let isToday = calendar.isDateInToday(day)
+        return Text("\(calendar.component(.day, from: day))")
+            .font(.system(size: 15, weight: isToday ? .heavy : .semibold))
+            .monospacedDigit()
+            .minimumScaleFactor(0.7)
+            .foregroundStyle(InsightsPalette.ink(status, isToday: isToday))
+            .frame(width: Self.largeCell, height: Self.largeCell)
+            .background(InsightsPalette.fill(status), in: .circle)
+            .overlay {
+                if isToday { Circle().strokeBorder(AppTheme.ColorToken.accent, lineWidth: 2) }
+            }
+            .frame(maxWidth: .infinity)
+    }
+
+    private func smallCell(_ day: Date) -> some View {
         let status = summaries[day]?.status
         let isToday = calendar.isDateInToday(day)
         return Text("\(calendar.component(.day, from: day))")
@@ -61,16 +103,22 @@ struct MonthCalendar: View {
     let onSelect: (Date) -> Void
     let onStep: (Int) -> Void
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
     private let calendar = Calendar.current
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+
+    /// Bigger days, rings and labels on iPad, where the card is far wider.
+    private var isLarge: Bool { sizeClass == .regular }
+    private var circle: CGFloat { isLarge ? 62 : 38 }
+    private var cellHeight: CGFloat { isLarge ? 84 : 50 }
+    private var columns: [GridItem] { Array(repeating: GridItem(.flexible(), spacing: isLarge ? 8 : 4), count: 7) }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: isLarge ? 20 : 12) {
             HStack {
                 arrow("chevron.backward", label: "Previous month") { onStep(-1) }
                 Spacer()
                 Text(month.formatted(.dateTime.month(.wide).year()))
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.system(size: isLarge ? 24 : 17, weight: .bold))
                     .contentTransition(.opacity)
                 Spacer()
                 arrow("chevron.forward", label: "Next month") { onStep(1) }
@@ -78,10 +126,10 @@ struct MonthCalendar: View {
                     .opacity(isCurrentOrLater ? 0.3 : 1)
             }
 
-            LazyVGrid(columns: columns, spacing: 4) {
+            LazyVGrid(columns: columns, spacing: isLarge ? 8 : 4) {
                 ForEach(Array(calendar.orderedVeryShortWeekdays.enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: isLarge ? 16 : 12, weight: .semibold))
                         .foregroundStyle(AppTheme.ColorToken.tertiaryText)
                         .frame(maxWidth: .infinity)
                 }
@@ -89,12 +137,12 @@ struct MonthCalendar: View {
                     if let day {
                         dayButton(day)
                     } else {
-                        Color.clear.frame(height: 50)
+                        Color.clear.frame(height: cellHeight)
                     }
                 }
             }
         }
-        .padding(14)
+        .padding(isLarge ? 24 : 14)
         .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: AppTheme.Radius.card, style: .continuous))
     }
 
@@ -106,9 +154,9 @@ struct MonthCalendar: View {
     private func arrow(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 15, weight: .bold))
+                .font(.system(size: isLarge ? 18 : 15, weight: .bold))
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
-                .frame(width: 36, height: 36)
+                .frame(width: isLarge ? 44 : 36, height: isLarge ? 44 : 36)
                 .background(AppTheme.ColorToken.controlFill, in: .circle)
         }
         .buttonStyle(.pressable)
@@ -123,28 +171,28 @@ struct MonthCalendar: View {
         return Button { onSelect(day) } label: {
             VStack(spacing: 3) {
                 Text("\(calendar.component(.day, from: day))")
-                    .font(.system(size: 16, weight: isToday || isSelected ? .bold : .semibold))
+                    .font(.system(size: isLarge ? 24 : 16, weight: isToday || isSelected ? .bold : .semibold))
                     .monospacedDigit()
                     .foregroundStyle(InsightsPalette.ink(status, isToday: isToday))
-                    .frame(width: 38, height: 38)
+                    .frame(width: circle, height: circle)
                     .background(InsightsPalette.fill(status), in: .circle)
                     .overlay {
                         // A partly taken day shows how much as a ring.
                         if status == .partial, let summary {
-                            ProgressRing(progress: summary.rate, lineWidth: 2.5, tint: AppTheme.ColorToken.accent, track: .clear)
+                            ProgressRing(progress: summary.rate, lineWidth: isLarge ? 4 : 2.5, tint: AppTheme.ColorToken.accent, track: .clear)
                         }
                     }
                     .overlay {
                         Circle()
-                            .strokeBorder(isSelected ? AppTheme.ColorToken.primaryText : (isToday ? AppTheme.ColorToken.accent : .clear), lineWidth: 2)
-                            .padding(-3)
+                            .strokeBorder(isSelected ? AppTheme.ColorToken.primaryText : (isToday ? AppTheme.ColorToken.accent : .clear), lineWidth: isLarge ? 2.5 : 2)
+                            .padding(isLarge ? -4 : -3)
                     }
                 // Doses still to come on this day.
                 Circle()
                     .fill(status == .upcoming ? AppTheme.ColorToken.accent : .clear)
-                    .frame(width: 5, height: 5)
+                    .frame(width: isLarge ? 7 : 5, height: isLarge ? 7 : 5)
             }
-            .frame(maxWidth: .infinity, minHeight: 50)
+            .frame(maxWidth: .infinity, minHeight: cellHeight)
             .contentShape(.rect)
             .scaleEffect(isSelected ? 1.06 : 1)
         }
@@ -166,13 +214,16 @@ struct MonthCalendar: View {
 // MARK: - Legend
 
 struct InsightsLegend: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     var body: some View {
-        HStack(spacing: 16) {
+        let isLarge = sizeClass == .regular
+        HStack(spacing: isLarge ? 28 : 16) {
             item("All taken", fill: InsightsPalette.all)
             item("Some taken", fill: InsightsPalette.partial)
             item("Missed", fill: InsightsPalette.missed)
         }
-        .font(.system(size: 13, weight: .medium))
+        .font(.system(size: isLarge ? 16 : 13, weight: .medium))
         .foregroundStyle(AppTheme.ColorToken.secondaryText)
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
@@ -180,7 +231,7 @@ struct InsightsLegend: View {
 
     private func item(_ title: String, fill: Color) -> some View {
         HStack(spacing: 6) {
-            Circle().fill(fill).frame(width: 12, height: 12)
+            Circle().fill(fill).frame(width: sizeClass == .regular ? 15 : 12, height: sizeClass == .regular ? 15 : 12)
             Text(title)
         }
     }

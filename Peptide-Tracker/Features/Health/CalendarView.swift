@@ -15,6 +15,8 @@ struct CalendarView: View {
     @State private var stepsForward = true
     @Environment(\.dismiss) private var dismiss
     @State private var showsShare = false
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isLarge: Bool { sizeClass == .regular }
 
     @State private var year = Calendar.current.component(.year, from: .now)
     /// The first day of the month that's open, or nil for the year.
@@ -35,6 +37,7 @@ struct CalendarView: View {
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.medium)
+            .readableWidth(AppTheme.Layout.wide)
             .padding(.top, 20)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
@@ -76,7 +79,8 @@ struct CalendarView: View {
 
     private var topPanel: some View {
         TopPanel(title: openMonth.map { $0.formatted(.dateTime.month(.wide)) } ?? "Calendar",
-                 titleValue: openMonth.map { Double(calendar.component(.month, from: $0)) }) {
+                 titleValue: openMonth.map { Double(calendar.component(.month, from: $0)) },
+                 contentWidth: AppTheme.Layout.wide) {
             Button { showsShare = true } label: {
                 Image(systemName: "square.and.arrow.up")
                     .font(.system(size: 16, weight: .semibold))
@@ -198,7 +202,7 @@ struct CalendarView: View {
                 .frame(maxWidth: .infinity)
                 .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: AppTheme.Radius.card, style: .continuous))
             }
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10, alignment: .top), count: 3), spacing: 10) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: isLarge ? 16 : 10, alignment: .top), count: 3), spacing: isLarge ? 16 : 10) {
                 ForEach(months, id: \.self) { month in
                     Button { open(month) } label: {
                         MiniMonth(month: month, summaries: summaries)
@@ -247,6 +251,9 @@ struct CalendarView: View {
                     .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .opacity))
             }
         }
+        // An open month reads best a little narrower than the year grid.
+        .frame(maxWidth: 860)
+        .frame(maxWidth: .infinity)
         .transition(monthTransition)
     }
 

@@ -11,6 +11,9 @@ struct BodyMap: View {
     /// When each site was last used.
     var lastUsed: [InjectionSite: Date] = [:]
     var now: Date = .now
+    /// Heatmap mode: how many injections went into each site. When set,
+    /// sites are shaded by use instead of by rotation.
+    var heat: [InjectionSite: Int]?
     var onSelect: ((InjectionSite) -> Void)?
 
     /// Sites used this recently are greyed out.
@@ -34,6 +37,12 @@ struct BodyMap: View {
     }
 
     private func fill(for site: InjectionSite) -> Color {
+        if let heat {
+            let most = max(heat.values.max() ?? 0, 1)
+            let count = heat[site] ?? 0
+            guard count > 0 else { return AppTheme.ColorToken.accent.opacity(0.06) }
+            return AppTheme.ColorToken.accent.opacity(0.18 + 0.82 * Double(count) / Double(most))
+        }
         if site == selected { return AppTheme.ColorToken.accent }
         if site == suggested { return AppTheme.ColorToken.accent.opacity(0.35) }
         if Self.isResting(lastUsed: lastUsed[site], now: now) { return AppTheme.ColorToken.tertiaryText.opacity(0.4) }

@@ -83,7 +83,8 @@ struct RemindersGroupView: View {
             GroupedSection(footer: "When refill reminders arrive, what they say, and how you tick off doses.") {
                 SettingsLinkRow(page: .reminders, value: store.remindersSummary)
                 SettingsLinkRow(page: .notifications, value: store.settings.showsMedicineName ? nil : "Names hidden")
-                SettingsLinkRow(page: .doses, value: store.settings.tracksDoses ? doseLayout.title : "Off", showsDivider: false)
+                SettingsLinkRow(page: .doses, value: store.settings.tracksDoses ? doseLayout.title : "Off")
+                SettingsLinkRow(page: .travel, value: store.settings.keepsHomeTime ? "Home time" : nil, showsDivider: false)
             }
         }
     }
@@ -96,6 +97,8 @@ struct HealthGroupView: View {
     @State private var calculator: HealthCalculator?
     @State private var showsWeight = false
     @State private var showsMood = false
+    @State private var showsSideEffects = false
+    @State private var showsSharps = false
 
     var body: some View {
         SettingsPageScaffold(page: .health) {
@@ -110,10 +113,27 @@ struct HealthGroupView: View {
                 SettingsSheetRow(
                     title: "Weight",
                     value: store.latestWeight.map { store.settings.weightUnit.format($0.kilograms) },
-                    showsDivider: false,
                     action: { showsWeight = true }
                 ) {
                     SettingsTile(symbol: "scalemass.fill", tint: Color(hex: 0x30B0C7))
+                }
+                SettingsSheetRow(
+                    title: "Side effects",
+                    value: store.sideEffects.isEmpty ? "Log" : "\(store.sideEffects(lastDays: 30).count) this month",
+                    showsDivider: store.medicines.contains { $0.type == .injection } || store.settings.tracksSharps,
+                    action: { showsSideEffects = true }
+                ) {
+                    SettingsTile(symbol: "list.bullet.clipboard.fill", tint: Color(hex: 0xFF453A))
+                }
+                if store.medicines.contains(where: { $0.type == .injection }) || store.settings.tracksSharps {
+                    SettingsSheetRow(
+                        title: "Sharps container",
+                        value: store.sharpsSummary,
+                        showsDivider: false,
+                        action: { showsSharps = true }
+                    ) {
+                        SettingsTile(symbol: "trash.square.fill", tint: Color(hex: 0xFF9F0A))
+                    }
                 }
             }
 
@@ -132,6 +152,8 @@ struct HealthGroupView: View {
         }
         .sheet(item: $calculator) { CalculatorSheet(kind: $0) }
         .sheet(isPresented: $showsWeight) { WeightSheet() }
+        .sheet(isPresented: $showsSideEffects) { SideEffectsSheet() }
+        .sheet(isPresented: $showsSharps) { SharpsSheet() }
         .sheet(isPresented: $showsMood) {
             MoodSheet().presentationDetents([.large])
         }

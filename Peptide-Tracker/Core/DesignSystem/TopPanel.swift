@@ -8,6 +8,8 @@ struct TopPanel<Actions: View, Controls: View>: View {
     /// A number that orders titles (e.g. the month), so the title rolls
     /// up or down like a counter when it changes. Nil just fades.
     var titleValue: Double?
+    /// How wide the panel's content may get on iPad; match the screen below.
+    var contentWidth: CGFloat = AppTheme.Layout.readable
     @ViewBuilder var actions: Actions
     @ViewBuilder var controls: Controls
 
@@ -28,6 +30,7 @@ struct TopPanel<Actions: View, Controls: View>: View {
 
             controls
         }
+        .readableWidth(contentWidth)
         .padding(.top, 8)
         .padding(.bottom, 16)
         .frame(maxWidth: .infinity)

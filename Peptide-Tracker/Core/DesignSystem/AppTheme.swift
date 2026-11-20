@@ -32,6 +32,17 @@ enum AppTheme {
         static let destructive = Color(hex: 0xC8372D)
     }
 
+    /// Content widths on iPad and other wide windows. On iPhone the screen
+    /// is narrower than all of these, so nothing changes there.
+    enum Layout {
+        /// Lists, forms and settings: a comfortable reading line.
+        static let readable: CGFloat = 720
+        /// Grids that gain from more columns (Medicines, the calendar).
+        static let wide: CGFloat = 1040
+        /// Onboarding and other single-question screens.
+        static let narrow: CGFloat = 600
+    }
+
     enum Radius {
         static let card: CGFloat = 24
         static let tile: CGFloat = 22
@@ -82,5 +93,17 @@ extension UIColor {
             blue: CGFloat(hex & 0xFF) / 255,
             alpha: 1
         )
+    }
+}
+
+// MARK: - Wide windows
+
+extension View {
+    /// Caps the content at `width` and centres it, so iPad screens (and
+    /// iPhone landscape) keep a readable line instead of stretching edge
+    /// to edge. Backgrounds behind it still fill the screen.
+    func readableWidth(_ width: CGFloat = AppTheme.Layout.readable) -> some View {
+        frame(maxWidth: width)
+            .frame(maxWidth: .infinity)
     }
 }

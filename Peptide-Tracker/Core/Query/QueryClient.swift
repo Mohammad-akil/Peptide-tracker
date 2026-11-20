@@ -5,7 +5,7 @@ import Observation
 /// query carrying that tag goes stale — the same idea as React Query's
 /// `invalidateQueries({ queryKey })`, but by what the data *is*.
 enum QueryTag: Hashable, CaseIterable {
-    case medicines, doses, refills, moods, weights, calculators, settings, contacts
+    case medicines, doses, refills, moods, weights, calculators, settings, contacts, sideEffects
     /// Anything that depends on what "today" is; invalidated at midnight.
     case day
 }
