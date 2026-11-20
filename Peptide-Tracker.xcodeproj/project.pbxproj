@@ -46,11 +46,21 @@
 			);
 			target = D05EDA700000000000000001 /* DosedayWidgetsExtension */;
 		};
+		000000000000000000000011 /* Exceptions for "Peptide-Tracker" folder in "Peptide-Tracker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 000000000000000100000000 /* Peptide-Tracker */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* Peptide-Tracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				000000000000000000000011 /* Exceptions for "Peptide-Tracker" folder in "Peptide-Tracker" target */,
+			);
 			path = "Peptide-Tracker";
 			sourceTree = "<group>";
 		};
@@ -365,6 +375,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Peptide-Tracker/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Doseday;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
@@ -414,6 +425,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Peptide-Tracker/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Doseday;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
