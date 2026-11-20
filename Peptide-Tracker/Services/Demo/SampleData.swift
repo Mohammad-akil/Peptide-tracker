@@ -18,7 +18,8 @@ enum SampleData {
                      reminderDaysBefore: 5, reminderTime: .defaultReminder, createdAt: created),
             Medicine(name: "Insulin glargine", strength: "100 u/ml", type: .injection, color: .amber,
                      stock: 18, capacity: 30, perDay: 1, intakeTimes: [.init(hour: 22, minute: 0)],
-                     reminderDaysBefore: 5, reminderTime: .init(hour: 21, minute: 0), createdAt: created),
+                     reminderDaysBefore: 5, reminderTime: .init(hour: 21, minute: 0), createdAt: created,
+                     openedAt: now.startOfDay.adding(days: -9), usableDaysAfterOpening: 28, prepMinutes: 30),
             Medicine(name: "Hydrocortisone", strength: "1% cream", type: .cream, color: .slate,
                      stock: 40, capacity: 60, perDay: 2, intakeTimes: [.init(hour: 8, minute: 0), .init(hour: 20, minute: 0)],
                      reminderDaysBefore: 5, reminderTime: .defaultReminder, createdAt: created),
@@ -27,6 +28,8 @@ enum SampleData {
                      reminderDaysBefore: 5, reminderTime: .defaultReminder, createdAt: created),
         ]
 
+        let injection = medicines[3]
+        var siteClock: [InjectionSite: Date] = [:]
         var logs: [DoseLog] = []
         // A month of history: nearly everything taken, a few misses so the
         // adherence numbers and week dots have something to show.
@@ -36,9 +39,16 @@ enum SampleData {
                 for time in medicine.intakeTimes {
                     let missed = (offset * 7 + index * 3 + time.hour) % 23 == 0
                     let jitter = TimeInterval(((offset + index) % 9) * 60)
+                    let takenAt = missed ? nil : time.on(day).addingTimeInterval(jitter)
+                    // Injections rotate round the body, for the site map.
+                    var site: InjectionSite?
+                    if medicine.id == injection.id, let takenAt {
+                        site = InjectionSite.next(lastUsed: siteClock)
+                        siteClock[site!] = takenAt
+                    }
                     logs.append(DoseLog(
                         medicineID: medicine.id, day: day, time: time, units: medicine.unitsPerIntake,
-                        takenAt: missed ? nil : time.on(day).addingTimeInterval(jitter)
+                        takenAt: takenAt, site: site
                     ))
                 }
             }
@@ -67,12 +77,49 @@ enum SampleData {
             }
         }
 
+        // Mood most days, gently up.
+        let moods: [DailyCheckIn.Mood] = [.okay, .good, .good, .great, .low, .good, .great]
+        let checkIns = (0..<28).compactMap { offset -> DailyCheckIn? in
+            guard offset % 5 != 3 else { return nil }
+            return DailyCheckIn(day: now.startOfDay.adding(days: -offset), mood: moods[offset % moods.count])
+        }.reversed()
+
+        // A weigh-in every few days, trending down.
+        let weights = stride(from: 56, through: 0, by: -4).map { offset in
+            WeightEntry(day: now.startOfDay.adding(days: -offset), kilograms: 84.0 - Double(56 - offset) * 0.09 + Double(offset % 3) * 0.2)
+        }
+
+        // A handful of side effects, mostly the day after an injection.
+        let effects: [(days: Int, kind: SideEffectEntry.Kind, severity: SideEffectEntry.Severity)] = [
+            (2, .nausea, .mild), (6, .nausea, .moderate), (9, .fatigue, .mild),
+            (13, .nausea, .mild), (16, .headache, .mild), (20, .siteReaction, .mild), (23, .nausea, .mild),
+        ]
+        let sideEffects = effects.map { effect in
+            SideEffectEntry(
+                date: now.startOfDay.adding(days: -effect.days).addingTimeInterval(10 * 3600),
+                kind: effect.kind,
+                severity: effect.severity,
+                medicineID: injection.id,
+                site: effect.kind == .siteReaction ? .thighLeft : nil
+            )
+        }
+
+        let contacts = [
+            HealthContact(name: "Dr. Sarah Patel", role: .doctor, phone: "+44 20 7946 0018", email: "reception@example.com"),
+            HealthContact(name: "City Pharmacy", role: .pharmacist, phone: "+44 20 7946 0412"),
+            HealthContact(name: "Diabetes nurse", role: .nurse, phone: "+44 20 7946 0733", email: "nurse@example.com"),
+        ]
+
         return MedicineSnapshot(
             medicines: medicines,
             doseLogs: logs,
             refills: refills,
             settings: settings,
-            lastCountdownDay: now.startOfDay.adding(days: -1)
+            lastCountdownDay: now.startOfDay.adding(days: -1),
+            contacts: contacts,
+            checkIns: Array(checkIns),
+            weights: weights,
+            sideEffects: sideEffects
         )
     }
 }

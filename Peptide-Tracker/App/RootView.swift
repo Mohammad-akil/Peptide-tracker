@@ -47,6 +47,10 @@ struct RootView: View {
             OverlayWindow.install(router: router)
             // Privacy mode's lock screen, above the toasts.
             LockWindow.install()
+            #if DEBUG
+            // Screenshot mode's floating download button.
+            StudioButtonWindow.install(router: router)
+            #endif
         }
     }
 
@@ -96,6 +100,14 @@ struct RootView: View {
                     .presentationBackground(AppTheme.ColorToken.cardBackground)
             case .paywall(let reason):
                 PaywallView(reason: reason)
+            case .sideEffects:
+                SideEffectsSheet()
+            case .screenshotStudio:
+                #if DEBUG
+                ScreenshotStudioView()
+                #else
+                EmptyView()
+                #endif
             case .notificationPermission:
                 NotificationPermissionSheet()
                     .presentationDetents([.height(520)])

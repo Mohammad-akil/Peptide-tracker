@@ -511,6 +511,10 @@ final class MedicineStore {
         medicines = sample.medicines
         doseLogs = sample.doseLogs
         refills = sample.refills
+        contacts = sample.contacts
+        checkIns = sample.checkIns
+        weights = sample.weights
+        sideEffects = sample.sideEffects
         lastCountdownDay = sample.lastCountdownDay
         didChange()
     }

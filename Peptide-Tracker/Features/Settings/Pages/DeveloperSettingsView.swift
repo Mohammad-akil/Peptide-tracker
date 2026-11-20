@@ -10,6 +10,12 @@ struct DeveloperSettingsView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .developer) {
+            GroupedSection(title: "App Store", footer: "Capture every major screen with demo data, or turn on the floating download button and save any screen to Photos.") {
+                actionRow("Screenshot Studio", symbol: "camera.viewfinder", tint: Color(hex: 0xFF2D55), showsDivider: false) {
+                    router.sheet = .screenshotStudio
+                }
+            }
+
             GroupedSection(title: "Data") {
                 actionRow("Load sample medicines", symbol: "tray.and.arrow.down.fill", tint: Color(hex: 0x0A84FF)) {
                     store.loadSampleData()

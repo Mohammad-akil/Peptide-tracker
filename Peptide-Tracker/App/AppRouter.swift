@@ -43,6 +43,10 @@ final class AppRouter {
         case notificationPermission
         /// `reason` says why it opened, when something hit the free limit.
         case paywall(reason: String?)
+        /// Health → Side effects, opened from elsewhere.
+        case sideEffects
+        /// Debug builds: the App Store screenshot studio.
+        case screenshotStudio
 
         var id: String {
             switch self {
@@ -53,6 +57,8 @@ final class AppRouter {
             case .injectionSite(let dose): "site-\(dose.id)"
             case .notificationPermission: "permission"
             case .paywall: "paywall"
+            case .sideEffects: "sideEffects"
+            case .screenshotStudio: "screenshotStudio"
             }
         }
     }
@@ -122,6 +128,11 @@ final class AppRouter {
         case "add":
             showToday(nil)
             requestAddMedicine(count: medicineCount, purchases: purchases)
+        #if DEBUG
+        case "studio":
+            // doseday://studio — the App Store Screenshot Studio.
+            sheet = .screenshotStudio
+        #endif
         case "pro":
             showToday(nil)
             if !purchases.isPro { sheet = .paywall(reason: nil) }
