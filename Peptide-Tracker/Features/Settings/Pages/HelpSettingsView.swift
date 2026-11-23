@@ -37,7 +37,7 @@ struct HelpSettingsView: View {
         ]),
         Topic(title: "Pro", questions: [
             ("What does Pro include?",
-             "Pro tracks as many medicines as you take. The free plan covers \(PurchaseStore.freeMedicineLimit). Everything else works on both."),
+             "Doseday is a subscription app. Pro unlocks everything: dose reminders and tracking, injection sites, weight and goal progress, side effects, reports and PDF exports, with as many medicines as you take."),
             ("How do I restore a purchase?",
              "Open the Pro screen from Settings and tap Restore. Use the same Apple Account you bought Pro with."),
         ]),

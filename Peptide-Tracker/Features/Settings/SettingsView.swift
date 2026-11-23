@@ -71,7 +71,7 @@ struct SettingsView: View {
 
     // MARK: Pro
 
-    /// Free: the way to Pro, with how much of the free limit is used.
+    /// Not Pro (rare behind the hard paywall): the way to Pro.
     /// Pro: the plan.
     @ViewBuilder
     private var proCard: some View {
@@ -80,8 +80,6 @@ struct SettingsView: View {
                 SettingsRowLabel(symbol: "crown.fill", tint: Color(hex: 0xFF9F0A), title: "\(Bundle.main.appName) Pro", value: plan.title)
             }
         } else {
-            let limit = PurchaseStore.freeMedicineLimit
-            let used = min(store.medicines.count, limit)
             Button { router.sheet = .paywall(reason: nil) } label: {
                 HStack(spacing: 14) {
                     Image(systemName: "crown.fill")
@@ -96,7 +94,7 @@ struct SettingsView: View {
                         Text("Upgrade to Pro")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(AppTheme.ColorToken.primaryText)
-                        Text("\(used) of \(limit) free medicines used · From \(purchases.price(for: .monthly))")
+                        Text("Unlock every feature · From \(purchases.price(for: .monthly))")
                             .font(.system(size: 13))
                             .foregroundStyle(AppTheme.ColorToken.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)

@@ -36,12 +36,12 @@ struct PaywallFeature: Identifiable {
 /// What the paywall promises. Only list what the app actually ships and
 /// gates — App Review rejects paywalls that promise features the binary
 /// doesn't have, and a Pro tick on something free users already get is
-/// misleading. Keep this in sync with `PurchaseStore.freeMedicineLimit`,
-/// `.proLocked(...)` and the PDF export gates.
+/// misleading. Keep this in sync with `.proLocked(...)` and the PDF
+/// export gates.
 @MainActor
 enum PaywallContent {
     static let features: [PaywallFeature] = [
-        PaywallFeature(title: "Unlimited medicines", tier: .pro, freeLimit: "\(PurchaseStore.freeMedicineLimit)", symbol: "pills.fill"),
+        PaywallFeature(title: "Unlimited medicines", tier: .pro, symbol: "pills.fill"),
         PaywallFeature(title: "Weekly & custom schedules", tier: .pro, symbol: "calendar"),
         PaywallFeature(title: "Adherence report & charts", tier: .pro, symbol: "chart.bar.fill"),
         PaywallFeature(title: "PDF exports for doctor visits", tier: .pro, symbol: "doc.text.fill"),

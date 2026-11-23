@@ -88,13 +88,9 @@ final class AppRouter {
         path = [.medicine(id)]
     }
 
-    /// Opens Add, or the paywall once a free user is at the medicine limit.
+    /// Opens Add. There's no free tier: everyone past the hard paywall is
+    /// Pro, so there's no medicine limit to check.
     func requestAddMedicine(named name: String? = nil, count: Int, purchases: PurchaseStore) {
-        guard purchases.canAddMedicine(count: count) else {
-            let limit = PurchaseStore.freeMedicineLimit
-            sheet = .paywall(reason: "You’re tracking \(limit) medicines, the free limit. Go Pro to add more.")
-            return
-        }
         if let name, !name.isEmpty {
             sheet = .addMedicineNamed(name)
         } else {

@@ -69,7 +69,7 @@ struct PaywallView: View {
 }
 
 #Preview {
-    PaywallView(reason: "You’re tracking 2 medicines, the free limit. Go Pro to add more.")
+    PaywallView(reason: nil)
         .environment(PurchaseStore())
         .environment(AppRouter())
 }

@@ -19,10 +19,6 @@ struct RootView: View {
     @State private var showsSetupPaywall = false
 
     private static let welcomeSeenKey = "welcome.seen"
-    /// Set when someone finishes the new setup: from then on the app needs
-    /// Pro, and the paywall comes back on launch until they have it.
-    /// Users from before the hard paywall never get it set.
-    @AppStorage("paywall.required") private var requiresPro = false
 
     init(startsWithOnboarding: Bool) {
         _showsOnboarding = State(initialValue: startsWithOnboarding)
@@ -77,15 +73,12 @@ struct RootView: View {
         .fullScreenCover(isPresented: $showsSetupPaywall, onDismiss: openAddAfterSetup) {
             JourneyPaywallView { showsSetupPaywall = false }
         }
-        // Hard paywall: back on every launch until Pro, gone once it is.
-        .task {
-            try? await Task.sleep(for: .milliseconds(600))
-            if requiresPro && !purchases.isPro { showsSetupPaywall = true }
-        }
-        .onChange(of: purchases.isPro) { _, isPro in
-            if isPro { showsSetupPaywall = false }
-            else if requiresPro { showsSetupPaywall = true }
-        }
+        // Hard paywall: every user pays. Shown whenever the app opens
+        // without Pro (once the App Store has answered, so it never flashes
+        // over a paying user), and gone as soon as Pro unlocks.
+        .task { updateHardPaywall() }
+        .onChange(of: purchases.isPro) { updateHardPaywall() }
+        .onChange(of: purchases.hasCheckedEntitlements) { updateHardPaywall() }
         .onAppear {
             #if DEBUG
             // `-onboarding time` opens setup on a step; `-paywall YES` opens Pro.
@@ -141,11 +134,19 @@ struct RootView: View {
     /// Leaves setup for the paywall (unless already Pro), then Add.
     private func finishOnboarding() {
         hasSeenWelcome = true
-        requiresPro = true
         showsOnboarding = false
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             if purchases.isPro { openAddAfterSetup() } else { showsSetupPaywall = true }
+        }
+    }
+
+    private func updateHardPaywall() {
+        guard purchases.hasCheckedEntitlements else { return }
+        if purchases.isPro {
+            showsSetupPaywall = false
+        } else if !showsOnboarding {
+            showsSetupPaywall = true
         }
     }
 

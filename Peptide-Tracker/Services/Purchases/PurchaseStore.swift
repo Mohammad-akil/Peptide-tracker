@@ -58,8 +58,6 @@ final class PurchaseStore {
         case failed(String)
     }
 
-    /// Medicines a free user can track; adding past this opens the paywall.
-    static let freeMedicineLimit = 2
     /// Preselected on the paywall.
     static let defaultPlan = Plan.yearly
 
@@ -68,6 +66,9 @@ final class PurchaseStore {
     /// still take it. Missing means no trial to offer, so none is promised.
     private(set) var trialDays: [Plan: Int] = [:]
     private(set) var isPro = false
+    /// False until the first entitlement check finishes, so the hard
+    /// paywall never flashes over someone who has already paid.
+    private(set) var hasCheckedEntitlements = false
     private(set) var activePlan: Plan?
     private(set) var isPurchasing = false
     var errorMessage: String?
@@ -85,12 +86,6 @@ final class PurchaseStore {
             await loadProducts()
             await refreshEntitlements()
         }
-    }
-
-    // MARK: Limits
-
-    func canAddMedicine(count: Int) -> Bool {
-        isPro || count < Self.freeMedicineLimit
     }
 
     // MARK: Paywall copy
@@ -224,6 +219,7 @@ final class PurchaseStore {
         }
         activePlan = plan
         isPro = plan != nil
+        hasCheckedEntitlements = true
         // Having subscribed before can use up the trial.
         await refreshTrials()
     }
