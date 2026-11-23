@@ -72,43 +72,14 @@ struct SettingsView: View {
 
     // MARK: Pro
 
-    /// Not Pro (rare behind the hard paywall): the way to Pro.
-    /// Pro: the plan.
+    /// The plan, for subscribers. Everyone in the app has Pro (hard
+    /// paywall), so there's nothing to upgrade to.
     @ViewBuilder
     private var proCard: some View {
         if let plan = purchases.activePlan {
             GroupedSection {
                 SettingsRowLabel(symbol: "crown.fill", tint: Color(hex: 0xFF9F0A), title: "\(Bundle.main.appName) Pro", value: plan.title)
             }
-        } else {
-            Button { router.sheet = .paywall(reason: nil) } label: {
-                HStack(spacing: 14) {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 48, height: 48)
-                        .background(
-                            LinearGradient(colors: [Color(hex: 0x8A6CF0), AppTheme.ColorToken.accent], startPoint: .top, endPoint: .bottom),
-                            in: .rect(cornerRadius: 13, style: .continuous)
-                        )
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Upgrade to Pro")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(AppTheme.ColorToken.primaryText)
-                        Text("Unlock every feature · From \(purchases.price(for: .monthly))")
-                            .font(.system(size: 13))
-                            .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer(minLength: 8)
-                    Chevron()
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .contentShape(.rect)
-            }
-            .buttonStyle(RowPressStyle())
-            .groupedCard()
         }
     }
 

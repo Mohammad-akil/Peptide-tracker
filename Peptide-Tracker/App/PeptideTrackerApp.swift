@@ -57,8 +57,6 @@ struct PeptideTrackerApp: App {
                     // Doses and moods logged from a widget while away.
                     appDelegate.store.reloadFromDisk()
                     appDelegate.store.runDailyCountdown()
-                    // Changes made on another device while away.
-                    CloudSync.shared.requestSync()
                 }
             }
         }

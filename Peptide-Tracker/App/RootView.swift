@@ -15,7 +15,7 @@ struct RootView: View {
     /// Setup is the first screen rather than a cover slid over the app;
     /// whether it shows is decided during the splash.
     @State private var showsOnboarding: Bool
-    /// After setup: the paywall, then Add once it closes.
+    /// After setup: the paywall (unless already Pro).
     @State private var showsSetupPaywall = false
 
     private static let welcomeSeenKey = "welcome.seen"
@@ -70,7 +70,7 @@ struct RootView: View {
                     }
                 }
         }
-        .fullScreenCover(isPresented: $showsSetupPaywall, onDismiss: openAddAfterSetup) {
+        .fullScreenCover(isPresented: $showsSetupPaywall) {
             JourneyPaywallView { showsSetupPaywall = false }
         }
         // Hard paywall: every user pays. Shown whenever the app opens
@@ -79,12 +79,6 @@ struct RootView: View {
         .task { updateHardPaywall() }
         .onChange(of: purchases.isPro) { updateHardPaywall() }
         .onChange(of: purchases.hasCheckedEntitlements) { updateHardPaywall() }
-        .onAppear {
-            #if DEBUG
-            // `-onboarding time` opens setup on a step; `-paywall YES` opens Pro.
-            if UserDefaults.standard.bool(forKey: "paywall") { router.sheet = .paywall(reason: nil) }
-            #endif
-        }
         .sheet(item: $router.sheet, onDismiss: presentPermissionIfNeeded) { sheet in
             switch sheet {
             case .addMedicine:
@@ -104,8 +98,6 @@ struct RootView: View {
                     .presentationDetents([.large])
                     .presentationCornerRadius(44)
                     .presentationBackground(AppTheme.ColorToken.cardBackground)
-            case .paywall(let reason):
-                PaywallView(reason: reason)
             case .sideEffects:
                 SideEffectsSheet()
             case .screenshotStudio:
@@ -131,13 +123,14 @@ struct RootView: View {
         #endif
     }
 
-    /// Leaves setup for the paywall (unless already Pro), then Add.
+    /// Leaves setup for the paywall (unless already Pro), then Today.
     private func finishOnboarding() {
         hasSeenWelcome = true
         showsOnboarding = false
         Task {
             try? await Task.sleep(for: .milliseconds(450))
-            if purchases.isPro { openAddAfterSetup() } else { showsSetupPaywall = true }
+            // The app stays on Today; the user adds a medicine with "+".
+            if !purchases.isPro { showsSetupPaywall = true }
         }
     }
 
@@ -147,13 +140,6 @@ struct RootView: View {
             showsSetupPaywall = false
         } else if !showsOnboarding {
             showsSetupPaywall = true
-        }
-    }
-
-    private func openAddAfterSetup() {
-        Task {
-            try? await Task.sleep(for: .milliseconds(350))
-            router.requestAddMedicine(count: store.medicines.count, purchases: purchases)
         }
     }
 

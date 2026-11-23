@@ -41,8 +41,6 @@ final class AppRouter {
         /// "Where did you inject?" before an injection is ticked off.
         case injectionSite(ScheduledDose)
         case notificationPermission
-        /// `reason` says why it opened, when something hit the free limit.
-        case paywall(reason: String?)
         /// Health → Side effects, opened from elsewhere.
         case sideEffects
         /// Debug builds: the App Store screenshot studio.
@@ -130,8 +128,8 @@ final class AppRouter {
             sheet = .screenshotStudio
         #endif
         case "pro":
+            // Everyone in the app has Pro; the hard paywall covers the rest.
             showToday(nil)
-            if !purchases.isPro { sheet = .paywall(reason: nil) }
         default:
             break
         }

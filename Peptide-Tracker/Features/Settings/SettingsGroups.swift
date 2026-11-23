@@ -189,22 +189,14 @@ struct DataGroupView: View {
         SettingsPageScaffold(page: .data) {
             GroupedSection(title: "Reports", footer: "PDFs of your medicines and how you’re doing, handy for doctor visits.") {
                 SettingsLinkRow(page: .report, value: store.reportSummary)
-                if purchases.isPro {
-                    ShareLink(
-                        item: MedicineListPDF(medicines: store.medicinesByUrgency, pharmacyName: store.settings.pharmacyName, date: .now),
-                        preview: SharePreview("Medicine list", image: Image(systemName: "doc.text"))
-                    ) {
-                        SettingsRowLabel(symbol: "doc.text.fill", tint: Color(hex: 0xFF9F0A), title: "Export medicine list", showsChevron: true)
-                    }
-                    .buttonStyle(RowPressStyle())
-                    .disabled(store.medicines.isEmpty)
-                } else {
-                    Button { router.sheet = .paywall(reason: "PDF exports for doctor visits are part of Pro.") } label: {
-                        SettingsRowLabel(symbol: "doc.text.fill", tint: Color(hex: 0xFF9F0A), title: "Export medicine list")
-                            .overlay(alignment: .trailing) { ProCrownBadge().padding(.trailing, 16) }
-                    }
-                    .buttonStyle(RowPressStyle())
+                ShareLink(
+                    item: MedicineListPDF(medicines: store.medicinesByUrgency, pharmacyName: store.settings.pharmacyName, date: .now),
+                    preview: SharePreview("Medicine list", image: Image(systemName: "doc.text"))
+                ) {
+                    SettingsRowLabel(symbol: "doc.text.fill", tint: Color(hex: 0xFF9F0A), title: "Export medicine list", showsChevron: true)
                 }
+                .buttonStyle(RowPressStyle())
+                .disabled(store.medicines.isEmpty)
             }
 
             GroupedSection(title: "Your data", footer: "Every dose, medicine, refill, mood, weight and calculator result, as spreadsheets. Everything stays on this iPhone until you share it.") {

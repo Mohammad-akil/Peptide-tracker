@@ -172,19 +172,21 @@ struct MoodCard: View {
 struct WeightCard: View {
     @Environment(MedicineStore.self) private var store
     @State private var showsLog = false
+    @State private var range = WeightRange.quarter
 
     var body: some View {
         let unit = store.settings.weightUnit
-        let since = Date.now.startOfDay.adding(days: -90)
-        let recent = store.weights.filter { $0.day >= since }
+        let recent = range.entries(store.weights)
+        let goal = store.settings.goalWeightKg
 
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Weight")
                         .font(.system(size: 17, weight: .semibold))
-                    Text("Last 90 days")
+                    Text(range.subtitle)
                         .font(.system(size: 13))
+                        .contentTransition(.opacity)
                         .foregroundStyle(AppTheme.ColorToken.secondaryText)
                 }
                 Spacer(minLength: 8)
@@ -216,9 +218,22 @@ struct WeightCard: View {
                     }
                 }
 
+                if let goal, let start = store.weights.first {
+                    goalProgress(start: start.kilograms, current: latest.kilograms, goal: goal, unit: unit)
+                }
+
+                if store.weights.count > 1 {
+                    SectionPicker(selection: $range.animation(.snappy), title: \.rawValue, height: 36, track: AppTheme.ColorToken.background)
+                        .frame(height: 36)
+                }
+
                 if recent.count > 1 {
-                    chart(recent, unit: unit)
-                        .frame(height: 150)
+                    chart(recent, unit: unit, goal: goal)
+                        .frame(height: 170)
+                } else if store.weights.count > 1 {
+                    Text("No weigh-ins in this range yet.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.ColorToken.secondaryText)
                 } else {
                     Text("Log a few more days to see your trend.")
                         .font(.system(size: 13))
@@ -262,11 +277,64 @@ struct WeightCard: View {
         .minimumScaleFactor(0.8)
     }
 
-    private func chart(_ entries: [WeightEntry], unit: WeightUnit) -> some View {
-        let values = entries.map { unit.value(fromKilograms: $0.kilograms) }
+    /// Start → goal bar: how much of the way there, and what's left.
+    private func goalProgress(start: Double, current: Double, goal: Double, unit: WeightUnit) -> some View {
+        let total = start - goal
+        let done = start - current
+        let fraction = total == 0 ? 1 : min(max(done / total, 0), 1)
+        let left = abs(current - goal)
+        let reached = total > 0 ? current <= goal : current >= goal
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(reached ? "Goal reached" : "\(unit.format(left)) to go")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(reached ? Urgency.healthy.ink : AppTheme.ColorToken.primaryText)
+                Spacer(minLength: 8)
+                Text("\(Int((fraction * 100).rounded()))%")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                    .monospacedDigit()
+            }
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(AppTheme.ColorToken.ringTrack)
+                    Capsule()
+                        .fill(reached ? Urgency.healthy.tint : AppTheme.ColorToken.accent)
+                        .frame(width: max(proxy.size.width * fraction, 8))
+                }
+            }
+            .frame(height: 8)
+            HStack {
+                Text("Start \(unit.format(start))")
+                Spacer(minLength: 8)
+                Text("Goal \(unit.format(goal))")
+            }
+            .font(.system(size: 12))
+            .foregroundStyle(AppTheme.ColorToken.secondaryText)
+        }
+        .padding(12)
+        .background(AppTheme.ColorToken.background, in: .rect(cornerRadius: 14, style: .continuous))
+        .animation(.snappy, value: fraction)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func chart(_ entries: [WeightEntry], unit: WeightUnit, goal: Double?) -> some View {
+        let goalValue = goal.map { unit.value(fromKilograms: $0) }
+        let values = entries.map { unit.value(fromKilograms: $0.kilograms) } + (goalValue.map { [$0] } ?? [])
         let low = (values.min() ?? 0).rounded(.down) - 1
         let high = (values.max() ?? 0).rounded(.up) + 1
-        return Chart(entries) { entry in
+        return Chart {
+            if let goalValue {
+                RuleMark(y: .value("Goal", goalValue))
+                    .foregroundStyle(Urgency.healthy.tint.opacity(0.8))
+                    .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                    .annotation(position: .top, alignment: .trailing) {
+                        Text("Goal")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Urgency.healthy.ink)
+                    }
+            }
+            ForEach(entries) { entry in
             AreaMark(
                 x: .value("Day", entry.day),
                 yStart: .value("Base", low),
@@ -285,6 +353,7 @@ struct WeightCard: View {
             PointMark(x: .value("Day", entry.day), y: .value("Weight", unit.value(fromKilograms: entry.kilograms)))
                 .foregroundStyle(AppTheme.ColorToken.accent)
                 .symbolSize(28)
+            }
         }
         .chartYScale(domain: low...high)
         .chartYAxis {
@@ -294,11 +363,17 @@ struct WeightCard: View {
             }
         }
         .chartXAxis {
-            AxisMarks(values: .stride(by: .month)) { _ in
-                AxisValueLabel(format: .dateTime.month(.abbreviated)).font(.system(size: 11)).foregroundStyle(AppTheme.ColorToken.tertiaryText)
+            if range == .month {
+                AxisMarks(values: .stride(by: .weekOfYear)) { _ in
+                    AxisValueLabel(format: .dateTime.day().month(.abbreviated)).font(.system(size: 11)).foregroundStyle(AppTheme.ColorToken.tertiaryText)
+                }
+            } else {
+                AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                    AxisValueLabel(format: .dateTime.month(.abbreviated)).font(.system(size: 11)).foregroundStyle(AppTheme.ColorToken.tertiaryText)
+                }
             }
         }
-        .accessibilityLabel("Weight trend over the last 90 days")
+        .accessibilityLabel("Weight trend, \(range.subtitle.lowercased())")
     }
 }
 
@@ -397,10 +472,13 @@ struct WeightSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                WeightCard()
-                    .padding(.horizontal, AppTheme.Spacing.medium)
-                    .padding(.top, 8)
-                    .padding(.bottom, AppTheme.Spacing.large)
+                VStack(spacing: 16) {
+                    WeightCard()
+                    BodyStatsCard()
+                }
+                .padding(.horizontal, AppTheme.Spacing.medium)
+                .padding(.top, 8)
+                .padding(.bottom, AppTheme.Spacing.large)
             }
             .scrollIndicators(.hidden)
             .background(AppTheme.ColorToken.background.ignoresSafeArea())

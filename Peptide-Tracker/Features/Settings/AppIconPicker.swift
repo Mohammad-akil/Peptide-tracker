@@ -22,7 +22,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
 
     /// How the picker groups them.
     enum Group: String, CaseIterable {
-        case free = "Free"
+        case free = "Classic"
         case colors = "Colours"
         case premium = "Premium finishes"
     }
@@ -35,10 +35,6 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Classic and two looks are free; the rest come with Pro.
-    var isPro: Bool { !Self.free.contains(self) }
-    private static let free: Set<Self> = [.classic, .midnight, .daylight]
-
     static var current: Self {
         guard let name = UIApplication.shared.alternateIconName else { return .classic }
         return allCases.first { $0.iconName == name } ?? .classic
@@ -49,10 +45,8 @@ enum AppIconOption: String, CaseIterable, Identifiable {
 /// the current one ringed. Picking one asks iOS to switch (iOS confirms
 /// with its own alert).
 struct AppIconPicker: View {
-    @Environment(PurchaseStore.self) private var purchases
     @Environment(\.dismiss) private var dismiss
     @State private var selection = AppIconOption.current
-    @State private var showsPaywall = false
     @State private var errorMessage: String?
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
@@ -68,17 +62,10 @@ struct AppIconPicker: View {
 
                     ForEach(AppIconOption.Group.allCases, id: \.self) { group in
                         VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 6) {
-                                Text(group.rawValue)
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                                if group != .free {
-                                    Image(systemName: "crown.fill")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundStyle(PaywallPalette.gold)
-                                }
-                            }
-                            .padding(.leading, 4)
+                            Text(group.rawValue)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(AppTheme.ColorToken.secondaryText)
+                                .padding(.leading, 4)
                             LazyVGrid(columns: columns, spacing: 20) {
                                 ForEach(AppIconOption.allCases.filter { $0.group == group }) { option in
                                     tile(option)
@@ -103,9 +90,6 @@ struct AppIconPicker: View {
                         .tint(AppTheme.ColorToken.primaryText)
                 }
             }
-            .sheet(isPresented: $showsPaywall) {
-                PaywallView(reason: "Every app icon comes with Pro.")
-            }
             .alert("Couldn’t change the icon", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK", role: .cancel) {}
             } message: {
@@ -117,7 +101,6 @@ struct AppIconPicker: View {
 
     private func tile(_ option: AppIconOption) -> some View {
         let isSelected = selection == option
-        let isLocked = option.isPro && !purchases.isPro
         let shape = RoundedRectangle(cornerRadius: 18, style: .continuous)
 
         return Button { choose(option) } label: {
@@ -136,10 +119,7 @@ struct AppIconPicker: View {
                             .opacity(isSelected ? 1 : 0)
                     }
                     .overlay(alignment: .topTrailing) {
-                        if isLocked {
-                            ProCrownBadge(size: 22)
-                                .offset(x: 4, y: -4)
-                        } else if isSelected {
+                        if isSelected {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 22))
                                 .foregroundStyle(.white, AppTheme.ColorToken.accent)
@@ -154,7 +134,7 @@ struct AppIconPicker: View {
             .contentShape(.rect)
         }
         .buttonStyle(.pressable)
-        .accessibilityLabel(isLocked ? "\(option.title), Pro" : option.title)
+        .accessibilityLabel(option.title)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .animation(.snappy, value: isSelected)
     }
@@ -162,10 +142,6 @@ struct AppIconPicker: View {
     private func choose(_ option: AppIconOption) {
         HapticFeedback.selection()
         guard option != selection else { return }
-        if option.isPro && !purchases.isPro {
-            showsPaywall = true
-            return
-        }
         guard UIApplication.shared.supportsAlternateIcons else {
             errorMessage = "This device doesn’t support changing the app icon."
             return

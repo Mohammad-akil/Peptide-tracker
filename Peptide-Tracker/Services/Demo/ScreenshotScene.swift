@@ -6,7 +6,7 @@ import SwiftUI
 /// screen; the Screenshot Studio (Settings → Developer) captures them.
 enum ScreenshotScene: String, CaseIterable, Identifiable {
     case today, pillbox, medicines, medicine, calendar, reminders
-    case mood, sideEffects, report, health, privacy, travel, settings, paywall
+    case mood, sideEffects, report, health, privacy, travel, settings
 
     var id: String { rawValue }
 
@@ -25,7 +25,6 @@ enum ScreenshotScene: String, CaseIterable, Identifiable {
         case .privacy: "Privacy"
         case .travel: "Travel"
         case .settings: "Settings"
-        case .paywall: "Pro"
         }
     }
 
@@ -44,7 +43,6 @@ enum ScreenshotScene: String, CaseIterable, Identifiable {
         case .privacy: "hand.raised.fill"
         case .travel: "airplane"
         case .settings: "gearshape.fill"
-        case .paywall: "crown.fill"
         }
     }
 
@@ -64,7 +62,6 @@ enum ScreenshotScene: String, CaseIterable, Identifiable {
         case .privacy: "App Lock and hidden names"
         case .travel: "Home time and trip planner"
         case .settings: "Settings home"
-        case .paywall: "Doseday Pro"
         }
     }
 
@@ -116,9 +113,6 @@ enum ScreenshotScene: String, CaseIterable, Identifiable {
             router.push(.settings(.travel))
         case .settings:
             router.selectedTab = .settings
-        case .paywall:
-            router.selectedTab = .today
-            router.sheet = .paywall(reason: nil)
         }
     }
 

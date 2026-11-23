@@ -156,19 +156,6 @@ struct ProfileHeader: View {
                 )
                 .overlay { Capsule().strokeBorder(AppTheme.ColorToken.cardBackground, lineWidth: 2.5) }
                 .accessibilityLabel("Pro member")
-        } else {
-            Button { router.sheet = .paywall(reason: nil) } label: {
-                Text("FREE")
-                    .font(.system(size: 12, weight: .heavy))
-                    .kerning(0.6)
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                    .padding(.horizontal, 12)
-                    .frame(height: 24)
-                    .background(AppTheme.ColorToken.cardBackground, in: .capsule)
-                    .overlay { Capsule().strokeBorder(AppTheme.ColorToken.separator, lineWidth: 1) }
-            }
-            .buttonStyle(.pressable)
-            .accessibilityLabel("Free plan. Upgrade to Pro")
         }
     }
 }

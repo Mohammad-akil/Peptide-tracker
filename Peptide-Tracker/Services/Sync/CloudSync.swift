@@ -11,8 +11,10 @@ import Observation
 /// copy differs. Uploads only land if nobody else saved in between; if they
 /// did, it fetches and merges again.
 ///
-/// Syncs at launch, on returning to the app, a few seconds after each
-/// change, and when the iCloud account changes.
+/// Syncs a few seconds after the user changes something (bursts of edits
+/// become one sync), once at launch to bring in other devices' changes,
+/// when the iCloud account changes, and from "Sync now". Not on every
+/// return to the app.
 @MainActor
 @Observable
 final class CloudSync {

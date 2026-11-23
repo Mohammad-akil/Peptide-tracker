@@ -17,14 +17,12 @@ struct CalculatorResult: Identifiable, Codable, Hashable {
     var fat: Int?
 }
 
-/// How far back the history chart looks. Free users get the last 3
-/// months; longer ranges are Pro. Everything is kept either way.
+/// How far back the history chart looks.
 enum HistoryRange: String, CaseIterable, Identifiable {
     case threeMonths = "3M", sixMonths = "6M", nineMonths = "9M", year = "1Y", all = "All"
 
     var id: String { rawValue }
     var title: String { rawValue }
-    var isPro: Bool { self != .threeMonths }
 
     var months: Int? {
         switch self {

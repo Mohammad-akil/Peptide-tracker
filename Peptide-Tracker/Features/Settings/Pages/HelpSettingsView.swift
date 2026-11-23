@@ -39,7 +39,9 @@ struct HelpSettingsView: View {
             ("What does Pro include?",
              "Doseday is a subscription app. Pro unlocks everything: dose reminders and tracking, injection sites, weight and goal progress, side effects, reports and PDF exports, with as many medicines as you take."),
             ("How do I restore a purchase?",
-             "Open the Pro screen from Settings and tap Restore. Use the same Apple Account you bought Pro with."),
+             "On the subscription screen that opens with the app, tap Restore. Use the same Apple Account you subscribed with."),
+            ("How do I cancel?",
+             "In the iPhone’s Settings app, tap your name, then Subscriptions, then Doseday. You keep Pro until the end of the period you paid for."),
         ]),
     ]
 

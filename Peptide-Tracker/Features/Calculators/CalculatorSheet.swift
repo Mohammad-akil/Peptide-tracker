@@ -13,9 +13,7 @@ struct CalculatorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(AppRouter.self) private var router
-    @Environment(PurchaseStore.self) private var purchases
     @State private var range = HistoryRange.threeMonths
-    @State private var showsPaywall = false
 
     @State private var sex = BodySex.female
     @State private var age = 30
@@ -62,9 +60,6 @@ struct CalculatorSheet: View {
         }
         .onAppear(perform: load)
         .onDisappear(perform: remember)
-        .sheet(isPresented: $showsPaywall) {
-            PaywallView(reason: "See 6 months, 9 months, a year or all of your calculator history with Pro.")
-        }
     }
 
     // MARK: Result
@@ -159,7 +154,6 @@ struct CalculatorSheet: View {
         let saved = store.calculatorResults(for: kind)
         let start = range.start()
         let shown = saved.filter { start == nil || $0.day >= start! }
-        let hasOlder = start.map { first in saved.contains { $0.day < first } } ?? false
 
         return VStack(alignment: .leading, spacing: 14) {
             Text("Your history")
@@ -167,28 +161,19 @@ struct CalculatorSheet: View {
 
             HStack(spacing: 6) {
                 ForEach(HistoryRange.allCases) { option in
-                    let isLocked = option.isPro && !purchases.isPro
                     Button {
                         HapticFeedback.selection()
-                        if isLocked { showsPaywall = true } else { withAnimation(.snappy) { range = option } }
+                        withAnimation(.snappy) { range = option }
                     } label: {
-                        HStack(spacing: 3) {
-                            Text(option.title)
-                            if isLocked {
-                                Image(systemName: "crown.fill").font(.system(size: 9, weight: .bold))
-                            }
-                        }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(range == option ? .white : (isLocked ? PaywallPalette.goldInk : AppTheme.ColorToken.primaryText))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 32)
-                        .background(
-                            range == option ? AppTheme.ColorToken.accent : (isLocked ? PaywallPalette.gold.opacity(0.22) : AppTheme.ColorToken.controlFill),
-                            in: .capsule
-                        )
+                        Text(option.title)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(range == option ? .white : AppTheme.ColorToken.primaryText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 32)
+                            .background(range == option ? AppTheme.ColorToken.accent : AppTheme.ColorToken.controlFill, in: .capsule)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(isLocked ? "\(option.title), Pro" : option.title)
+                    .accessibilityLabel(option.title)
                     .accessibilityAddTraits(range == option ? [.isSelected] : [])
                 }
             }
@@ -209,18 +194,6 @@ struct CalculatorSheet: View {
                             .rowDivider(index < min(shown.count, 12) - 1, inset: 0)
                     }
                 }
-            }
-
-            if hasOlder && !purchases.isPro {
-                Button { showsPaywall = true } label: {
-                    Label("Older results are saved — see them all with Pro", systemImage: "crown.fill")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(PaywallPalette.goldInk)
-                        .padding(.horizontal, 12)
-                        .frame(maxWidth: .infinity, minHeight: 36)
-                        .background(PaywallPalette.gold.opacity(0.22), in: .capsule)
-                }
-                .buttonStyle(.pressable)
             }
         }
         .padding(16)

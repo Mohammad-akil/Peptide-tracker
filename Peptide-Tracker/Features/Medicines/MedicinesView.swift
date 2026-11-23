@@ -119,23 +119,9 @@ struct MedicinesView: View {
         .accessibilityLabel("Share refill list")
     }
 
-    /// The medicine list as a PDF, the same one Settings exports. Pro only;
-    /// free users get the paywall.
-    @ViewBuilder
+    /// The medicine list as a PDF, the same one Settings exports.
     private var shareMedicinesButton: some View {
-        if purchases.isPro {
-            proShareMedicinesButton
-        } else {
-            Button { router.sheet = .paywall(reason: "PDF exports for doctor visits are part of Pro.") } label: {
-                Icon(.share, size: 20)
-                    .foregroundStyle(AppTheme.ColorToken.primaryText)
-                    .frame(width: 44, height: 44)
-                    .overlay(alignment: .topTrailing) { ProCrownBadge(size: 16).offset(x: 2, y: -2) }
-            }
-            .buttonStyle(.plain)
-            .compatGlass(interactive: true, in: .circle)
-            .accessibilityLabel("Share medicine list, Pro feature")
-        }
+        proShareMedicinesButton
     }
 
     private var proShareMedicinesButton: some View {

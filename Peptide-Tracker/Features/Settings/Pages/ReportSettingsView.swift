@@ -27,12 +27,6 @@ struct ReportSettingsView: View {
                     shareRow
                     byMedicine(report)
                 }
-                // The last 7 days are free; 30 and 90 days are Pro.
-                .proLocked(
-                    "See the bigger picture",
-                    message: "Your last 7 days are free. Pro shows 30 and 90 days, each medicine’s rate, and shares it as a PDF for your doctor.",
-                    when: period != .week
-                )
                 dataCard
             }
         }
@@ -51,7 +45,7 @@ struct ReportSettingsView: View {
                     .accessibilityLabel("Download all your data")
                 }
             }
-            if report.due > 0 && purchases.isPro {
+            if report.due > 0 {
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(
                         item: AdherenceReportPDF(report: report, personName: personName, health: VisitHealthSummary(store: store, days: period.days)),

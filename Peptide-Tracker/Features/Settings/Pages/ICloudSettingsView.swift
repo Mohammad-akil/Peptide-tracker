@@ -19,7 +19,7 @@ struct ICloudSettingsView: View {
             }
 
             if sync.isEnabled {
-                GroupedSection(footer: "It syncs on its own when you open the app and after each change.") {
+                GroupedSection(footer: "It syncs a few seconds after each change you make, and you can sync any time here.") {
                     SettingsRowLabel(symbol: statusSymbol, tint: statusTint, title: "Status", value: sync.detail)
                         .rowDivider(true, inset: 58)
                         .contentTransition(.opacity)

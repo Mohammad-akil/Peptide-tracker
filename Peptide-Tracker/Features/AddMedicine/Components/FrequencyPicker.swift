@@ -2,14 +2,9 @@ import SwiftUI
 
 /// "Which days": every day, once a week, every few days, certain weekdays,
 /// or days on / days off — with the settings for the picked kind under it.
-/// Everything except every day is Pro; free users picking one get the
-/// paywall instead.
 struct FrequencyPicker: View {
     @Binding var frequency: DoseFrequency
     @Binding var start: Date
-
-    @Environment(PurchaseStore.self) private var purchases
-    @State private var showsPaywall = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -27,21 +22,15 @@ struct FrequencyPicker: View {
             }
         }
         .animation(.snappy, value: frequency.kind)
-        .sheet(isPresented: $showsPaywall) {
-            PaywallView(reason: "Weekly and custom schedules are part of Pro.")
-        }
     }
 
     // MARK: Kinds
 
     private func row(_ kind: DoseFrequency.Kind, showsDivider: Bool) -> some View {
         let isSelected = frequency.kind == kind
-        let isLocked = kind != .daily && !purchases.isPro
         return Button {
             HapticFeedback.selection()
-            if isLocked {
-                showsPaywall = true
-            } else if !isSelected {
+            if !isSelected {
                 withAnimation(.snappy) { frequency = kind.defaultFrequency }
             }
         } label: {
@@ -50,16 +39,12 @@ struct FrequencyPicker: View {
                     .font(.system(size: 17))
                     .foregroundStyle(AppTheme.ColorToken.primaryText)
                 Spacer(minLength: 8)
-                if isLocked {
-                    ProCrownBadge(size: 20)
-                } else {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(AppTheme.ColorToken.accent)
-                        .frame(width: 20)
-                        .opacity(isSelected ? 1 : 0)
-                        .scaleEffect(isSelected ? 1 : 0.5)
-                }
+                Image(systemName: "checkmark")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.ColorToken.accent)
+                    .frame(width: 20)
+                    .opacity(isSelected ? 1 : 0)
+                    .scaleEffect(isSelected ? 1 : 0.5)
             }
             .padding(.horizontal, 16)
             .frame(minHeight: 52)
@@ -67,7 +52,7 @@ struct FrequencyPicker: View {
             .rowDivider(showsDivider)
         }
         .buttonStyle(RowPressStyle())
-        .accessibilityLabel(isLocked ? "\(kind.title), Pro feature" : kind.title)
+        .accessibilityLabel(kind.title)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
