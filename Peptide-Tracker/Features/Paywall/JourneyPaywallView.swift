@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The paywall at the end of setup, laid out like the top GLP-1 apps':
-/// icon, "Everything for your GLP-1 journey", a phone showing a real
+/// "Everything for your GLP-1 journey", a phone showing a real
 /// screenshot of the app, three benefits, two plans side by side and one
 /// big button. Hard: no close and no swipe-down — subscribing or restoring
 /// is the way through. Price, billing terms, Restore, Terms and Privacy
@@ -18,29 +18,23 @@ struct JourneyPaywallView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                logo
-                    .padding(.top, 8)
-                    .appear(isShown, delay: 0)
-
                 Text("Everything for your GLP-1 journey")
                     .font(.system(size: 30, weight: .heavy))
                     .kerning(-0.6)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 14)
-                    .appear(isShown, delay: 0.05)
+                    .padding(.top, 24)
+                    .appear(isShown, delay: 0)
 
                 PaywallPhonePreview()
                     .padding(.top, 20)
                     .appear(isShown, delay: 0.12)
 
                 VStack(alignment: .leading, spacing: 16) {
-                    benefit("syringe.fill", "Stay on top of every dose", "Track shots, pills, timing, injection sites and reminders.")
-                        .appear(isShown, delay: 0.2)
-                    benefit("target", "Hit your goal weight", "Log weigh-ins and watch your progress toward your goal.")
-                        .appear(isShown, delay: 0.25)
-                    benefit("heart.text.square.fill", "Feel better along the way", "Log side effects and share clean reports with your doctor.")
-                        .appear(isShown, delay: 0.3)
+                    ForEach(Array(Self.benefits.enumerated()), id: \.offset) { index, item in
+                        benefit(item.symbol, item.title, item.detail)
+                            .appear(isShown, delay: 0.2 + min(Double(index), 6) * 0.05)
+                    }
                 }
                 .padding(.top, 22)
             }
@@ -71,19 +65,19 @@ struct JourneyPaywallView: View {
 
     // MARK: Top
 
-    private var logo: some View {
-        Image(systemName: "pill.fill")
-            .font(.system(size: 22, weight: .bold))
-            .rotationEffect(.degrees(-45))
-            .foregroundStyle(.white)
-            .frame(width: 48, height: 48)
-            .background(
-                LinearGradient(colors: [Color(hex: 0x8A6CF0), AppTheme.ColorToken.accent], startPoint: .topLeading, endPoint: .bottomTrailing),
-                in: .rect(cornerRadius: 13, style: .continuous)
-            )
-            .shadow(color: AppTheme.ColorToken.accent.opacity(0.35), radius: 10, y: 4)
-            .accessibilityHidden(true)
-    }
+    /// What Pro unlocks, in the order people care about.
+    private static let benefits: [(symbol: String, title: String, detail: String)] = [
+        ("syringe.fill", "Stay on top of every dose", "Reminders for shots and pills, right on time."),
+        ("figure.arms.open", "Rotate injection sites", "See where you injected last and where to go next."),
+        ("target", "Hit your goal weight", "Log weigh-ins and watch your progress toward your goal."),
+        ("shippingbox.fill", "Never run out", "Supply countdowns and refill alerts before you’re low."),
+        ("face.smiling.inverse", "Daily check-ins", "Track mood, energy and side effects day by day."),
+        ("chart.bar.xaxis", "Insights and calendar", "See your adherence and trends over 7, 30 and 90 days."),
+        ("doc.text.fill", "Doctor-ready reports", "Share clean PDF reports and export your data anytime."),
+        ("function", "Dose and BMI calculators", "Work out doses, units and BMI in seconds."),
+        ("square.grid.2x2.fill", "Home Screen widgets", "Your next dose and supply at a glance."),
+        ("lock.shield.fill", "Private by design", "Privacy mode hides medicine names on your screen."),
+    ]
 
     private func benefit(_ symbol: String, _ title: String, _ detail: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
@@ -134,12 +128,6 @@ struct JourneyPaywallView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .contentTransition(.opacity)
                 .padding(.top, 8)
-
-            Text("Your GLP-1 journey is already a lot. Tracking it shouldn’t be.")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(AppTheme.ColorToken.tertiaryText)
-                .multilineTextAlignment(.center)
-                .padding(.top, 6)
 
             PaywallLegalLinks(onRestore: restore)
         }
