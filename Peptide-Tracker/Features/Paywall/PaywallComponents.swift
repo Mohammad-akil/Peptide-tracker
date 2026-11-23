@@ -283,6 +283,7 @@ struct PaywallPlanTile: View {
 
     private var isGold: Bool { false }
     private var ring: Color { isGold ? PaywallPalette.gold : PaywallPalette.accent }
+    private var isLoaded: Bool { purchases.isLoaded(plan) }
 
     private var chip: String? {
         switch plan {
@@ -315,6 +316,7 @@ struct PaywallPlanTile: View {
                     .foregroundStyle(AppTheme.ColorToken.primaryText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                    .redacted(reason: isLoaded ? [] : .placeholder)
                     .padding(.top, 4)
                 Text(plan.period)
                     .font(.system(size: 12, weight: .semibold))

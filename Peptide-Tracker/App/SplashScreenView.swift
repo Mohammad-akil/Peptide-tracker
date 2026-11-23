@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// Launch splash, picking up from the plain-colour `LaunchScreen.storyboard`.
 /// The app icon builds itself: the track circle and pill pop in, the ring
@@ -10,7 +9,8 @@ struct SplashScreenView: View {
     let isRevealingApp: Bool
 
     /// How long the build-up takes before the splash is ready to leave.
-    static let entranceDuration: Duration = .milliseconds(2000)
+    /// Short: the splash is a flourish, not a wait.
+    static let entranceDuration: Duration = .milliseconds(1000)
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hasStarted = false
@@ -33,8 +33,8 @@ struct SplashScreenView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Bundle.main.appName)
         .task { await play() }
-        .animation(.easeInOut(duration: reduceMotion ? 0.12 : 0.38), value: isFinishing)
-        .animation(.easeInOut(duration: reduceMotion ? 0.12 : 0.42), value: isRevealingApp)
+        .animation(.easeInOut(duration: reduceMotion ? 0.12 : 0.25), value: isFinishing)
+        .animation(.easeInOut(duration: reduceMotion ? 0.12 : 0.3), value: isRevealingApp)
     }
 
     private func play() async {
@@ -53,35 +53,27 @@ struct SplashScreenView: View {
             isFlowing = true
         }
 
-        // 1. The track circle, then the pill a beat later.
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.72)) { showsMark = true }
-        try? await Task.sleep(for: .milliseconds(150))
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.62)) { showsPill = true }
-
-        // 2. The ring fills clockwise from the top.
-        try? await Task.sleep(for: .milliseconds(250))
-        withAnimation(.timingCurve(0.65, 0, 0.35, 1, duration: 0.9)) {
+        // Starts on the very first frame, straight from the launch screen.
+        // 1. The track circle and the ring filling together, the pill
+        //    landing just after.
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) { showsMark = true }
+        withAnimation(.timingCurve(0.65, 0, 0.35, 1, duration: 0.6).delay(0.08)) {
             ringProgress = SplashMark.progress
         }
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.65).delay(0.1)) { showsPill = true }
 
-        // 3. The name, once the ring has landed.
-        try? await Task.sleep(for: .milliseconds(850))
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.85)) {
+        // 2. The name, as the ring lands.
+        try? await Task.sleep(for: .milliseconds(500))
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
             isTextVisible = true
         }
     }
 
     private var background: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    AppTheme.ColorToken.accent.adjustedBrightness(by: 0.12),
-                    AppTheme.ColorToken.accent,
-                    AppTheme.ColorToken.accent.adjustedBrightness(by: -0.16),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            // The launch screen's exact colour, so the hand-over from the
+            // storyboard has no jump.
+            Color("LaunchBackground")
 
             // Slow-moving light gives the splash some life without
             // competing with the icon.
@@ -90,12 +82,14 @@ struct SplashScreenView: View {
                 .frame(width: 340, height: 340)
                 .blur(radius: 70)
                 .offset(x: isFlowing ? -120 : -160, y: isFlowing ? -280 : -225)
+                .opacity(showsMark ? 1 : 0)
 
             Circle()
                 .fill(Color.white.opacity(0.10))
                 .frame(width: 300, height: 300)
                 .blur(radius: 64)
                 .offset(x: isFlowing ? 150 : 110, y: isFlowing ? 300 : 245)
+                .opacity(showsMark ? 1 : 0)
         }
     }
 
@@ -158,16 +152,6 @@ private struct SplashMark: View {
         }
         .frame(width: size * 0.52, height: size * 0.21)
         .clipShape(.capsule)
-    }
-}
-
-private extension Color {
-    /// Lightens (positive `delta`) or darkens (negative) by shifting HSB
-    /// brightness, so the gradient stays derived from the accent.
-    func adjustedBrightness(by delta: CGFloat) -> Color {
-        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
-        UIColor(self).getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
-        return Color(hue: hue, saturation: saturation, brightness: min(max(brightness + delta, 0), 1), opacity: alpha)
     }
 }
 

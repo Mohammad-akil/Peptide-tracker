@@ -46,15 +46,6 @@ struct JourneyPaywallView: View {
         .scrollIndicators(.hidden)
         .scrollBounceBehavior(.basedOnSize)
         .safeAreaInset(edge: .bottom, spacing: 0) { purchasePanel }
-        #if DEBUG
-        // Debug builds only: a way past the hard paywall while developing.
-        // It comes back on the next launch, like it would for a real user.
-        .overlay(alignment: .topTrailing) {
-            PaywallCloseButton(action: onFinish)
-                .padding(.trailing, 12)
-                .padding(.top, 4)
-        }
-        #endif
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
         .interactiveDismissDisabled()
         .task { if purchases.products.isEmpty { await purchases.loadProducts() } }
@@ -281,6 +272,7 @@ private struct JourneyPlanTile: View {
                 .font(.system(size: size, weight: .heavy))
                 .monospacedDigit()
                 .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
+                .redacted(reason: purchases.isLoaded(plan) ? [] : .placeholder)
             Text(suffix)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(AppTheme.ColorToken.secondaryText)

@@ -36,15 +36,6 @@ final class PurchaseStore {
         }
 
         var isSubscription: Bool { true }
-
-        /// The US price, shown until RevenueCat returns the App Store's
-        /// own. Keep in step with App Store Connect.
-        var fallbackPrice: Decimal {
-            switch self {
-            case .monthly: Decimal(string: "4.99")!
-            case .yearly: Decimal(string: "29.99")!
-            }
-        }
     }
 
     enum PurchaseOutcome: Equatable {
@@ -59,8 +50,8 @@ final class PurchaseStore {
     static let entitlementID = "dosedaypro"
     /// Preselected on the paywall.
     static let defaultPlan = Plan.yearly
-    /// Formats the fallback prices until the store's load.
-    private static let fallbackFormat = Decimal.FormatStyle.Currency(code: "USD")
+    /// Sized like a price, shown redacted until the real one loads.
+    private static let pricePlaceholder = "$00.00"
 
     /// The current Offering's packages, by plan.
     private(set) var packages: [Plan: Package] = [:]
@@ -124,36 +115,27 @@ final class PurchaseStore {
     /// Whether the store has answered for this plan, so it can be sold.
     func isLoaded(_ plan: Plan) -> Bool { packages[plan] != nil }
 
-    /// The store's price, or the fallback until it loads.
-    private func amount(for plan: Plan) -> Decimal {
-        products[plan]?.price ?? plan.fallbackPrice
-    }
-
-    /// Yearly as a monthly price, "$2.49", in the store's currency (the
-    /// fallback's until it loads).
+    /// Yearly as a monthly price, "$2.49", in the store's currency. Nil
+    /// until Yearly has loaded.
     var yearlyPerMonth: String? {
-        if let perMonth = products[.yearly]?.localizedPricePerMonth { return perMonth }
-        var monthly = Plan.yearly.fallbackPrice / 12
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &monthly, 2, .down)
-        return rounded.formatted(Self.fallbackFormat)
+        products[.yearly]?.localizedPricePerMonth
     }
 
     /// How much Yearly saves over twelve months of Monthly, as a whole
     /// percentage. Nil until both have loaded or when there's no saving,
     /// so the badge only ever shows a true number.
     var yearlySavingsPercent: Int? {
-        let yearly = amount(for: .yearly), monthly = amount(for: .monthly)
-        guard monthly > 0 else { return nil }
+        guard let yearly = products[.yearly]?.price, let monthly = products[.monthly]?.price, monthly > 0 else { return nil }
         let fullYear = monthly * 12
         guard yearly < fullYear else { return nil }
         let percent = NSDecimalNumber(decimal: (fullYear - yearly) / fullYear * 100).doubleValue
         return Int(percent.rounded(.down))
     }
 
-    /// The App Store price, or the fixed fallback while it loads.
+    /// The App Store price from RevenueCat, or a placeholder (always shown
+    /// redacted) while it loads.
     func price(for plan: Plan) -> String {
-        products[plan]?.localizedPriceString ?? plan.fallbackPrice.formatted(Self.fallbackFormat)
+        products[plan]?.localizedPriceString ?? Self.pricePlaceholder
     }
 
     func trialDays(for plan: Plan) -> Int? { trialDays[plan] }
@@ -167,6 +149,7 @@ final class PurchaseStore {
 
     /// What they'll pay and when, said plainly under the buy button.
     func disclosure(for plan: Plan) -> String {
+        guard isLoaded(plan) else { return "Loading prices from the App Store…" }
         let price = price(for: plan)
         let period = plan == .yearly ? "year" : "month"
         if let days = trialDays[plan] {

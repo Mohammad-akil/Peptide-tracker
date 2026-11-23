@@ -14,8 +14,8 @@ struct PeptideTrackerApp: App {
     @State private var startsWithOnboarding: Bool?
 
     private static let minimumSplashDuration = SplashScreenView.entranceDuration
-    private static let logoExitDuration: Duration = .milliseconds(380)
-    private static let contentRevealDuration: Duration = .milliseconds(400)
+    private static let logoExitDuration: Duration = .milliseconds(250)
+    private static let contentRevealDuration: Duration = .milliseconds(300)
 
     var body: some Scene {
         WindowGroup {
@@ -64,12 +64,11 @@ struct PeptideTrackerApp: App {
 
     // MARK: - Splash
 
-    /// Holds the splash for a minimum beat while checking whether setup is
-    /// done, lets the icon exit, then crossfades into the first screen.
+    /// Plays the splash with nothing else on the main thread, lets the icon
+    /// exit, crossfades into the first screen, and only then warms the
+    /// caches, so the animation never stutters.
     private func runSplashSequence() async {
         let needsOnboarding = RootView.needsOnboarding(store: appDelegate.store)
-        // Warm the query cache while the splash is up.
-        appDelegate.store.preload()
         try? await Task.sleep(for: Self.minimumSplashDuration)
         guard !Task.isCancelled else { return }
 
@@ -87,5 +86,10 @@ struct PeptideTrackerApp: App {
         try? await Task.sleep(for: Self.contentRevealDuration)
         guard !Task.isCancelled else { return }
         isShowingLaunchScreen = false
+
+        // Now the app is on screen: warm Calendar, Report, the catalogue and
+        // the profile photo, a frame after the splash has gone.
+        await Task.yield()
+        appDelegate.store.preload()
     }
 }
