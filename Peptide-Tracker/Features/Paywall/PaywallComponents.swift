@@ -82,6 +82,7 @@ enum PaywallActions {
         case .purchased:
             router.show(.success("Welcome to Pro", message: "Everything’s unlocked. Thank you!"))
             router.celebrate()
+            ReviewPrompter.happyMoment(.proUnlocked)
             if let trialDays {
                 await TrialReminder.schedule(trialDays: trialDays, price: price, period: plan.period)
             }

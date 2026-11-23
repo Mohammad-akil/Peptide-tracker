@@ -1,19 +1,24 @@
 import StoreKit
 import UIKit
 
-/// Asks for an App Store rating at a happy moment: every dose of the day
-/// taken, a refill logged, a progress card saved to Photos. Only once the
-/// person clearly uses the app: a few days with every dose taken, or a
-/// week since they started with a medicine added. Ported from Plates'
-/// `ReviewPrompter`.
+/// Asks for an App Store rating at every happy moment: Pro unlocked, every
+/// dose of the day taken, a weigh-in that's down (or on goal), a good
+/// check-in, a refill logged, a progress card saved to Photos. The app is
+/// new and ratings drive App Store search, so it asks early and often and
+/// lets iOS do the rationing.
 ///
 /// Only the system prompt is used (no custom "Enjoying Doseday?" screen
 /// first): App Review rejects custom review prompts (5.6.1).
 ///
 /// iOS decides whether the prompt actually appears (at most three times a
-/// year), so this only picks the moment and keeps from asking too often:
-/// at most once per app version, and never within `minimumDaysBetween` of
-/// the last ask. Never with `-sampleData` (sample data isn't their success).
+/// year per person, never in TestFlight), so asking more often costs
+/// nothing; this only keeps asks `minimumDaysBetween` apart so the three
+/// showings spread out. Never with `-sampleData` (sample data isn't their
+/// success).
+///
+/// Never during first run either: not in onboarding, not on the paywall
+/// that follows it, nowhere in the session that started with setup. App
+/// Review rejects rating prompts shown before the app has been used.
 @MainActor
 enum ReviewPrompter {
     enum Moment {
@@ -23,25 +28,22 @@ enum ReviewPrompter {
         case refillLogged
         /// A progress card was saved to Photos.
         case shareCardSaved
+        /// Pro was bought or restored.
+        case proUnlocked
+        /// A weigh-in lower than the last one, or at the goal weight.
+        case weightProgress
+        /// Today's check-in was good or great.
+        case goodCheckIn
     }
 
-    private static let completedDaysKey = "doseday.review.completedDays"
     private static let lastCompletedDayKey = "doseday.review.lastCompletedDay"
-    private static let firstSeenKey = "doseday.review.firstSeen"
-    private static let lastVersionKey = "doseday.review.lastPromptVersion"
     private static let lastDateKey = "doseday.review.lastPromptDate"
 
-    private static let minimumCompletedDays = 3
-    private static let minimumDaysSinceFirstSeen = 7
-    private static let minimumDaysBetween = 60.0
+    private static let minimumDaysBetween = 4.0
 
-    /// Call once at launch: remembers when the app was first opened.
-    static func noteLaunch() {
-        let defaults = UserDefaults.standard
-        if defaults.object(forKey: firstSeenKey) == nil {
-            defaults.set(Date(), forKey: firstSeenKey)
-        }
-    }
+    /// True for the whole session that opened on onboarding (set by
+    /// `RootView`), so first run never asks, the post-setup paywall included.
+    static var isFirstRun = false
 
     /// Call when the last of a day's doses is ticked off. Counts each day
     /// once, however often its doses are unticked and ticked again.
@@ -51,14 +53,12 @@ enum ReviewPrompter {
         let key = day.startOfDay.timeIntervalSince1970
         guard defaults.double(forKey: lastCompletedDayKey) != key else { return }
         defaults.set(key, forKey: lastCompletedDayKey)
-        defaults.set(defaults.integer(forKey: completedDaysKey) + 1, forKey: completedDaysKey)
         happyMoment(.dayCompleted)
     }
 
-    /// Asks for a rating after a short pause, if the person is engaged
-    /// enough and wasn't asked recently.
-    static func happyMoment(_ moment: Moment, hasMedicines: Bool = true) {
-        guard !isDemo, isEngaged(hasMedicines: hasMedicines), canAsk() else { return }
+    /// Asks for a rating after a short pause, if it wasn't asked recently.
+    static func happyMoment(_ moment: Moment) {
+        guard !isDemo, canAsk() else { return }
         Task {
             // Let the moment land first (the tick, the confetti, "Saved").
             try? await Task.sleep(for: .seconds(1.2))
@@ -74,33 +74,16 @@ enum ReviewPrompter {
             .compactMap({ $0 as? UIWindowScene })
             .first(where: { $0.activationState == .foregroundActive }) else { return }
         AppStore.requestReview(in: scene)
-        let defaults = UserDefaults.standard
-        defaults.set(currentVersion, forKey: lastVersionKey)
-        defaults.set(Date(), forKey: lastDateKey)
-    }
-
-    /// A few full days of doses, or (for people who don't tick doses) a
-    /// week since they started, with a medicine in the app.
-    private static func isEngaged(hasMedicines: Bool) -> Bool {
-        let defaults = UserDefaults.standard
-        if defaults.integer(forKey: completedDaysKey) >= minimumCompletedDays { return true }
-        guard hasMedicines, let firstSeen = defaults.object(forKey: firstSeenKey) as? Date else { return false }
-        return Calendar.current.days(from: firstSeen, to: .now) >= minimumDaysSinceFirstSeen
+        UserDefaults.standard.set(Date(), forKey: lastDateKey)
     }
 
     private static func canAsk() -> Bool {
-        let defaults = UserDefaults.standard
-        if defaults.string(forKey: lastVersionKey) == currentVersion { return false }
-        if let last = defaults.object(forKey: lastDateKey) as? Date,
-           Date().timeIntervalSince(last) < minimumDaysBetween * 86_400 { return false }
-        return true
+        guard !isFirstRun else { return false }
+        guard let last = UserDefaults.standard.object(forKey: lastDateKey) as? Date else { return true }
+        return Date().timeIntervalSince(last) >= minimumDaysBetween * 86_400
     }
 
     private static var isDemo: Bool {
         ProcessInfo.processInfo.arguments.contains("-sampleData")
-    }
-
-    private static var currentVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     }
 }

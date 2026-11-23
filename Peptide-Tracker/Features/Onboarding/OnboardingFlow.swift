@@ -139,7 +139,7 @@ struct OnboardingFlow: View {
 
     private func finish(adding: Bool) {
         answers.apply(to: &store.settings)
-        for entry in answers.weighIns { store.logWeight(kilograms: entry.kilograms, on: entry.day) }
+        for entry in answers.weighIns { store.logWeight(kilograms: entry.kilograms, on: entry.day, asksForRating: false) }
         onFinish(adding)
     }
 }

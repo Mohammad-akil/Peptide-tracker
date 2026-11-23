@@ -22,6 +22,8 @@ struct RootView: View {
 
     init(startsWithOnboarding: Bool) {
         _showsOnboarding = State(initialValue: startsWithOnboarding)
+        // No rating prompts anywhere in the first-run session.
+        if startsWithOnboarding { ReviewPrompter.isFirstRun = true }
     }
 
     /// Whether launch should open on setup: never finished it and has no

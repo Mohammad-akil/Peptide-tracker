@@ -342,6 +342,7 @@ final class MedicineStore {
         }
         HapticFeedback.selection()
         persist()
+        if mood == .good || mood == .great { ReviewPrompter.happyMoment(.goodCheckIn) }
     }
 
     /// Days in a row with a check-in, back from today (or yesterday, while
@@ -367,8 +368,10 @@ final class MedicineStore {
     }
 
     /// Saves a weigh-in for `day`, replacing that day's earlier one.
-    func logWeight(kilograms: Double, on day: Date = .now) {
+    /// `asksForRating` is off for weigh-ins imported in bulk (onboarding).
+    func logWeight(kilograms: Double, on day: Date = .now, asksForRating: Bool = true) {
         let day = day.startOfDay
+        let previous = weights.last { $0.day < day }?.kilograms
         if let index = weights.firstIndex(where: { $0.day == day }) {
             weights[index].kilograms = kilograms
         } else {
@@ -376,6 +379,11 @@ final class MedicineStore {
             weights.sort { $0.day < $1.day }
         }
         persist()
+
+        // Down since the last weigh-in, or at the goal: a moment to ask for a rating.
+        let isDown = previous.map { kilograms < $0 - 0.05 } ?? false
+        let isAtGoal = settings.goalWeightKg.map { kilograms <= $0 + 0.05 } ?? false
+        if asksForRating, isDown || isAtGoal { ReviewPrompter.happyMoment(.weightProgress) }
     }
 
     func deleteWeight(id: UUID) {

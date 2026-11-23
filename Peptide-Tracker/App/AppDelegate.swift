@@ -46,7 +46,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         store.scheduler.registerCategories(snooze: store.settings.snooze)
         store.runDailyCountdown()
         store.rescheduleReminders()
-        ReviewPrompter.noteLaunch()
     }
 
     // Show reminders even while the app is open.
