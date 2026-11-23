@@ -57,6 +57,8 @@ struct PeptideTrackerApp: App {
                     // Doses and moods logged from a widget while away.
                     appDelegate.store.reloadFromDisk()
                     appDelegate.store.runDailyCountdown()
+                    // Changes made on another device while away.
+                    CloudSync.shared.requestSync()
                 }
             }
         }
@@ -91,5 +93,7 @@ struct PeptideTrackerApp: App {
         // the profile photo, a frame after the splash has gone.
         await Task.yield()
         appDelegate.store.preload()
+        // Then bring in anything from iCloud and back up what's here.
+        CloudSync.shared.start(store: appDelegate.store)
     }
 }

@@ -6,7 +6,7 @@ import SwiftUI
 enum SettingsPage: Hashable {
     case remindersGroup, health, careTeam, data, appearance
     case reminders, notifications, doses, pharmacy, contacts, tracking, report, help, about
-    case privacy, travel
+    case privacy, travel, icloud
     #if DEBUG
     case developer
     #endif
@@ -29,6 +29,7 @@ enum SettingsPage: Hashable {
         case .about: "About"
         case .privacy: "Privacy"
         case .travel: "Travel"
+        case .icloud: "iCloud sync"
         #if DEBUG
         case .developer: "Developer"
         #endif
@@ -53,6 +54,7 @@ enum SettingsPage: Hashable {
         case .about: "info.circle.fill"
         case .privacy: "hand.raised.fill"
         case .travel: "airplane"
+        case .icloud: "icloud.fill"
         #if DEBUG
         case .developer: "hammer.fill"
         #endif
@@ -78,6 +80,7 @@ enum SettingsPage: Hashable {
         case .about: Color(hex: 0x8E8E93)      // grey
         case .privacy: Color(hex: 0x0A84FF)    // blue
         case .travel: Color(hex: 0xFF9F0A)     // orange
+        case .icloud: Color(hex: 0x32ADE6)     // cyan
         #if DEBUG
         case .developer: Color(hex: 0x5E5CE6)  // indigo
         #endif
@@ -103,6 +106,7 @@ enum SettingsPage: Hashable {
         case .about: AboutSettingsView()
         case .privacy: PrivacySettingsView()
         case .travel: TravelSettingsView()
+        case .icloud: ICloudSettingsView()
         #if DEBUG
         case .developer: DeveloperSettingsView()
         #endif

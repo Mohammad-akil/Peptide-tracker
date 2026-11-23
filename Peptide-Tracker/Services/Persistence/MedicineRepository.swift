@@ -3,7 +3,7 @@ import Foundation
 /// Everything the app persists, saved as one JSON document. The data set is
 /// small (a handful of medicines and a few hundred logs) so a single file
 /// keeps saves atomic and the format easy to migrate.
-struct MedicineSnapshot: Codable {
+struct MedicineSnapshot: Codable, Equatable {
     var medicines: [Medicine] = []
     var doseLogs: [DoseLog] = []
     var refills: [RefillEvent] = []

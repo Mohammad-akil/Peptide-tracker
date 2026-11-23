@@ -581,6 +581,8 @@ final class MedicineStore {
         rescheduleReminders()
         DoseActivityController.refresh(store: self)
         QueryClient.shared.invalidate([.medicines, .doses, .moods])
+        // Doses logged from a widget or Live Activity go to iCloud too.
+        CloudSync.shared.localDidChange()
     }
 
     // MARK: - Plumbing
@@ -610,8 +612,9 @@ final class MedicineStore {
         }
     }
 
-    private func persist() {
-        let snapshot = MedicineSnapshot(
+    /// Everything as it stands, for saving and for iCloud.
+    var snapshot: MedicineSnapshot {
+        MedicineSnapshot(
             medicines: medicines,
             doseLogs: doseLogs,
             refills: refills,
@@ -623,10 +626,35 @@ final class MedicineStore {
             calculatorResults: calculatorResults,
             sideEffects: sideEffects
         )
+    }
+
+    /// Replaces everything with `snapshot` (iCloud's merged copy), then
+    /// saves and re-plans reminders like any other change.
+    func apply(_ snapshot: MedicineSnapshot) {
+        medicines = snapshot.medicines
+        doseLogs = snapshot.doseLogs
+        refills = snapshot.refills
+        contacts = snapshot.contacts
+        checkIns = snapshot.checkIns
+        weights = snapshot.weights.sorted { $0.day < $1.day }
+        calculatorResults = snapshot.calculatorResults.sorted { $0.day < $1.day }
+        sideEffects = snapshot.sideEffects.sorted { $0.date < $1.date }
+        lastCountdownDay = snapshot.lastCountdownDay
+        // Setting `settings` saves on its own; otherwise save here.
+        if settings != snapshot.settings {
+            settings = snapshot.settings
+        } else {
+            didChange()
+        }
+    }
+
+    private func persist() {
+        let snapshot = self.snapshot
         QueryClient.shared.invalidate(changedTags(from: lastSaved, to: snapshot))
         lastSaved = snapshot
         repository.save(snapshot)
         WidgetCenter.shared.reloadAllTimelines()
+        CloudSync.shared.localDidChange()
     }
 
     /// Which kinds of data differ between two saves.
