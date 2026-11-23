@@ -15,5 +15,7 @@
 			</array>
 		</dict>
 	</array>
+	<key>RevenueCatAPIKey</key>
+	<string>$(REVENUECAT_API_KEY)</string>
 </dict>
 </plist>

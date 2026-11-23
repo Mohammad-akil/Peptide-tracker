@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The paywall at the end of setup, laid out like the top GLP-1 apps':
-/// icon, "Everything for your GLP-1 journey", a phone preview filled with
-/// the user's own answers, three benefits, two plans side by side and one
+/// icon, "Everything for your GLP-1 journey", a phone showing a real
+/// screenshot of the app, three benefits, two plans side by side and one
 /// big button. Hard: no close and no swipe-down — subscribing or restoring
 /// is the way through. Price, billing terms, Restore, Terms and Privacy
 /// stay on screen (Guideline 3.1.2).
@@ -10,7 +10,6 @@ struct JourneyPaywallView: View {
     let onFinish: () -> Void
 
     @Environment(PurchaseStore.self) private var purchases
-    @Environment(MedicineStore.self) private var store
     @Environment(AppRouter.self) private var router
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var plan = PurchaseStore.defaultPlan
@@ -31,7 +30,7 @@ struct JourneyPaywallView: View {
                     .padding(.top, 14)
                     .appear(isShown, delay: 0.05)
 
-                PaywallPhonePreview(settings: store.settings, latestWeightKg: store.latestWeight?.kilograms)
+                PaywallPhonePreview()
                     .padding(.top, 20)
                     .appear(isShown, delay: 0.12)
 
@@ -108,8 +107,8 @@ struct JourneyPaywallView: View {
 
     private var purchasePanel: some View {
         VStack(spacing: 0) {
-            // Yearly (preselected) and Monthly side by side. Lifetime stays
-            // in `PurchaseStore` so earlier buyers keep Pro and can restore.
+            // Yearly (preselected) and Monthly side by side, from the
+            // current RevenueCat Offering.
             HStack(spacing: 10) {
                 JourneyPlanTile(plan: .yearly, isSelected: plan == .yearly) { select(.yearly) }
                 JourneyPlanTile(plan: .monthly, isSelected: plan == .monthly) { select(.monthly) }
@@ -208,8 +207,6 @@ private struct JourneyPlanTile: View {
             return parts.isEmpty ? "MOST POPULAR" : parts.joined(separator: " · ")
         case .monthly:
             return purchases.trialDays(for: plan).map { "\($0) DAYS FREE" }
-        case .lifetime:
-            return nil
         }
     }
 
@@ -217,7 +214,6 @@ private struct JourneyPlanTile: View {
         switch plan {
         case .monthly: "/mo"
         case .yearly: "/yr"
-        case .lifetime: ""
         }
     }
 
@@ -227,7 +223,6 @@ private struct JourneyPlanTile: View {
             if let perMonth = purchases.yearlyPerMonth { return "Just \(perMonth)/mo, billed yearly" }
             return "Billed yearly · Cancel anytime"
         case .monthly: return "Billed monthly"
-        case .lifetime: return "Pay once, keep it forever"
         }
     }
 
@@ -298,7 +293,6 @@ private struct JourneyPlanTile: View {
                 .font(.system(size: size, weight: .heavy))
                 .monospacedDigit()
                 .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
-                .redacted(reason: purchases.isLoaded(plan) ? [] : .placeholder)
             Text(suffix)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(AppTheme.ColorToken.secondaryText)
@@ -310,139 +304,25 @@ private struct JourneyPlanTile: View {
 
 // MARK: - Phone preview
 
-/// A small, live mock of the app inside a phone outline, filled with what
-/// the user told setup: their medication and dose, schedule and goal. It
-/// fades out at the bottom like a cropped screenshot.
+/// A real screenshot of the app (Today, with the tab bar) inside a phone
+/// outline, cropped and faded at the bottom.
 private struct PaywallPhonePreview: View {
-    let settings: AppSettings
-
-    @State private var level: CGFloat = 0
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private var medication: String {
-        guard let medication = settings.glp1Medication, medication != .dontKnow else { return "GLP-1" }
-        let typed = settings.glp1OtherMedication
-        return medication == .other ? (typed.isEmpty ? "GLP-1" : typed) : medication.title
-    }
-
-    private var dose: String { settings.glp1Dose.isEmpty ? "0.5 mg" : settings.glp1Dose }
-
-    private var schedule: String {
-        switch settings.glp1IntervalDays {
-        case 1: "Every day"
-        case let days?: "Every \(days) days"
-        case nil: "Weekly"
-        }
-    }
-
-    private var weight: String?
-
-    init(settings: AppSettings, latestWeightKg: Double?) {
-        self.settings = settings
-        self.weight = latestWeightKg.map { settings.weightUnit.format($0) }
-    }
-
-    private var goal: String? {
-        settings.goalWeightKg.map { settings.weightUnit.format($0) }
-    }
+    private let width: CGFloat = 230
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Doseday").font(.system(size: 13, weight: .heavy))
-                Spacer()
-                Text("Today")
-                    .font(.system(size: 10, weight: .bold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(AppTheme.ColorToken.accentSoft, in: .capsule)
-                    .foregroundStyle(AppTheme.ColorToken.accent)
+        Image("paywall-app-preview")
+            .resizable()
+            .scaledToFill()
+            .frame(width: width, height: 270, alignment: .top)
+            .clipShape(.rect(topLeadingRadius: 30, topTrailingRadius: 30, style: .continuous))
+            .overlay {
+                UnevenRoundedRectangle(topLeadingRadius: 30, topTrailingRadius: 30, style: .continuous)
+                    .strokeBorder(AppTheme.ColorToken.primaryText.opacity(0.85), lineWidth: 5)
             }
-
-            // Medication level card
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 6) {
-                    Image(systemName: "bolt.heart.fill").font(.system(size: 10, weight: .bold))
-                    Text("Medication level").font(.system(size: 10, weight: .semibold))
-                    Spacer()
-                    Text(medication)
-                        .font(.system(size: 10, weight: .bold))
-                        .lineLimit(1)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .overlay(Capsule().strokeBorder(AppTheme.ColorToken.accent, lineWidth: 1.2))
-                        .foregroundStyle(AppTheme.ColorToken.accent)
-                }
-                .foregroundStyle(AppTheme.ColorToken.secondaryText)
-                Text(dose).font(.system(size: 20, weight: .heavy)).monospacedDigit()
-                LevelCurve()
-                    .trim(from: 0, to: level)
-                    .stroke(AppTheme.ColorToken.accent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-                    .frame(height: 30)
-            }
-            .padding(10)
-            .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 12, style: .continuous))
-
-            HStack(spacing: 8) {
-                miniCard("calendar", "Next dose", schedule, tint: Color(hex: 0x30B0C7))
-                miniCard("target", "Goal", goal ?? "Set a goal", tint: Color(hex: 0xFF9F0A))
-            }
-            HStack(spacing: 8) {
-                miniCard("figure.arms.open", "Next site", "Left thigh", tint: Color(hex: 0x34C759))
-                miniCard("scalemass.fill", "Weight", weight ?? "Log a weigh-in", tint: Color(hex: 0x0A84FF))
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.top, 14)
-        .frame(width: 230, height: 250, alignment: .top)
-        .background(AppTheme.ColorToken.background)
-        .clipShape(.rect(topLeadingRadius: 30, topTrailingRadius: 30, style: .continuous))
-        .overlay {
-            UnevenRoundedRectangle(topLeadingRadius: 30, topTrailingRadius: 30, style: .continuous)
-                .strokeBorder(AppTheme.ColorToken.primaryText.opacity(0.85), lineWidth: 5)
-        }
-        .mask(LinearGradient(stops: [.init(color: .black, location: 0.7), .init(color: .clear, location: 1)], startPoint: .top, endPoint: .bottom))
-        .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Preview of Doseday showing your \(medication) dose, schedule and goal.")
-        .onAppear {
-            if reduceMotion { level = 1 } else {
-                withAnimation(.easeInOut(duration: 1.4).delay(0.5)) { level = 1 }
-            }
-        }
-    }
-
-    private func miniCard(_ symbol: String, _ title: String, _ value: String, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack(spacing: 4) {
-                Image(systemName: symbol).font(.system(size: 9, weight: .bold)).foregroundStyle(tint)
-                Text(title).font(.system(size: 9, weight: .semibold)).foregroundStyle(AppTheme.ColorToken.secondaryText)
-            }
-            Text(value).font(.system(size: 12, weight: .bold)).lineLimit(1).minimumScaleFactor(0.7)
-        }
-        .padding(8)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 10, style: .continuous))
-    }
-}
-
-/// A dose-level line: rises after each dose, eases off, rises again.
-private struct LevelCurve: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let peaks = 3
-        let step = rect.width / CGFloat(peaks)
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY * 0.85))
-        for i in 0..<peaks {
-            let x0 = rect.minX + CGFloat(i) * step
-            let peakY = rect.minY + rect.height * (0.35 - CGFloat(i) * 0.12)
-            path.addCurve(
-                to: CGPoint(x: x0 + step, y: rect.maxY * (0.75 - CGFloat(i) * 0.12)),
-                control1: CGPoint(x: x0 + step * 0.15, y: peakY),
-                control2: CGPoint(x: x0 + step * 0.45, y: peakY)
-            )
-        }
-        return path
+            .mask(LinearGradient(stops: [.init(color: .black, location: 0.7), .init(color: .clear, location: 1)], startPoint: .top, endPoint: .bottom))
+            .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Preview of Doseday's Today screen with your doses and refills.")
     }
 }
 

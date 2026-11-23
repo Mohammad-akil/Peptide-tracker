@@ -251,7 +251,6 @@ struct PaywallComparisonTable: View {
 struct PaywallPlanPicker: View {
     @Binding var selection: PurchaseStore.Plan
 
-    /// Lifetime isn't sold for now; it stays in `PurchaseStore` for restores.
     private let order: [PurchaseStore.Plan] = [.yearly, .monthly]
 
     var body: some View {
@@ -282,13 +281,11 @@ struct PaywallPlanTile: View {
 
     @Environment(PurchaseStore.self) private var purchases
 
-    private var isGold: Bool { plan == .lifetime }
+    private var isGold: Bool { false }
     private var ring: Color { isGold ? PaywallPalette.gold : PaywallPalette.accent }
-    private var isLoaded: Bool { purchases.isLoaded(plan) }
 
     private var chip: String? {
         switch plan {
-        case .lifetime: "ONE-TIME"
         case .yearly: purchases.trialDays(for: plan).map { "\($0) DAYS FREE" } ?? "POPULAR"
         case .monthly: purchases.trialDays(for: plan).map { "\($0) DAYS FREE" }
         }
@@ -297,7 +294,6 @@ struct PaywallPlanTile: View {
     /// The green line at the bottom; reserves its space on every tile.
     private var highlight: String? {
         switch plan {
-        case .lifetime: "FOREVER"
         case .yearly: purchases.yearlySavingsPercent.map { "SAVE \($0)%" }
         case .monthly: nil
         }
@@ -319,7 +315,6 @@ struct PaywallPlanTile: View {
                     .foregroundStyle(AppTheme.ColorToken.primaryText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                    .redacted(reason: isLoaded ? [] : .placeholder)
                     .padding(.top, 4)
                 Text(plan.period)
                     .font(.system(size: 12, weight: .semibold))
@@ -375,7 +370,7 @@ struct PaywallPurchasePanel: View {
 
     private var callToAction: String {
         if let days = purchases.trialDays(for: plan) { return "Start \(days)-day free trial" }
-        return plan == .lifetime ? "Unlock Pro forever" : "Continue"
+        return "Continue"
     }
 
     var body: some View {
@@ -534,7 +529,7 @@ enum PaywallActions {
         router.show(.loading("Contacting the App Store…"))
         switch await purchases.purchase(plan) {
         case .purchased:
-            router.show(.success("Welcome to Pro", message: plan == .lifetime ? "Unlocked for good. Thank you!" : "Everything’s unlocked. Thank you!"))
+            router.show(.success("Welcome to Pro", message: "Everything’s unlocked. Thank you!"))
             router.celebrate()
             if let trialDays {
                 await TrialReminder.schedule(trialDays: trialDays, price: price, period: plan.period)

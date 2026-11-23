@@ -13,12 +13,36 @@ enum ProfilePhoto {
     /// The longest side it's stored at, in pixels.
     private static let maxSide: CGFloat = 512
 
-    static func load() -> UIImage? {
-        guard let data = try? Data(contentsOf: url) else { return nil }
-        return UIImage(data: data)
+    /// The decoded photo, kept in memory once loaded so Settings shows it
+    /// without touching the disk. Nil until `preload()` finishes, or when
+    /// there's no photo.
+    @MainActor private(set) static var cached: UIImage?
+    @MainActor private static var hasLoaded = false
+
+    /// Reads and decodes the photo off the main thread (during the splash),
+    /// so the first visit to Settings never waits on the file.
+    @MainActor
+    static func preload() async {
+        guard !hasLoaded else { return }
+        let file = url
+        let image = await Task.detached(priority: .utility) { () -> UIImage? in
+            guard let data = try? Data(contentsOf: file), let image = UIImage(data: data) else { return nil }
+            // Decode now, not on first draw.
+            return await image.byPreparingForDisplay() ?? image
+        }.value
+        cached = image
+        hasLoaded = true
+    }
+
+    /// The cached photo, loading it in the background first if needed.
+    @MainActor
+    static func load() async -> UIImage? {
+        await preload()
+        return cached
     }
 
     /// Scales the picked image down and saves it. Returns what was saved.
+    @MainActor
     @discardableResult
     static func save(_ data: Data) -> UIImage? {
         guard let image = UIImage(data: data) else { return nil }
@@ -31,10 +55,15 @@ enum ProfilePhoto {
         }
         guard let jpeg = resized.jpegData(compressionQuality: 0.85) else { return nil }
         try? jpeg.write(to: url, options: [.atomic, .completeFileProtection])
+        cached = resized
+        hasLoaded = true
         return resized
     }
 
+    @MainActor
     static func remove() {
         try? FileManager.default.removeItem(at: url)
+        cached = nil
+        hasLoaded = true
     }
 }

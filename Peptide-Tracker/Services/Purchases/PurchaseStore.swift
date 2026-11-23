@@ -1,15 +1,15 @@
 import Foundation
 import Observation
-import StoreKit
+import RevenueCat
 
-/// The ways to unlock Pro — Monthly or Yearly (with the free trial) on the
-/// paywall, plus Lifetime, no longer sold but still honoured and
-/// restorable — and whether the user has any of them.
+/// Doseday Pro through RevenueCat: the plans the paywall offers, their
+/// prices and free trial, buying and restoring, and whether this user is
+/// Pro (the `dosedaypro` entitlement).
 ///
-/// Everything price-related on the paywall comes from here, straight from
-/// the App Store and localized per storefront: the price, the free trial
-/// (only when this Apple Account is still eligible). Nothing is hardcoded
-/// except the fallback shown while the store loads, so every claim on the
+/// The plans come from RevenueCat's *current Offering* (its Annual and
+/// Monthly packages), so prices and products can change from the
+/// dashboard without an app update. Every price is the App Store's own,
+/// localized per storefront; nothing is hardcoded, so every claim on the
 /// paywall stays true (Guideline 3.1.2).
 @MainActor
 @Observable
@@ -17,7 +17,6 @@ final class PurchaseStore {
     enum Plan: String, CaseIterable, Identifiable {
         case monthly = "com.doseday.ios.pro.monthly"
         case yearly = "com.doseday.ios.pro.yearly"
-        case lifetime = "com.doseday.ios.pro.lifetime"
 
         var id: String { rawValue }
 
@@ -25,7 +24,6 @@ final class PurchaseStore {
             switch self {
             case .monthly: "Monthly"
             case .yearly: "Yearly"
-            case .lifetime: "Lifetime"
             }
         }
 
@@ -34,18 +32,17 @@ final class PurchaseStore {
             switch self {
             case .monthly: "per month"
             case .yearly: "per year"
-            case .lifetime: "once"
             }
         }
 
-        var isSubscription: Bool { self != .lifetime }
+        var isSubscription: Bool { true }
 
-        /// Shown until the App Store price loads.
-        var fallbackPrice: String {
+        /// The US price, shown until RevenueCat returns the App Store's
+        /// own. Keep in step with App Store Connect.
+        var fallbackPrice: Decimal {
             switch self {
-            case .monthly: "$4.99"
-            case .yearly: "$29.99"
-            case .lifetime: "$59.99"
+            case .monthly: Decimal(string: "4.99")!
+            case .yearly: Decimal(string: "29.99")!
             }
         }
     }
@@ -58,28 +55,40 @@ final class PurchaseStore {
         case failed(String)
     }
 
+    /// The RevenueCat entitlement that unlocks the app.
+    static let entitlementID = "dosedaypro"
     /// Preselected on the paywall.
     static let defaultPlan = Plan.yearly
+    /// Formats the fallback prices until the store's load.
+    private static let fallbackFormat = Decimal.FormatStyle.Currency(code: "USD")
 
-    private(set) var products: [Plan: Product] = [:]
-    /// Free-trial length per subscription, only while this Apple Account can
-    /// still take it. Missing means no trial to offer, so none is promised.
+    /// The current Offering's packages, by plan.
+    private(set) var packages: [Plan: Package] = [:]
+    /// Free-trial length per plan, only while this Apple Account can still
+    /// take it. Missing means no trial to offer, so none is promised.
     private(set) var trialDays: [Plan: Int] = [:]
     private(set) var isPro = false
-    /// False until the first entitlement check finishes, so the hard
-    /// paywall never flashes over someone who has already paid.
+    /// False until RevenueCat first answers, so the hard paywall never
+    /// flashes over someone who has already paid.
     private(set) var hasCheckedEntitlements = false
     private(set) var activePlan: Plan?
     private(set) var isPurchasing = false
     var errorMessage: String?
 
+    /// The store products behind the packages, by plan.
+    var products: [Plan: StoreProduct] { packages.mapValues(\.storeProduct) }
+
     private var updates: Task<Void, Never>?
 
     init() {
+        guard Self.configureIfNeeded() else {
+            // No key (or a SwiftUI preview): nothing to sell, nobody is Pro.
+            hasCheckedEntitlements = true
+            return
+        }
         updates = Task { [weak self] in
-            for await result in Transaction.updates {
-                if case .verified(let transaction) = result { await transaction.finish() }
-                await self?.refreshEntitlements()
+            for await info in Purchases.shared.customerInfoStream {
+                self?.apply(info)
             }
         }
         Task {
@@ -88,31 +97,63 @@ final class PurchaseStore {
         }
     }
 
+    /// Configures RevenueCat once with the public key from Info.plist
+    /// (`REVENUECAT_API_KEY` in Config/Secrets.xcconfig). Returns whether
+    /// RevenueCat is ready.
+    private static func configureIfNeeded() -> Bool {
+        if Purchases.isConfigured { return true }
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" { return false }
+        guard let key = Bundle.main.object(forInfoDictionaryKey: "RevenueCatAPIKey") as? String,
+              key.hasPrefix("appl_") else {
+            #if DEBUG
+            print("⚠️ RevenueCat: no API key. Copy Config/Secrets.example.xcconfig to Config/Secrets.xcconfig and add the appl_ key.")
+            #endif
+            return false
+        }
+        #if DEBUG
+        Purchases.logLevel = .debug
+        #else
+        Purchases.logLevel = .warn
+        #endif
+        Purchases.configure(withAPIKey: key)
+        return true
+    }
+
     // MARK: Paywall copy
 
     /// Whether the store has answered for this plan, so it can be sold.
-    func isLoaded(_ plan: Plan) -> Bool { products[plan] != nil }
+    func isLoaded(_ plan: Plan) -> Bool { packages[plan] != nil }
 
-    /// Yearly as a monthly price, "$2.50", in the store's currency. Nil
-    /// until Yearly has loaded.
+    /// The store's price, or the fallback until it loads.
+    private func amount(for plan: Plan) -> Decimal {
+        products[plan]?.price ?? plan.fallbackPrice
+    }
+
+    /// Yearly as a monthly price, "$2.49", in the store's currency (the
+    /// fallback's until it loads).
     var yearlyPerMonth: String? {
-        guard let yearly = products[.yearly] else { return nil }
-        return (yearly.price / 12).formatted(yearly.priceFormatStyle)
+        if let perMonth = products[.yearly]?.localizedPricePerMonth { return perMonth }
+        var monthly = Plan.yearly.fallbackPrice / 12
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &monthly, 2, .down)
+        return rounded.formatted(Self.fallbackFormat)
     }
 
     /// How much Yearly saves over twelve months of Monthly, as a whole
     /// percentage. Nil until both have loaded or when there's no saving,
     /// so the badge only ever shows a true number.
     var yearlySavingsPercent: Int? {
-        guard let yearly = products[.yearly]?.price, let monthly = products[.monthly]?.price, monthly > 0 else { return nil }
+        let yearly = amount(for: .yearly), monthly = amount(for: .monthly)
+        guard monthly > 0 else { return nil }
         let fullYear = monthly * 12
         guard yearly < fullYear else { return nil }
         let percent = NSDecimalNumber(decimal: (fullYear - yearly) / fullYear * 100).doubleValue
         return Int(percent.rounded(.down))
     }
 
+    /// The App Store price, or the fixed fallback while it loads.
     func price(for plan: Plan) -> String {
-        products[plan]?.displayPrice ?? plan.fallbackPrice
+        products[plan]?.localizedPriceString ?? plan.fallbackPrice.formatted(Self.fallbackFormat)
     }
 
     func trialDays(for plan: Plan) -> Int? { trialDays[plan] }
@@ -127,38 +168,42 @@ final class PurchaseStore {
     /// What they'll pay and when, said plainly under the buy button.
     func disclosure(for plan: Plan) -> String {
         let price = price(for: plan)
-        switch plan {
-        case .lifetime:
-            return "\(price) one-time payment. No subscription, no renewals."
-        case .monthly, .yearly:
-            let period = plan == .yearly ? "year" : "month"
-            if let days = trialDays[plan] {
-                return "Free for \(days) days, then \(price) per \(period). Cancel anytime in Settings."
-            }
-            return "\(price) per \(period). Renews until cancelled in Settings."
+        let period = plan == .yearly ? "year" : "month"
+        if let days = trialDays[plan] {
+            return "Free for \(days) days, then \(price) per \(period). Cancel anytime in Settings."
         }
+        return "\(price) per \(period). Renews until cancelled in Settings."
     }
 
     // MARK: Store
 
+    /// Reads the current Offering's Annual and Monthly packages.
     func loadProducts() async {
-        guard let loaded = try? await Product.products(for: Plan.allCases.map(\.rawValue)) else { return }
-        products = Dictionary(uniqueKeysWithValues: loaded.compactMap { product in
-            Plan(rawValue: product.id).map { ($0, product) }
-        })
+        guard Purchases.isConfigured,
+              let offering = try? await Purchases.shared.offerings().current else { return }
+        var loaded: [Plan: Package] = [:]
+        if let annual = offering.annual { loaded[.yearly] = annual }
+        if let monthly = offering.monthly { loaded[.monthly] = monthly }
+        // Fall back to matching product IDs if the packages use custom types.
+        for package in offering.availablePackages {
+            if let plan = Plan(rawValue: package.storeProduct.productIdentifier), loaded[plan] == nil {
+                loaded[plan] = package
+            }
+        }
+        packages = loaded
         await refreshTrials()
     }
 
     /// Apple allows one introductory offer per subscription group, so ask
-    /// StoreKit rather than assuming everyone gets the trial.
+    /// rather than assuming everyone gets the trial.
     func refreshTrials() async {
+        guard Purchases.isConfigured else { return }
         var days: [Plan: Int] = [:]
-        for plan in Plan.allCases where plan.isSubscription {
-            guard let subscription = products[plan]?.subscription,
-                  let offer = subscription.introductoryOffer,
-                  offer.paymentMode == .freeTrial,
-                  await subscription.isEligibleForIntroOffer else { continue }
-            let period = offer.period
+        for (plan, product) in products {
+            guard let offer = product.introductoryDiscount, offer.paymentMode == .freeTrial,
+                  await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product) == .eligible
+            else { continue }
+            let period = offer.subscriptionPeriod
             let unitDays: Int
             switch period.unit {
             case .day: unitDays = 1
@@ -167,34 +212,29 @@ final class PurchaseStore {
             case .year: unitDays = 365
             @unknown default: continue
             }
-            days[plan] = period.value * unitDays * max(offer.periodCount, 1)
+            days[plan] = period.value * unitDays * max(offer.numberOfPeriods, 1)
         }
         trialDays = days
     }
 
     func purchase(_ plan: Plan) async -> PurchaseOutcome {
-        if products[plan] == nil { await loadProducts() }
-        guard let product = products[plan] else {
+        guard Purchases.isConfigured else {
+            return .failed("Purchases aren’t set up in this build.")
+        }
+        if packages[plan] == nil { await loadProducts() }
+        guard let package = packages[plan] else {
             return .failed("The App Store isn’t available right now. Try again in a moment.")
         }
         isPurchasing = true
         defer { isPurchasing = false }
         do {
-            switch try await product.purchase() {
-            case .success(.verified(let transaction)):
-                await transaction.finish()
-                await refreshEntitlements()
-                return isPro ? .purchased : .failed("The purchase went through but Pro didn’t unlock. Tap Restore to try again.")
-            case .success(.unverified):
-                return .failed("We couldn’t verify that purchase with the App Store.")
-            case .pending:
-                return .pending
-            case .userCancelled:
-                return .cancelled
-            @unknown default:
-                return .cancelled
-            }
+            let result = try await Purchases.shared.purchase(package: package)
+            if result.userCancelled { return .cancelled }
+            apply(result.customerInfo)
+            return isPro ? .purchased : .failed("The purchase went through but Pro didn’t unlock. Tap Restore to try again.")
         } catch {
+            if (error as NSError).code == ErrorCode.paymentPendingError.rawValue { return .pending }
+            if (error as NSError).code == ErrorCode.purchaseCancelledError.rawValue { return .cancelled }
             return .failed(error.localizedDescription)
         }
     }
@@ -202,25 +242,33 @@ final class PurchaseStore {
     /// Returns whether Pro is unlocked afterwards.
     @discardableResult
     func restore() async -> Bool {
+        guard Purchases.isConfigured else { return false }
         isPurchasing = true
         defer { isPurchasing = false }
-        try? await AppStore.sync()
-        await refreshEntitlements()
+        if let info = try? await Purchases.shared.restorePurchases() { apply(info) }
         return isPro
     }
 
     func refreshEntitlements() async {
-        var plan: Plan?
-        for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result, transaction.revocationDate == nil,
-                  let owned = Plan(rawValue: transaction.productID) else { continue }
-            // Lifetime wins over a subscription bought before it.
-            if plan != .lifetime { plan = owned }
+        guard Purchases.isConfigured else {
+            hasCheckedEntitlements = true
+            return
         }
-        activePlan = plan
-        isPro = plan != nil
-        hasCheckedEntitlements = true
+        if let info = try? await Purchases.shared.customerInfo() {
+            apply(info)
+        } else {
+            // Offline with nothing cached: decide anyway, so the app isn't
+            // stuck waiting; the stream unlocks Pro once RevenueCat answers.
+            hasCheckedEntitlements = true
+        }
         // Having subscribed before can use up the trial.
         await refreshTrials()
+    }
+
+    private func apply(_ info: CustomerInfo) {
+        let entitlement = info.entitlements[Self.entitlementID]
+        isPro = entitlement?.isActive == true
+        activePlan = isPro ? entitlement.flatMap { Plan(rawValue: $0.productIdentifier) } : nil
+        hasCheckedEntitlements = true
     }
 }

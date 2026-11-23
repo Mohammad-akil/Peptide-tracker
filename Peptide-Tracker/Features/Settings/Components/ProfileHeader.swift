@@ -8,7 +8,9 @@ struct ProfileHeader: View {
     @Environment(MedicineStore.self) private var store
     @Environment(PurchaseStore.self) private var purchases
     @Environment(AppRouter.self) private var router
-    @State private var photo: UIImage?
+    /// Starts from the photo decoded during the splash, so it's there on
+    /// the first frame.
+    @State private var photo: UIImage? = ProfilePhoto.cached
     @State private var pickedItem: PhotosPickerItem?
     @State private var showsPicker = false
     @State private var isEditingName = false
@@ -40,7 +42,8 @@ struct ProfileHeader: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .onAppear { photo = ProfilePhoto.load() }
+        // Free after the splash's preload: it just returns the cached image.
+        .task { photo = await ProfilePhoto.load() }
         .photosPicker(isPresented: $showsPicker, selection: $pickedItem, matching: .images)
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }

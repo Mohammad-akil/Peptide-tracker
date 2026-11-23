@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		444352F130823DD90002BADB /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 444352F030823DD90002BADB /* ConfettiSwiftUI */; };
+		44CCBF1F30B4222200D15402 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 44CCBF1E30B4222200D15402 /* RevenueCat */; };
+		44CCBF2130B4222200D15402 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 44CCBF2030B4222200D15402 /* RevenueCatUI */; };
 		D05EDA700000000000000009 /* DosedayWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D05EDA700000000000000002 /* DosedayWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -36,22 +38,23 @@
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Peptide-Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Peptide-Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D05EDA700000000000000002 /* DosedayWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DosedayWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACC0000000000000000000B1 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D05EDA700000000000000004 /* Exceptions for "DosedayWidgets" folder in "DosedayWidgetsExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = D05EDA700000000000000001 /* DosedayWidgetsExtension */;
-		};
 		000000000000000000000011 /* Exceptions for "Peptide-Tracker" folder in "Peptide-Tracker" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 000000000000000100000000 /* Peptide-Tracker */;
+		};
+		D05EDA700000000000000004 /* Exceptions for "DosedayWidgets" folder in "DosedayWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D05EDA700000000000000001 /* DosedayWidgetsExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -78,7 +81,9 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				44CCBF1F30B4222200D15402 /* RevenueCat in Frameworks */,
 				444352F130823DD90002BADB /* ConfettiSwiftUI in Frameworks */,
+				44CCBF2130B4222200D15402 /* RevenueCatUI in Frameworks */,
 			);
 		};
 		D05EDA700000000000000006 /* Frameworks */ = {
@@ -94,8 +99,17 @@
 			children = (
 				000000000000000000000010 /* Peptide-Tracker */,
 				D05EDA700000000000000003 /* DosedayWidgets */,
+				ACC0000000000000000000B2 /* Config */,
 				000000000000000000000020 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		ACC0000000000000000000B2 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				ACC0000000000000000000B1 /* App.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		000000000000000000000020 /* Products */ = {
@@ -130,6 +144,8 @@
 			name = "Peptide-Tracker";
 			packageProductDependencies = (
 				444352F030823DD90002BADB /* ConfettiSwiftUI */,
+				44CCBF1E30B4222200D15402 /* RevenueCat */,
+				44CCBF2030B4222200D15402 /* RevenueCatUI */,
 			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* Peptide-Tracker.app */;
@@ -182,6 +198,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				444352EF30823DD90002BADB /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+				44CCBF1D30B4222200D15402 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
@@ -363,6 +380,7 @@
 		};
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "Peptide-Tracker" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = ACC0000000000000000000B1 /* App.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -413,6 +431,7 @@
 		};
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "Peptide-Tracker" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = ACC0000000000000000000B1 /* App.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -565,6 +584,14 @@
 				minimumVersion = 3.0.0;
 			};
 		};
+		44CCBF1D30B4222200D15402 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.103.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -572,6 +599,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 444352EF30823DD90002BADB /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
 			productName = ConfettiSwiftUI;
+		};
+		44CCBF1E30B4222200D15402 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 44CCBF1D30B4222200D15402 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		44CCBF2030B4222200D15402 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 44CCBF1D30B4222200D15402 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

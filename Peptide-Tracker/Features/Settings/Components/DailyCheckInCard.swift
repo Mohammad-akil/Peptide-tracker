@@ -93,7 +93,12 @@ struct DailyCheckInCard: View {
                 VStack(spacing: 4) {
                     ZStack {
                         if let checkIn {
-                            Text(checkIn.mood.emoji).font(.system(size: 16))
+                            // The app's drawn mood face, not the emoji.
+                            checkIn.mood.illustration
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 22, height: 22)
+                                .transition(.scale.combined(with: .opacity))
                         } else {
                             Circle()
                                 .strokeBorder(AppTheme.ColorToken.uncheckedRing, style: StrokeStyle(lineWidth: 1.5, dash: day == today ? [3, 3] : []))

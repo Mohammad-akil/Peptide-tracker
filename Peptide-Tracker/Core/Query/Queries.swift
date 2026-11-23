@@ -32,5 +32,8 @@ extension MedicineStore {
         }
         // The medicine catalogue parses its JSON on first use; do it now.
         _ = MedicineCatalog.all.count
+        // Settings' profile photo: read and decode off the main thread now,
+        // so switching to Settings never waits on the file.
+        Task { await ProfilePhoto.preload() }
     }
 }

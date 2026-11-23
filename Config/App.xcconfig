@@ -1,0 +1,5 @@
+// Shared build settings for the Doseday app target.
+// Keys live in Secrets.xcconfig (git-ignored). Copy Secrets.example.xcconfig
+// to Secrets.xcconfig and fill it in; the build still works without it, but
+// purchases won't load.
+#include? "Secrets.xcconfig"

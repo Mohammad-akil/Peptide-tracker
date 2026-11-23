@@ -1,5 +1,5 @@
 {
-  "originHash" : "0813d8074328ac339b3ad4d9e895dca3cbd4327633fce793259860c9993a0805",
+  "originHash" : "ea6303082232630344dde201cbf79e2825cc77a926af2fc46d16a12e33a10caf",
   "pins" : [
     {
       "identity" : "confettiswiftui",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "9ae5bc2ce2149980884d4612321c3a266d6bf82c",
         "version" : "3.0.0"
+      }
+    },
+    {
+      "identity" : "purchases-ios-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",
+      "state" : {
+        "revision" : "a835ead7b1b0439864e2450e17c08be193aec473",
+        "version" : "5.103.2"
       }
     }
   ],

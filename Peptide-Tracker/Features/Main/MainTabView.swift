@@ -50,10 +50,10 @@ struct MainTabView: View {
                 }
             }
 
-            // The search role puts "+" in its own circle, apart from the tabs.
+            // The native bar puts "+" in its own circle, apart from the tabs.
             // The floating bar before iOS 26 has its own "+".
             if !MainTabLayout.usesCustomTabBar {
-                Tab(value: Item.add, role: .search) {
+                Tab(value: Item.add, role: addRole) {
                     Color.clear
                 } label: {
                     Label {
@@ -66,6 +66,13 @@ struct MainTabView: View {
         }
         .tint(AppTheme.ColorToken.accent)
         .toolbarVisibility(.hidden, for: .navigationBar)
+    }
+
+    /// The role that sets "+" apart in its own circle: `.prominent` from
+    /// iOS 27, which otherwise folds a `.search` tab into the bar as a
+    /// fourth tab; `.search` on iOS 26.
+    private var addRole: TabRole {
+        if #available(iOS 27, *) { .prominent } else { .search }
     }
 
     /// Keeps "+" from ever becoming the selected tab.
