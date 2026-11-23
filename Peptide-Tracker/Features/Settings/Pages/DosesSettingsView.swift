@@ -36,7 +36,7 @@ struct DosesSettingsView: View {
 
     /// The areas site rotation walks through. At least one stays on.
     private var siteRotation: some View {
-        let areas = InjectionSite.Area.allCases
+        let areas = InjectionSite.Area.rotationAreas
         return GroupedSection(
             title: "Injection site rotation",
             footer: "Doseday suggests the site that has rested longest, in the areas you use. Turn off any you don’t inject."
@@ -65,7 +65,7 @@ struct DosesSettingsView: View {
     }
 
     private func isOnlyAreaInUse(_ area: InjectionSite.Area) -> Bool {
-        let inUse = InjectionSite.Area.allCases.filter { !store.settings.skippedSiteAreas.contains($0) }
+        let inUse = InjectionSite.Area.rotationAreas.filter { !store.settings.skippedSiteAreas.contains($0) }
         return inUse == [area]
     }
 }
@@ -77,6 +77,7 @@ private extension InjectionSite.Area {
         case .thigh: "figure.walk"
         case .arm: "figure.strengthtraining.functional"
         case .glute: "figure.step.training"
+        default: "figure.stand"
         }
     }
 }

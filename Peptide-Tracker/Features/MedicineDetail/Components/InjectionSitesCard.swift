@@ -73,7 +73,7 @@ struct InjectionSitesCard: View {
     private func heatRows(_ heat: [InjectionSite: Int]) -> some View {
         let start = now.startOfDay.adding(days: -(Self.heatDays - 1))
         let reactions = Dictionary(grouping: store.sideEffects.filter { $0.kind == .siteReaction && $0.day >= start && $0.site != nil }, by: { $0.site! })
-        let sites = InjectionSite.rotation.filter { (heat[$0] ?? 0) > 0 || reactions[$0] != nil }
+        let sites = InjectionSite.all.filter { (heat[$0] ?? 0) > 0 || reactions[$0] != nil }
             .sorted { (heat[$0] ?? 0) > (heat[$1] ?? 0) }
         if sites.isEmpty {
             Text("No injections with a site in the last \(Self.heatDays) days.")

@@ -38,11 +38,24 @@ def site(view, muscle, box):
         # Facing us: the viewer's right is the person's left.
         side = "Left" if cx > FRONT_W / 2 else "Right"
         if muscle == ".core": return "abdomen" + side
-        if muscle == ".legs" and y0 >= 600 and y1 <= 1110: return "thigh" + side
+        if muscle == ".legs": return ("calf" if y0 >= 1100 else "thigh") + side
+        if muscle == ".calves": return "calf" + side
+        if muscle in (".shoulders", ".trapezius"): return "shoulder" + side
+        if muscle == ".chest": return "chest" + side
+        if muscle == ".biceps": return "frontArm" + side
+        if muscle == ".triceps": return "arm" + side
+        if muscle == ".forearm": return "forearm" + side
+        if muscle == ".back": return "flank" + side
     else:
         side = "Right" if cx > BACK_W / 2 else "Left"
         if muscle == ".triceps": return "arm" + side
         if muscle == ".hips": return "glute" + side
+        if muscle in (".shoulders", ".trapezius"): return "shoulder" + side
+        if muscle == ".back": return "back" + side
+        if muscle == ".forearm": return "forearm" + side
+        if muscle == ".calves": return "calf" + side
+        if muscle == ".legs": return ("calf" if y0 >= 1100 else "hamstring") + side
+    # The neck and plain outline stay unpickable.
     return None
 
 lines, counts = [], {}

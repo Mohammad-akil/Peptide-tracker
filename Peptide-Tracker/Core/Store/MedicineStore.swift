@@ -13,8 +13,16 @@ final class MedicineStore {
     /// this same instance as the screens, so nothing writes the file twice.
     static let shared = MedicineStore()
 
-    private(set) var medicines: [Medicine]
-    private(set) var doseLogs: [DoseLog]
+    private(set) var medicines: [Medicine] {
+        didSet { dosesByDay.removeAll(keepingCapacity: true) }
+    }
+    private(set) var doseLogs: [DoseLog] {
+        didSet { dosesByDay.removeAll(keepingCapacity: true) }
+    }
+    /// `doses(on:)` per day, so Today, the week strip and the check-in card
+    /// don't each re-scan every log on every redraw. Cleared whenever
+    /// medicines or logs change.
+    @ObservationIgnored private var dosesByDay: [Date: [ScheduledDose]] = [:]
     private(set) var refills: [RefillEvent]
     /// Doctors, carers and clinics, A–Z.
     private(set) var contacts: [HealthContact]
@@ -148,6 +156,16 @@ final class MedicineStore {
     /// Every dose scheduled on `day`, in time order, resolved against logs.
     func doses(on day: Date) -> [ScheduledDose] {
         let day = day.startOfDay
+        // Read both arrays even on a cache hit, so the calling view still
+        // redraws when either changes.
+        let medicines = medicines, doseLogs = doseLogs
+        if let cached = dosesByDay[day] { return cached }
+        let doses = computeDoses(on: day, medicines: medicines, doseLogs: doseLogs)
+        dosesByDay[day] = doses
+        return doses
+    }
+
+    private func computeDoses(on day: Date, medicines: [Medicine], doseLogs: [DoseLog]) -> [ScheduledDose] {
         let logs = Dictionary(
             doseLogs.filter { $0.day == day }.map { ("\($0.medicineID)-\($0.time.minutesSinceMidnight)", $0) },
             uniquingKeysWith: { first, _ in first }

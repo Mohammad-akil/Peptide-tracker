@@ -184,7 +184,7 @@ private struct SideEffectEditor: View {
                                 Spacer()
                                 Picker("Site", selection: $entry.site) {
                                     Text("Not sure").tag(InjectionSite?.none)
-                                    ForEach(InjectionSite.rotation) { Text($0.title).tag(InjectionSite?.some($0)) }
+                                    ForEach(InjectionSite.all) { Text($0.title).tag(InjectionSite?.some($0)) }
                                 }
                                 .labelsHidden()
                             }

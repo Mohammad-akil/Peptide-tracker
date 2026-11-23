@@ -44,7 +44,9 @@ struct InjectionSiteSheet: View {
                 .padding(.bottom, 14)
 
             SuggestionChips(
-                options: InjectionSite.rotation.map(\.title),
+                // The usual sites, plus the picked one when it's elsewhere
+                // on the body; tap the map for any other spot.
+                options: (InjectionSite.rotation + (InjectionSite.rotation.contains(site) ? [] : [site])).map(\.title),
                 selection: Binding(
                     get: { site.title },
                     // Tapping the picked chip again keeps it picked.

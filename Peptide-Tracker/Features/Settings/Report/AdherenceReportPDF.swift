@@ -202,7 +202,7 @@ struct VisitHealthSummary {
             if let site = log.site { counts[site, default: 0] += 1 }
         }
         let reactions = Dictionary(grouping: effects.compactMap(\.site), by: { $0 }).mapValues(\.count)
-        sites = InjectionSite.rotation
+        sites = InjectionSite.all
             .filter { counts[$0] != nil || reactions[$0] != nil }
             .map { SiteLine(site: $0, count: counts[$0] ?? 0, reactions: reactions[$0] ?? 0) }
     }

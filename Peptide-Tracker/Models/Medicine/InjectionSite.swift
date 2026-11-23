@@ -3,8 +3,14 @@ import Foundation
 /// Where an injection went, so the next one can go somewhere else. The
 /// four areas used for injections under the skin, each side.
 enum InjectionSite: String, Codable, CaseIterable, Identifiable {
+    // The usual subcutaneous sites, which rotation walks through.
     case abdomenLeft, abdomenRight, thighLeft, thighRight
     case armLeft, armRight, gluteLeft, gluteRight
+    // Every other major part of the body map, so any spot can be logged.
+    case shoulderLeft, shoulderRight, chestLeft, chestRight
+    case frontArmLeft, frontArmRight, forearmLeft, forearmRight
+    case flankLeft, flankRight, backLeft, backRight
+    case hamstringLeft, hamstringRight, calfLeft, calfRight
 
     var id: String { rawValue }
 
@@ -12,6 +18,7 @@ enum InjectionSite: String, Codable, CaseIterable, Identifiable {
         var id: String { rawValue }
 
         case abdomen, thigh, arm, glute
+        case shoulder, chest, frontArm, forearm, flank, back, hamstring, calf
 
         var title: String {
             switch self {
@@ -19,8 +26,20 @@ enum InjectionSite: String, Codable, CaseIterable, Identifiable {
             case .thigh: "Thigh"
             case .arm: "Back of arm"
             case .glute: "Glute"
+            case .shoulder: "Shoulder"
+            case .chest: "Chest"
+            case .frontArm: "Front of arm"
+            case .forearm: "Forearm"
+            case .flank: "Side"
+            case .back: "Back"
+            case .hamstring: "Back of thigh"
+            case .calf: "Calf"
             }
         }
+
+        /// The areas rotation suggests from, and that Settings can switch
+        /// off. The rest can always be picked but are never suggested.
+        static let rotationAreas: [Area] = [.abdomen, .thigh, .arm, .glute]
     }
 
     enum Side { case left, right }
@@ -31,18 +50,30 @@ enum InjectionSite: String, Codable, CaseIterable, Identifiable {
         case .thighLeft, .thighRight: .thigh
         case .armLeft, .armRight: .arm
         case .gluteLeft, .gluteRight: .glute
+        case .shoulderLeft, .shoulderRight: .shoulder
+        case .chestLeft, .chestRight: .chest
+        case .frontArmLeft, .frontArmRight: .frontArm
+        case .forearmLeft, .forearmRight: .forearm
+        case .flankLeft, .flankRight: .flank
+        case .backLeft, .backRight: .back
+        case .hamstringLeft, .hamstringRight: .hamstring
+        case .calfLeft, .calfRight: .calf
         }
     }
 
     var side: Side {
         switch self {
-        case .abdomenLeft, .thighLeft, .armLeft, .gluteLeft: .left
-        case .abdomenRight, .thighRight, .armRight, .gluteRight: .right
+        case .abdomenLeft, .thighLeft, .armLeft, .gluteLeft,
+             .shoulderLeft, .chestLeft, .frontArmLeft, .forearmLeft,
+             .flankLeft, .backLeft, .hamstringLeft, .calfLeft: .left
+        default: .right
         }
     }
 
-    /// Arms and glutes are drawn on the back of the body, the rest on the front.
-    var isOnBack: Bool { area == .arm || area == .glute }
+    /// Back of the arm, glutes, back and back of the thigh are drawn on the
+    /// back of the body; the rest on the front (shoulders and calves show
+    /// on both).
+    var isOnBack: Bool { [.arm, .glute, .back, .hamstring].contains(area) }
 
     /// "Left abdomen", "Right back of arm"
     var title: String {
@@ -51,11 +82,15 @@ enum InjectionSite: String, Codable, CaseIterable, Identifiable {
     }
 
     /// The order rotation walks through: round the body, alternating sides,
-    /// so consecutive injections land far apart.
+    /// so consecutive injections land far apart. Only the usual
+    /// subcutaneous sites; the others are picked by hand.
     static let rotation: [InjectionSite] = [
         .abdomenLeft, .abdomenRight, .thighLeft, .thighRight,
         .armLeft, .armRight, .gluteLeft, .gluteRight,
     ]
+
+    /// Every site, rotation's first, for pickers and reports.
+    static let all: [InjectionSite] = rotation + allCases.filter { !rotation.contains($0) }
 }
 
 // MARK: - Rotation
