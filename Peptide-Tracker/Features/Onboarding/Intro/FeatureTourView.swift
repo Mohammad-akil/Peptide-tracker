@@ -14,7 +14,7 @@ struct FeatureTourView: View {
             video: "onboarding-1",
             icon: .pill,
             title: "Add what you take.",
-            text: "Pills, injections, creams, liquids and drops — with how much you have and how often you take it."
+            text: "Pills, injections, creams, liquids and drops, with how much you have and how often you take it."
         ),
         FeaturePage(
             video: "onboarding-2",
@@ -26,7 +26,7 @@ struct FeatureTourView: View {
             video: "onboarding-3",
             icon: .bell,
             title: "Get reminded in time to refill.",
-            text: "A heads-up timed to how long your refill really takes, so you never run out."
+            text: "A reminder timed to how long your refill really takes, so you never run out."
         ),
     ]
 

@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Back, a five-step progress bar and Skip — the frame every question and
+/// Back, the segmented progress bar and Skip — the frame every question and
 /// the summary share.
 struct OnboardingTopBar: View {
-    /// How many of the five segments are filled.
+    /// How many of the segments are filled.
     let progress: Int
     let onBack: () -> Void
     /// Hidden on screens that aren't questions (the benefit chart, the plan).
@@ -98,13 +98,9 @@ struct OnboardingChoice<Detail: View>: View {
                 withAnimation(.snappy) { action() }
             } label: {
                 HStack(spacing: 14) {
-                    FilledIcon(icon, size: 21)
-                        .foregroundStyle(isSelected ? .white : AppTheme.ColorToken.primaryText)
-                        .frame(width: 42, height: 42)
-                        .background(
-                            isSelected ? AppTheme.ColorToken.accent : Color(hex: 0x767680, opacity: 0.1),
-                            in: .rect(cornerRadius: 13, style: .continuous)
-                        )
+                    FilledIcon(icon, size: 24)
+                        .foregroundStyle(isSelected ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)
+                        .frame(width: 30, height: 30)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.system(size: 17, weight: .semibold))
@@ -216,10 +212,12 @@ struct OnboardingField: View {
 struct OnboardingNote: View {
     let icon: AppIcon
     let text: Text
+    /// The icon's colour; the accent unless a step needs another (red heart).
+    var tint: Color = AppTheme.ColorToken.accent
 
     var body: some View {
         HStack(spacing: 10) {
-            FilledIcon(icon, size: 19).foregroundStyle(AppTheme.ColorToken.accent)
+            FilledIcon(icon, size: 19).foregroundStyle(tint)
             text
                 .font(.system(size: 15))
                 .lineSpacing(2)
@@ -238,5 +236,35 @@ struct OnboardingNote: View {
 struct ChoiceDivider: View {
     var body: some View {
         Rectangle().fill(AppTheme.ColorToken.separator).frame(height: 0.5)
+    }
+}
+
+/// Fades and lifts a piece of a step in, a beat after the one before it,
+/// so a screen builds top to bottom instead of popping in at once.
+private struct StaggeredAppear: ViewModifier {
+    let index: Int
+    @State private var isShown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isShown ? 1 : 0)
+            .offset(y: isShown || reduceMotion ? 0 : 16)
+            .scaleEffect(isShown || reduceMotion ? 1 : 0.98, anchor: .top)
+            .onAppear {
+                guard !isShown else { return }
+                if reduceMotion {
+                    withAnimation(.easeOut(duration: 0.2)) { isShown = true }
+                } else {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.1 + Double(index) * 0.05)) { isShown = true }
+                }
+            }
+    }
+}
+
+extension View {
+    /// Enters the `index`th in line on a step; see `StaggeredAppear`.
+    func stagger(_ index: Int) -> some View {
+        modifier(StaggeredAppear(index: index))
     }
 }

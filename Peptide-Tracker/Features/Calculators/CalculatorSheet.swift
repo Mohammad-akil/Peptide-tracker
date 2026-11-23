@@ -516,7 +516,7 @@ struct CalculatorSheet: View {
 }
 
 /// The four WHO bands as one bar, with a marker at this BMI.
-private struct BMIScale: View {
+struct BMIScale: View {
     let bmi: Double
 
     private let lower = 15.0

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Onboarding's second screen: what the app does in one line, three
-/// reassurances, then the five setup questions. Everything arrives one item
+/// reassurances, then the setup questions. Everything arrives one item
 /// at a time, top to bottom.
 struct WelcomeView: View {
     let onContinue: () -> Void
@@ -41,16 +41,11 @@ struct WelcomeView: View {
 
             Spacer(minLength: 16)
 
-            VStack(spacing: 8) {
-                Button("Get started", action: onContinue)
-                    .buttonStyle(.glassPrimary)
-                Text("5 quick questions, about a minute")
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.ColorToken.secondaryText)
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 12)
-            .staggeredAppear(appears, order: 7)
+            Button("Get started", action: onContinue)
+                .buttonStyle(.glassPrimary)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 12)
+                .staggeredAppear(appears, order: 7)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(AppTheme.ColorToken.background.ignoresSafeArea())

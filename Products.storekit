@@ -13,7 +13,7 @@
   "nonRenewingSubscriptions": [],
   "products": [
     {
-      "displayPrice": "39.99",
+      "displayPrice": "59.99",
       "familyShareable": false,
       "internalID": "6739000002",
       "localizations": [
@@ -39,15 +39,47 @@
   "subscriptionGroups": [
     {
       "id": "6739000010",
-      "localizations": [],
+      "localizations": [
+        {
+          "description": "",
+          "displayName": "Doseday Pro",
+          "locale": "en_US"
+        }
+      ],
       "name": "Doseday Pro",
       "subscriptions": [
         {
           "adHocOffers": [],
           "codeOffers": [],
-          "displayPrice": "2.99",
+          "displayPrice": "29.99",
           "familyShareable": false,
           "groupNumber": 1,
+          "internalID": "6739000003",
+          "localizations": [
+            {
+              "description": "Pro, billed yearly.",
+              "displayName": "Pro Yearly",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.doseday.ios.pro.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Pro Yearly",
+          "subscriptionGroupID": "6739000010",
+          "type": "RecurringSubscription",
+          "introductoryOffer": {
+            "internalID": "6739000013",
+            "numberOfPeriods": 1,
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W"
+          }
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "4.99",
+          "familyShareable": false,
+          "groupNumber": 2,
           "internalID": "6739000001",
           "localizations": [
             {
@@ -60,13 +92,7 @@
           "recurringSubscriptionPeriod": "P1M",
           "referenceName": "Pro Monthly",
           "subscriptionGroupID": "6739000010",
-          "type": "RecurringSubscription",
-          "introductoryOffer": {
-            "internalID": "6739000012",
-            "numberOfPeriods": 1,
-            "paymentMode": "free",
-            "subscriptionPeriod": "P1W"
-          }
+          "type": "RecurringSubscription"
         }
       ]
     }

@@ -56,11 +56,36 @@ struct AppSettings: Codable, Hashable {
     var tracksDoses = true
     var pharmacyName = ""
     var pharmacyPhone = ""
-    /// Onboarding Q1: whose medicines these are.
+    /// Onboarding GLP-1 questions: where the user is, how they take it and
+    /// which medication (with the typed name when they chose Other).
+    var glp1Journey: GLP1Journey?
+    var glp1Route: GLP1Route?
+    var glp1Medication: GLP1Medication?
+    var glp1OtherMedication = ""
+    /// The dose as a label ("0.5 mg", or what was typed under Other).
+    var glp1Dose = ""
+    /// Pen, auto-injector or syringe; nil for pills or when skipped.
+    var glp1Device: GLP1Device?
+    var glp1OtherDevice = ""
+    /// Days between GLP-1 doses (1 to 21); nil when skipped.
+    var glp1IntervalDays: Int?
+    /// When the user started their GLP-1, from onboarding.
+    var glp1StartDate: Date?
+    /// Target weight from onboarding, in kilograms.
+    var goalWeightKg: Double?
+    /// Chosen pace toward the goal, kilograms a week.
+    var weeklyGoalKg: Double?
+    /// Side effects the user said they worry about, from onboarding.
+    var sideEffectConcerns: Set<SideEffectConcern> = []
+    var otherSideEffectConcern = ""
+    /// Why the user wants to reach their goal, from onboarding.
+    var goalReasons: Set<GoalReason> = []
+    var otherGoalReason = ""
+    /// Onboarding: whose medicines these are.
     var trackingFor = TrackingFor.me
     /// The person cared for — reminders use it ("Mum’s Metformin…").
     var personName = ""
-    /// Onboarding Q5: how refills arrive.
+    /// How refills arrive.
     var pharmacyKind = PharmacyKind.one
     /// The user's own name, shown on their profile in Settings.
     var userName = ""
@@ -141,6 +166,7 @@ struct AppSettings: Codable, Hashable {
         case weightUnit, heightCm, birthYear, sex
         case appLock, keepsHomeTime, homeTimeZoneID
         case tracksSharps, sharpsCapacity, sharpsEmptiedAt
+        case glp1Journey, glp1Route, glp1Medication, glp1OtherMedication, glp1Dose, glp1Device, glp1OtherDevice, glp1IntervalDays, glp1StartDate, goalWeightKg, weeklyGoalKg, sideEffectConcerns, otherSideEffectConcern, goalReasons, otherGoalReason
     }
 
     /// Tolerates keys added in later versions, so an older save still loads.
@@ -177,10 +203,25 @@ struct AppSettings: Codable, Hashable {
         tracksSharps = try c.decodeIfPresent(Bool.self, forKey: .tracksSharps) ?? defaults.tracksSharps
         sharpsCapacity = try c.decodeIfPresent(Int.self, forKey: .sharpsCapacity) ?? defaults.sharpsCapacity
         sharpsEmptiedAt = try c.decodeIfPresent(Date.self, forKey: .sharpsEmptiedAt)
+        glp1Journey = try c.decodeIfPresent(GLP1Journey.self, forKey: .glp1Journey)
+        glp1Route = try c.decodeIfPresent(GLP1Route.self, forKey: .glp1Route)
+        glp1Medication = try c.decodeIfPresent(GLP1Medication.self, forKey: .glp1Medication)
+        glp1OtherMedication = try c.decodeIfPresent(String.self, forKey: .glp1OtherMedication) ?? defaults.glp1OtherMedication
+        glp1Dose = try c.decodeIfPresent(String.self, forKey: .glp1Dose) ?? defaults.glp1Dose
+        glp1Device = try c.decodeIfPresent(GLP1Device.self, forKey: .glp1Device)
+        glp1OtherDevice = try c.decodeIfPresent(String.self, forKey: .glp1OtherDevice) ?? defaults.glp1OtherDevice
+        glp1IntervalDays = try c.decodeIfPresent(Int.self, forKey: .glp1IntervalDays)
+        glp1StartDate = try c.decodeIfPresent(Date.self, forKey: .glp1StartDate)
+        goalWeightKg = try c.decodeIfPresent(Double.self, forKey: .goalWeightKg)
+        weeklyGoalKg = try c.decodeIfPresent(Double.self, forKey: .weeklyGoalKg)
+        sideEffectConcerns = try c.decodeIfPresent(Set<SideEffectConcern>.self, forKey: .sideEffectConcerns) ?? defaults.sideEffectConcerns
+        otherSideEffectConcern = try c.decodeIfPresent(String.self, forKey: .otherSideEffectConcern) ?? defaults.otherSideEffectConcern
+        goalReasons = try c.decodeIfPresent(Set<GoalReason>.self, forKey: .goalReasons) ?? defaults.goalReasons
+        otherGoalReason = try c.decodeIfPresent(String.self, forKey: .otherGoalReason) ?? defaults.otherGoalReason
     }
 }
 
-/// Onboarding Q1.
+/// Whose medicines these are.
 enum TrackingFor: String, Codable, CaseIterable {
     case me, someoneElse, both
 
@@ -193,7 +234,7 @@ enum TrackingFor: String, Codable, CaseIterable {
     }
 }
 
-/// Onboarding Q2. Each answer sets how many days ahead the heads-up comes.
+/// How long a refill takes. Each answer sets how many days ahead the heads-up comes.
 enum RefillLeadTime: CaseIterable {
     case sameDay, oneToTwoDays, threeToFiveDays, weekOrMore
 
@@ -211,7 +252,7 @@ enum RefillLeadTime: CaseIterable {
     }
 }
 
-/// Onboarding Q5.
+/// How refills arrive.
 /// How long "Remind me later" on a refill reminder waits.
 enum SnoozeOption: String, Codable, CaseIterable {
     case oneHour, threeHours, tomorrow

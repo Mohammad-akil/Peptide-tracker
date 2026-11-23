@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The paywall opened from anywhere a free user reaches Pro (the medicine
-/// limit, the report, PDF exports, Settings), and the last step of
-/// `PaywallFlowView`. The headline and Free vs Pro table scroll; the plans,
+/// limit, the report, PDF exports, Settings). The setup paywall is
+/// `JourneyPaywallView`. The headline and Free vs Pro table scroll; the plans,
 /// buy button, billing terms and legal links are one panel pinned to the
 /// bottom, so the price and terms never scroll away (Guideline 3.1.2).
 struct PaywallView: View {

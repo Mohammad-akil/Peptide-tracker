@@ -2,8 +2,9 @@ import Foundation
 import Observation
 import StoreKit
 
-/// The two ways to unlock Pro — Monthly (with the free trial) or a
-/// one-time Lifetime purchase — and whether the user has any of them.
+/// The ways to unlock Pro — Monthly or Yearly (with the free trial) on the
+/// paywall, plus Lifetime, no longer sold but still honoured and
+/// restorable — and whether the user has any of them.
 ///
 /// Everything price-related on the paywall comes from here, straight from
 /// the App Store and localized per storefront: the price, the free trial
@@ -15,6 +16,7 @@ import StoreKit
 final class PurchaseStore {
     enum Plan: String, CaseIterable, Identifiable {
         case monthly = "com.doseday.ios.pro.monthly"
+        case yearly = "com.doseday.ios.pro.yearly"
         case lifetime = "com.doseday.ios.pro.lifetime"
 
         var id: String { rawValue }
@@ -22,6 +24,7 @@ final class PurchaseStore {
         var title: String {
             switch self {
             case .monthly: "Monthly"
+            case .yearly: "Yearly"
             case .lifetime: "Lifetime"
             }
         }
@@ -30,6 +33,7 @@ final class PurchaseStore {
         var period: String {
             switch self {
             case .monthly: "per month"
+            case .yearly: "per year"
             case .lifetime: "once"
             }
         }
@@ -39,8 +43,9 @@ final class PurchaseStore {
         /// Shown until the App Store price loads.
         var fallbackPrice: String {
             switch self {
-            case .monthly: "$2.99"
-            case .lifetime: "$39.99"
+            case .monthly: "$4.99"
+            case .yearly: "$29.99"
+            case .lifetime: "$59.99"
             }
         }
     }
@@ -56,7 +61,7 @@ final class PurchaseStore {
     /// Medicines a free user can track; adding past this opens the paywall.
     static let freeMedicineLimit = 2
     /// Preselected on the paywall.
-    static let defaultPlan = Plan.monthly
+    static let defaultPlan = Plan.yearly
 
     private(set) var products: [Plan: Product] = [:]
     /// Free-trial length per subscription, only while this Apple Account can
@@ -93,6 +98,24 @@ final class PurchaseStore {
     /// Whether the store has answered for this plan, so it can be sold.
     func isLoaded(_ plan: Plan) -> Bool { products[plan] != nil }
 
+    /// Yearly as a monthly price, "$2.50", in the store's currency. Nil
+    /// until Yearly has loaded.
+    var yearlyPerMonth: String? {
+        guard let yearly = products[.yearly] else { return nil }
+        return (yearly.price / 12).formatted(yearly.priceFormatStyle)
+    }
+
+    /// How much Yearly saves over twelve months of Monthly, as a whole
+    /// percentage. Nil until both have loaded or when there's no saving,
+    /// so the badge only ever shows a true number.
+    var yearlySavingsPercent: Int? {
+        guard let yearly = products[.yearly]?.price, let monthly = products[.monthly]?.price, monthly > 0 else { return nil }
+        let fullYear = monthly * 12
+        guard yearly < fullYear else { return nil }
+        let percent = NSDecimalNumber(decimal: (fullYear - yearly) / fullYear * 100).doubleValue
+        return Int(percent.rounded(.down))
+    }
+
     func price(for plan: Plan) -> String {
         products[plan]?.displayPrice ?? plan.fallbackPrice
     }
@@ -112,11 +135,12 @@ final class PurchaseStore {
         switch plan {
         case .lifetime:
             return "\(price) one-time payment. No subscription, no renewals."
-        case .monthly:
+        case .monthly, .yearly:
+            let period = plan == .yearly ? "year" : "month"
             if let days = trialDays[plan] {
-                return "Free for \(days) days, then \(price) per month. Cancel anytime in Settings."
+                return "Free for \(days) days, then \(price) per \(period). Cancel anytime in Settings."
             }
-            return "\(price) per month. Renews until cancelled in Settings."
+            return "\(price) per \(period). Renews until cancelled in Settings."
         }
     }
 

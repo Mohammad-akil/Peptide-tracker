@@ -88,21 +88,29 @@ struct GetStartedView: View {
             .scaleEffect(showsNumber ? 1 : 0.85)
             .opacity(showsNumber ? 1 : 0)
 
-            tile(.pill, color: .blue, angle: -10, at: CGPoint(x: -130, y: -91), delay: 0)
-            tile(.syringe, color: .amber, angle: 12, at: CGPoint(x: 130, y: -113), delay: 0.15)
-            tile(.drop, color: .teal, angle: 8, at: CGPoint(x: -126, y: 117), delay: 0.3)
-            tile(.liquid, color: .pink, angle: -8, at: CGPoint(x: 126, y: 109), delay: 0.45)
+            // Everyday medicines floating around the ring; the smaller
+            // ones sit further back.
+            tile("pills.fill", color: MedicineColor.blue.color, angle: -10, at: CGPoint(x: -130, y: -91), delay: 0)
+            tile("syringe.fill", color: MedicineColor.amber.color, angle: 12, at: CGPoint(x: 130, y: -113), delay: 0.15)
+            tile("drop.fill", color: MedicineColor.teal.color, angle: 8, at: CGPoint(x: -126, y: 117), delay: 0.3)
+            tile("waterbottle.fill", color: MedicineColor.pink.color, angle: -8, at: CGPoint(x: 126, y: 109), delay: 0.45)
+            tile("pill.fill", color: MedicineColor.purple.color, angle: 18, at: CGPoint(x: 0, y: -138), size: 44, delay: 0.6)
+            tile("bandage.fill", color: Color(hex: 0xFF7A59), angle: -14, at: CGPoint(x: -158, y: 14), size: 44, delay: 0.75)
+            tile("cross.vial.fill", color: Color(hex: 0x30B07A), angle: 10, at: CGPoint(x: 158, y: -2), size: 44, delay: 0.9)
         }
         .accessibilityElement()
         .accessibilityLabel("A medicine with 5 days left")
     }
 
-    private func tile(_ icon: AppIcon, color: MedicineColor, angle: Double, at offset: CGPoint, delay: Double) -> some View {
-        FilledIcon(icon, size: 26)
-            .foregroundStyle(color.color)
-            .frame(width: 56, height: 56)
-            // A solid light pastel, so tiles stay bright in dark mode too.
-            .background(color.color.mix(with: .white, by: 0.82), in: .rect(cornerRadius: 17, style: .continuous))
+    private func tile(_ symbol: String, color: Color, angle: Double, at offset: CGPoint, size: CGFloat = 56, delay: Double) -> some View {
+        Image(systemName: symbol)
+            .font(.system(size: size * 0.42, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            // Each tile its own solid colour with a white icon, the same in
+            // light and dark mode.
+            .background(color, in: .rect(cornerRadius: size * 0.3, style: .continuous))
+            .shadow(color: color.opacity(0.35), radius: 10, y: 6)
             .rotationEffect(.degrees(angle))
             .scaleEffect(showsTiles ? 1 : 0.4)
             .opacity(showsTiles ? 1 : 0)

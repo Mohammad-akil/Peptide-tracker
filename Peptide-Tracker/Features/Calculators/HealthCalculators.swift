@@ -217,15 +217,15 @@ enum BMICategory: CaseIterable {
     var range: String {
         switch self {
         case .under: "Below 18.5"
-        case .healthy: "18.5 – 24.9"
-        case .over: "25 – 29.9"
+        case .healthy: "18.5 to 24.9"
+        case .over: "25 to 29.9"
         case .obese: "30 and above"
         }
     }
 
     var tint: Color {
         switch self {
-        case .under: Color(hex: 0x0A84FF)
+        case .under: Color(hex: 0xAF52DE)
         case .healthy: Color(hex: 0x1F8A4C)
         case .over: Color(hex: 0xB26A00)
         case .obese: Color(hex: 0xC8372D)

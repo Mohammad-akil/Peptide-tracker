@@ -4,30 +4,40 @@ import Foundation
 /// app behaves; skipping one keeps its default.
 enum OnboardingStep: Int, CaseIterable, Comparable {
     // Raw names double as `-onboarding <step>` debug launch arguments.
-    case getStarted, tour, welcome, who, refill, benefit, doses, time, pharmacy, notifications, settingUp, plan
+    case getStarted, tour, welcome
+    case journey, route, medication, dose, device, frequency, education
+    case height, weight, start, goal, momentum, pace, comparison
+    case sideEffects, reason, settingUp
 
-    static let questionCount = 5
+    static let questionCount = 13
 
     static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
 
-    /// Filled segments of the progress bar.
+    /// Filled segments of the progress bar. Info screens share the
+    /// question before them.
     var progress: Int {
         switch self {
         case .getStarted, .tour, .welcome: 0
-        case .who: 1
-        case .refill, .benefit: 2
-        case .doses: 3
-        case .time: 4
-        case .pharmacy, .notifications, .settingUp, .plan: 5
+        case .journey: 1
+        case .route: 2
+        case .medication: 3
+        case .dose: 4
+        case .device: 5
+        case .frequency, .education: 6
+        case .height: 7
+        case .weight: 8
+        case .start: 9
+        case .goal, .momentum: 10
+        case .pace, .comparison: 11
+        case .sideEffects: 12
+        case .reason, .settingUp: 13
         }
     }
 
-    var isQuestion: Bool { [.who, .refill, .doses, .time, .pharmacy].contains(self) }
+    var isQuestion: Bool {
+        [.journey, .route, .medication, .dose, .device, .frequency, .height, .weight, .start, .goal, .pace, .sideEffects, .reason].contains(self)
+    }
 
     var next: Self? { Self(rawValue: rawValue + 1) }
-    /// Back skips the "setting up" beat; it only plays going forward.
-    var previous: Self? {
-        let previous = Self(rawValue: rawValue - 1)
-        return previous == .settingUp ? previous?.previous : previous
-    }
+    var previous: Self? { Self(rawValue: rawValue - 1) }
 }

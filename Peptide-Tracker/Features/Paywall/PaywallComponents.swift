@@ -246,12 +246,13 @@ struct PaywallComparisonTable: View {
 
 // MARK: - Plans
 
-/// Monthly (preselected) and Lifetime side by side,
+/// Yearly (preselected) and Monthly side by side,
 /// so every price is visible at once with nothing behind a dropdown.
 struct PaywallPlanPicker: View {
     @Binding var selection: PurchaseStore.Plan
 
-    private let order: [PurchaseStore.Plan] = [.monthly, .lifetime]
+    /// Lifetime isn't sold for now; it stays in `PurchaseStore` for restores.
+    private let order: [PurchaseStore.Plan] = [.yearly, .monthly]
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
@@ -273,8 +274,7 @@ struct PaywallPlanPicker: View {
 }
 
 /// One plan as a compact tile: name, big price, period, and a green line
-/// at the bottom, with one chip over the top edge — the trial on Monthly,
-/// "Best value" on Lifetime.
+/// at the bottom, with one chip over the top edge — the trial on Yearly.
 struct PaywallPlanTile: View {
     let plan: PurchaseStore.Plan
     let isSelected: Bool
@@ -288,7 +288,8 @@ struct PaywallPlanTile: View {
 
     private var chip: String? {
         switch plan {
-        case .lifetime: "BEST VALUE"
+        case .lifetime: "ONE-TIME"
+        case .yearly: purchases.trialDays(for: plan).map { "\($0) DAYS FREE" } ?? "POPULAR"
         case .monthly: purchases.trialDays(for: plan).map { "\($0) DAYS FREE" }
         }
     }
@@ -296,7 +297,8 @@ struct PaywallPlanTile: View {
     /// The green line at the bottom; reserves its space on every tile.
     private var highlight: String? {
         switch plan {
-        case .lifetime: "ONE-TIME"
+        case .lifetime: "FOREVER"
+        case .yearly: purchases.yearlySavingsPercent.map { "SAVE \($0)%" }
         case .monthly: nil
         }
     }

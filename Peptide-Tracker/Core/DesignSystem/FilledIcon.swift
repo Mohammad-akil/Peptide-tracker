@@ -50,6 +50,8 @@ extension AppIcon {
         case .moon: "moon.fill"
         case .list: "list.clipboard.fill"
         case .sparkle: "sparkles"
+        case .info: "info.circle.fill"
+        case .edit: "pencil"
         default: nil
         }
     }

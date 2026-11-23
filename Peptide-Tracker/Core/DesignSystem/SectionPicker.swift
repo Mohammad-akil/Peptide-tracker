@@ -10,6 +10,9 @@ where Value: Hashable & CaseIterable & RawRepresentable, Value.RawValue == Strin
     @Binding var selection: Value
     let title: (Value) -> String
     var height: CGFloat = 44
+    /// The track behind the pill; nil uses the default, which suits the
+    /// white top panel. Pass the card colour on the lavender background.
+    var track: Color?
 
     /// Lavender in light mode, a lifted grey in dark, so the track reads
     /// against the panel behind it.
@@ -35,7 +38,7 @@ where Value: Hashable & CaseIterable & RawRepresentable, Value.RawValue == Strin
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .padding(4)
-            .background(trackBackground, in: .capsule)
+            .background(track ?? trackBackground, in: .capsule)
         }
         .frame(height: height)
     }

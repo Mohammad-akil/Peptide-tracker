@@ -27,27 +27,28 @@ struct SettingUpStep: View {
     /// shows the first unticked one.
     private var items: [Item] {
         [
-            Item(title: "Who you’re tracking for", status: "Setting up \(trackingName)…", symbol: "person.fill", tint: Color(hex: 0x0A84FF)),
-            Item(title: "Refill heads-up", status: "Timing reminders \(answers.leadTime.daysBefore) days ahead…", symbol: "bell.fill", tint: Color(hex: 0xFF453A)),
-            answers.tracksDoses
-                ? Item(title: "Dose reminders", status: "Turning on dose reminders…", symbol: "pills.fill", tint: AppTheme.ColorToken.accent)
-                : Item(title: "Supply countdown", status: "Starting your supply countdown…", symbol: "hourglass", tint: AppTheme.ColorToken.accent),
-            Item(title: "Reminder time", status: "Scheduling reminders for \(answers.reminderTime.label)…", symbol: "clock.fill", tint: Color(hex: 0x30B0C7)),
-            Item(title: "Pharmacy", status: pharmacyStatus, symbol: "cross.case.fill", tint: Color(hex: 0xFF9F0A)),
+            Item(title: "Creating your profile", status: "Creating your profile…", symbol: "person.crop.circle.fill", tint: Color(hex: 0x0A84FF)),
+            Item(title: "Your GLP-1 plan", status: "Setting up \(medicationName)…", symbol: "cross.vial.fill", tint: Color(hex: 0x34C759)),
+            Item(title: "Dose schedule", status: scheduleStatus, symbol: "calendar", tint: Color(hex: 0x30B0C7)),
+            Item(title: "Your goal", status: goalStatus, symbol: "target", tint: Color(hex: 0xFF9F0A)),
+            Item(title: "Side effect support", status: "Tailoring tips for you…", symbol: "heart.text.square.fill", tint: Color(hex: 0xFF2D55)),
+            Item(title: "Reminders", status: "Scheduling your reminders…", symbol: "bell.fill", tint: AppTheme.ColorToken.accent),
         ]
     }
 
-    private var pharmacyStatus: String {
-        switch answers.pharmacyKind {
-        case .one: "Adding your pharmacy to reminders…"
-        case .delivery: "Leaving time for delivery…"
-        case .varies: "Keeping reminders pharmacy-free…"
-        }
+    private var medicationName: String {
+        guard let medication = answers.medication, medication != .dontKnow else { return "your medication" }
+        return answers.medicationLabel
     }
 
-    private var trackingName: String {
-        let name = answers.personName.trimmingCharacters(in: .whitespaces)
-        return answers.trackingFor == .someoneElse && !name.isEmpty ? "\(name)’s list" : "your list"
+    private var scheduleStatus: String {
+        guard let days = answers.intervalDays else { return "Planning your doses…" }
+        return days == 1 ? "Planning a dose every day…" : "Planning a dose every \(days) days…"
+    }
+
+    private var goalStatus: String {
+        guard let goal = answers.goalWeightKg else { return "Personalizing your goal…" }
+        return "Setting your goal of \(answers.weightUnit.format(goal))…"
     }
 
     private func threshold(for index: Int) -> Double {
@@ -68,7 +69,7 @@ struct SettingUpStep: View {
                 .contentTransition(.numericText(value: progress))
                 .monospacedDigit()
 
-            Text("We’re setting everything up for you")
+            Text("We’re personalizing your experience")
                 .font(.system(size: 26, weight: .bold))
                 .kerning(-0.5)
                 .multilineTextAlignment(.center)
@@ -115,7 +116,7 @@ struct SettingUpStep: View {
 
     private var checklist: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Your reminder setup")
+            Text("Building your plan")
                 .font(.system(size: 16, weight: .bold))
 
             ForEach(Array(items.enumerated()), id: \.offset) { index, item in
