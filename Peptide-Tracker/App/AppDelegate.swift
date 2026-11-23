@@ -19,7 +19,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         UINavigationBar.appearance().tintColor = UIColor { traits in
             UIColor(hex: traits.userInterfaceStyle == .dark ? 0xF4F3F8 : 0x111418)
         }
-        store.scheduler.registerCategories(snooze: store.settings.snooze)
         #if DEBUG
         // Launch with `-sampleData` to start from the design's cabinet.
         if ProcessInfo.processInfo.arguments.contains("-sampleData") { store.loadSampleData() }
@@ -33,12 +32,21 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             router.handle(url, medicineCount: store.medicines.count, purchases: purchases)
         }
         #endif
-        // Privacy mode: locked until Face ID or the passcode.
+        // Privacy mode: locked until Face ID or the passcode. Before the
+        // first frame, so nothing private ever shows.
         AppLock.shared.launch(enabled: store.settings.appLock)
+        // Everything else waits for the splash to be on screen
+        // (`finishLaunching`), so launch draws its first frame at once.
+        return true
+    }
+
+    /// Launch work that can wait a frame: called once the splash is up.
+    func finishLaunching() {
+        purchases.start()
+        store.scheduler.registerCategories(snooze: store.settings.snooze)
         store.runDailyCountdown()
         store.rescheduleReminders()
         ReviewPrompter.noteLaunch()
-        return true
     }
 
     // Show reminders even while the app is open.

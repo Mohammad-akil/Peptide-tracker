@@ -54,7 +54,6 @@ final class AppRouter {
             case .refill(let id): "refill-\(id)"
             case .injectionSite(let dose): "site-\(dose.id)"
             case .notificationPermission: "permission"
-            case .paywall: "paywall"
             case .sideEffects: "sideEffects"
             case .screenshotStudio: "screenshotStudio"
             }

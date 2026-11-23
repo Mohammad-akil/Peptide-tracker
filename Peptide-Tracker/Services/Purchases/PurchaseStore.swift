@@ -71,7 +71,12 @@ final class PurchaseStore {
 
     private var updates: Task<Void, Never>?
 
-    init() {
+    init() {}
+
+    /// Sets up RevenueCat and starts listening. Called just after launch
+    /// draws its first frame, so configuring never holds up the splash.
+    func start() {
+        guard updates == nil, !hasCheckedEntitlements else { return }
         guard Self.configureIfNeeded() else {
             // No key (or a SwiftUI preview): nothing to sell, nobody is Pro.
             hasCheckedEntitlements = true
@@ -102,7 +107,8 @@ final class PurchaseStore {
             return false
         }
         #if DEBUG
-        Purchases.logLevel = .debug
+        // `.debug` floods the console and slows launch under Xcode.
+        Purchases.logLevel = .info
         #else
         Purchases.logLevel = .warn
         #endif

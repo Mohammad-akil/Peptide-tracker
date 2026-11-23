@@ -69,6 +69,9 @@ struct PeptideTrackerApp: App {
     /// caches, so the animation never stutters.
     private func runSplashSequence() async {
         let needsOnboarding = RootView.needsOnboarding(store: appDelegate.store)
+        // The splash is on screen now; do the launch work that was waiting.
+        await Task.yield()
+        appDelegate.finishLaunching()
         try? await Task.sleep(for: Self.minimumSplashDuration)
         guard !Task.isCancelled else { return }
 

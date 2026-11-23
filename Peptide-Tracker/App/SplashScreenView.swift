@@ -10,7 +10,7 @@ struct SplashScreenView: View {
 
     /// How long the build-up takes before the splash is ready to leave.
     /// Short: the splash is a flourish, not a wait.
-    static let entranceDuration: Duration = .milliseconds(1000)
+    static let entranceDuration: Duration = .milliseconds(800)
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hasStarted = false
