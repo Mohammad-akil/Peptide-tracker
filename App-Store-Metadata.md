@@ -1,6 +1,6 @@
 # Doseday — App Store metadata (20 locales, matching the app's languages)
 
-Paste each block into App Store Connect → your app → the version's localization. Limits: name 30, subtitle 30, keywords 100 characters (comma-separated, no spaces).
+Paste each block into App Store Connect → your app → the version's localization. Limits: name 30, subtitle 30, keywords 100 characters (comma-separated, no spaces). Every description must end with the Terms of Use and Privacy Policy links shown for its locale.
 
 Locales match the app's String Catalog: en, en-GB, en-AU, en-CA, de, fr, fr-CA, es, es-MX, it, pt-BR, ja, ko, ar, tr, zh-Hans, zh-Hant, id, hi, ru. Removed (app is not translated into them): nl-NL, sv, da, no, pl. Added: zh-Hans, zh-Hant, id, hi, ru.
 
@@ -34,117 +34,217 @@ Volume / difficulty (0–100). Only the notable results are listed.
 - **Name** (30): `Doseday: GLP-1 Peptide Tracker`
 - **Subtitle** (29): `Shot Log & Injection Reminder`
 - **Keywords** (97): `semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,medication`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Terms of Use: https://doseday.vercel.app/terms
+  Privacy Policy: https://doseday.vercel.app/privacy
+  ```
 
 ## en-GB — United Kingdom, Ireland
 
 - **Name** (30): `Doseday: GLP-1 Peptide Tracker`
 - **Subtitle** (29): `Shot Log & Injection Reminder`
 - **Keywords** (98): `jab,semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,journal`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Terms of Use: https://doseday.vercel.app/terms
+  Privacy Policy: https://doseday.vercel.app/privacy
+  ```
 
 ## en-CA — Canada
 
 - **Name** (30): `Doseday: GLP-1 Peptide Tracker`
 - **Subtitle** (29): `Shot Log & Injection Reminder`
 - **Keywords** (97): `semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,medication`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Terms of Use: https://doseday.vercel.app/terms
+  Privacy Policy: https://doseday.vercel.app/privacy
+  ```
 
 ## en-AU — Australia, New Zealand
 
 - **Name** (30): `Doseday: GLP-1 Peptide Tracker`
 - **Subtitle** (29): `Shot Log & Injection Reminder`
 - **Keywords** (98): `jab,semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,journal`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Terms of Use: https://doseday.vercel.app/terms
+  Privacy Policy: https://doseday.vercel.app/privacy
+  ```
 
 ## de-DE — Germany, Austria, Switzerland
 
 - **Name** (29): `Doseday: GLP-1 Peptid-Tracker`
 - **Subtitle** (30): `Abnehmspritze & Dosis-Tagebuch`
 - **Keywords** (97): `semaglutid,tirzepatid,glp1,erinnerung,gewicht,abnehmen,injektion,pen,nebenwirkungen,bmi,protokoll`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Nutzungsbedingungen: https://doseday.vercel.app/terms
+  Datenschutzerklärung: https://doseday.vercel.app/privacy
+  ```
 
 ## fr-FR — France, Belgium, Switzerland
 
 - **Name** (30): `Doseday: Suivi GLP-1 & Peptide`
 - **Subtitle** (30): `Injections, rappel dose, poids`
 - **Keywords** (97): `sémaglutide,tirzépatide,glp1,piqûre,perte,stylo,effets,secondaires,imc,traitement,minceur,journal`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Conditions d’utilisation: https://doseday.vercel.app/terms
+  Politique de confidentialité: https://doseday.vercel.app/privacy
+  ```
 
 ## fr-CA — Canada (French)
 
 - **Name** (30): `Doseday: Suivi GLP-1 & Peptide`
 - **Subtitle** (30): `Injections, rappel dose, poids`
 - **Keywords** (97): `sémaglutide,tirzépatide,glp1,piqûre,perte,stylo,effets,secondaires,imc,traitement,minceur,journal`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Conditions d’utilisation: https://doseday.vercel.app/terms
+  Politique de confidentialité: https://doseday.vercel.app/privacy
+  ```
 
 ## es-ES — Spain
 
 - **Name** (25): `Doseday: GLP-1 y Péptidos`
 - **Subtitle** (30): `Registro de inyecciones y peso`
 - **Keywords** (94): `semaglutida,tirzepatida,glp1,dosis,recordatorio,adelgazar,pluma,efectos,secundarios,imc,diario`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Términos de uso: https://doseday.vercel.app/terms
+  Política de privacidad: https://doseday.vercel.app/privacy
+  ```
 
 ## es-MX — Mexico, Latin America
 
 - **Name** (25): `Doseday: GLP-1 y Péptidos`
 - **Subtitle** (30): `Registro de inyecciones y peso`
 - **Keywords** (98): `semaglutida,tirzepatida,glp1,dosis,recordatorio,bajar,pluma,efectos,secundarios,imc,diario,control`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Términos de uso: https://doseday.vercel.app/terms
+  Política de privacidad: https://doseday.vercel.app/privacy
+  ```
 
 ## it — Italy
 
 - **Name** (30): `Doseday: Tracker GLP-1 Peptidi`
 - **Subtitle** (29): `Diario iniezioni, dosi e peso`
 - **Keywords** (97): `semaglutide,tirzepatide,glp1,promemoria,dimagrire,penna,effetti,collaterali,bmi,farmaci,controllo`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Termini d’uso: https://doseday.vercel.app/terms
+  Informativa sulla privacy: https://doseday.vercel.app/privacy
+  ```
 
 ## pt-BR — Brazil
 
 - **Name** (26): `Doseday: GLP-1 e Peptídeos`
 - **Subtitle** (27): `Controle de injeções e peso`
 - **Keywords** (98): `tirzepatide,semaglutida,tirzepatida,glp1,canetinha,caneta,emagrecedora,emagrecer,lembrete,dose,imc`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Termos de Uso: https://doseday.vercel.app/terms
+  Política de Privacidade: https://doseday.vercel.app/privacy
+  ```
 
 ## ja — Japan
 
 - **Name** (23): `Doseday: GLP-1・ペプチド注射記録`
 - **Subtitle** (17): `投与量・体重・副作用をかんたん管理`
 - **Keywords** (75): `セマグルチド,チルゼパチド,glp1,ダイエット,リマインダー,ペン,bmi,痩せる,メディカルダイエット,トラッカー,服薬,注射管理,体重記録,肥満`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  利用規約: https://doseday.vercel.app/terms
+  プライバシーポリシー: https://doseday.vercel.app/privacy
+  ```
 
 ## ko — South Korea
 
 - **Name** (25): `Doseday: GLP-1 다이어트 주사 기록`
 - **Subtitle** (17): `약 알림·용량·체중·부작용 관리`
 - **Keywords** (66): `세마글루타이드,티르제파타이드,glp1,펜,비만,bmi,체중감량,트래커,복약,펩타이드,주사관리,투약,체중기록,다이어트기록`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  이용약관: https://doseday.vercel.app/terms
+  개인정보 처리방침: https://doseday.vercel.app/privacy
+  ```
 
 ## ar-SA — Saudi Arabia, UAE, Middle East
 
 - **Name** (21): `Doseday: متابعة GLP-1`
 - **Subtitle** (21): `الحقن والجرعات والوزن`
 - **Keywords** (94): `سيماجلوتايد,تيرزيباتيد,glp1,تخسيس,إبرة,تذكير,قلم,أعراض,جانبية,مؤشر,كتلة,الجسم,رشاقة,ببتيد,دواء`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  شروط الاستخدام: https://doseday.vercel.app/terms
+  سياسة الخصوصية: https://doseday.vercel.app/privacy
+  ```
 
 ## tr — Türkiye
 
 - **Name** (28): `Doseday: GLP-1 Peptit Takibi`
 - **Subtitle** (23): `Enjeksiyon, doz ve kilo`
 - **Keywords** (96): `semaglutid,tirzepatid,tirzepatide,glp1,zayıflama,iğne,hatırlatıcı,kalem,yan,etki,bmi,günlük,ilaç`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Kullanım Koşulları: https://doseday.vercel.app/terms
+  Gizlilik Politikası: https://doseday.vercel.app/privacy
+  ```
 
 ## zh-Hans — China mainland, Singapore
 
 - **Name** (18): `Doseday: GLP-1注射记录`
 - **Subtitle** (15): `司美格鲁肽减重针剂量与体重管理`
 - **Keywords** (58): `替尔泊肽,glp1,减肥针,减肥,打针,提醒,副作用,体重记录,bmi,多肽,注射笔,用药提醒,减肥记录,瘦身,减脂`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  使用条款: https://doseday.vercel.app/terms
+  隐私政策: https://doseday.vercel.app/privacy
+  ```
 
 ## zh-Hant — Taiwan, Hong Kong
 
 - **Name** (21): `Doseday: GLP-1減肥針注射紀錄`
 - **Subtitle** (13): `劑量提醒、體重與副作用追蹤`
 - **Keywords** (61): `司美格魯肽,替爾泊肽,glp1,減重,打針,吃藥提醒,bmi,胜肽,注射筆,體重紀錄,瘦身,用藥,減肥記錄,體重管理,減脂`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  使用條款: https://doseday.vercel.app/terms
+  隱私權政策: https://doseday.vercel.app/privacy
+  ```
 
 ## id — Indonesia, Malaysia
 
 - **Name** (29): `Doseday: Catatan Suntik GLP-1`
 - **Subtitle** (29): `Pengingat dosis & berat badan`
 - **Keywords** (98): `semaglutide,tirzepatide,glp1,diet,turun,suntikan,pena,efek,samping,bmi,jurnal,peptida,obat,pelacak`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Ketentuan Penggunaan: https://doseday.vercel.app/terms
+  Kebijakan Privasi: https://doseday.vercel.app/privacy
+  ```
 
 ## hi — India
 
 - **Name** (30): `Doseday: GLP-1 इंजेक्शन ट्रैकर`
 - **Subtitle** (25): `डोज़ रिमाइंडर और वज़न लॉग`
 - **Keywords** (85): `peptide,semaglutide,tirzepatide,glp1,वजन,घटाना,दवा,खुराक,सुई,पेन,बीएमआई,डायरी,tracker`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  उपयोग की शर्तें: https://doseday.vercel.app/terms
+  गोपनीयता नीति: https://doseday.vercel.app/privacy
+  ```
 
 ## ru — Russia, CIS
 
 - **Name** (24): `Doseday: GLP-1 и пептиды`
 - **Subtitle** (26): `Дневник уколов, доз и веса`
 - **Keywords** (97): `семаглутид,тирзепатид,glp1,похудение,шприц,ручка,напоминание,побочные,эффекты,имт,трекер,инъекции`
+- **End of description** (paste as the last lines of the description; required for subscriptions, Guideline 3.1.2):
+  ```
+  Условия использования: https://doseday.vercel.app/terms
+  Политика конфиденциальности: https://doseday.vercel.app/privacy
+  ```

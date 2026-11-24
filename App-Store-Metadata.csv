@@ -1,21 +1,41 @@
-Locale,Storefronts,App Name (30),Subtitle (30),Keywords (100),Name len,Subtitle len,Keywords len
-en-US,United States,Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,medication",30,29,97
-en-GB,"United Kingdom, Ireland",Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"jab,semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,journal",30,29,98
-en-CA,Canada,Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,medication",30,29,97
-en-AU,"Australia, New Zealand",Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"jab,semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,journal",30,29,98
-de-DE,"Germany, Austria, Switzerland",Doseday: GLP-1 Peptid-Tracker,Abnehmspritze & Dosis-Tagebuch,"semaglutid,tirzepatid,glp1,erinnerung,gewicht,abnehmen,injektion,pen,nebenwirkungen,bmi,protokoll",29,30,97
-fr-FR,"France, Belgium, Switzerland",Doseday: Suivi GLP-1 & Peptide,"Injections, rappel dose, poids","sémaglutide,tirzépatide,glp1,piqûre,perte,stylo,effets,secondaires,imc,traitement,minceur,journal",30,30,97
-fr-CA,Canada (French),Doseday: Suivi GLP-1 & Peptide,"Injections, rappel dose, poids","sémaglutide,tirzépatide,glp1,piqûre,perte,stylo,effets,secondaires,imc,traitement,minceur,journal",30,30,97
-es-ES,Spain,Doseday: GLP-1 y Péptidos,Registro de inyecciones y peso,"semaglutida,tirzepatida,glp1,dosis,recordatorio,adelgazar,pluma,efectos,secundarios,imc,diario",25,30,94
-es-MX,"Mexico, Latin America",Doseday: GLP-1 y Péptidos,Registro de inyecciones y peso,"semaglutida,tirzepatida,glp1,dosis,recordatorio,bajar,pluma,efectos,secundarios,imc,diario,control",25,30,98
-it,Italy,Doseday: Tracker GLP-1 Peptidi,"Diario iniezioni, dosi e peso","semaglutide,tirzepatide,glp1,promemoria,dimagrire,penna,effetti,collaterali,bmi,farmaci,controllo",30,29,97
-pt-BR,Brazil,Doseday: GLP-1 e Peptídeos,Controle de injeções e peso,"tirzepatide,semaglutida,tirzepatida,glp1,canetinha,caneta,emagrecedora,emagrecer,lembrete,dose,imc",26,27,98
-ja,Japan,Doseday: GLP-1・ペプチド注射記録,投与量・体重・副作用をかんたん管理,"セマグルチド,チルゼパチド,glp1,ダイエット,リマインダー,ペン,bmi,痩せる,メディカルダイエット,トラッカー,服薬,注射管理,体重記録,肥満",23,17,75
-ko,South Korea,Doseday: GLP-1 다이어트 주사 기록,약 알림·용량·체중·부작용 관리,"세마글루타이드,티르제파타이드,glp1,펜,비만,bmi,체중감량,트래커,복약,펩타이드,주사관리,투약,체중기록,다이어트기록",25,17,66
-ar-SA,"Saudi Arabia, UAE, Middle East",Doseday: متابعة GLP-1,الحقن والجرعات والوزن,"سيماجلوتايد,تيرزيباتيد,glp1,تخسيس,إبرة,تذكير,قلم,أعراض,جانبية,مؤشر,كتلة,الجسم,رشاقة,ببتيد,دواء",21,21,94
-tr,Türkiye,Doseday: GLP-1 Peptit Takibi,"Enjeksiyon, doz ve kilo","semaglutid,tirzepatid,tirzepatide,glp1,zayıflama,iğne,hatırlatıcı,kalem,yan,etki,bmi,günlük,ilaç",28,23,96
-zh-Hans,"China mainland, Singapore",Doseday: GLP-1注射记录,司美格鲁肽减重针剂量与体重管理,"替尔泊肽,glp1,减肥针,减肥,打针,提醒,副作用,体重记录,bmi,多肽,注射笔,用药提醒,减肥记录,瘦身,减脂",18,15,58
-zh-Hant,"Taiwan, Hong Kong",Doseday: GLP-1減肥針注射紀錄,劑量提醒、體重與副作用追蹤,"司美格魯肽,替爾泊肽,glp1,減重,打針,吃藥提醒,bmi,胜肽,注射筆,體重紀錄,瘦身,用藥,減肥記錄,體重管理,減脂",21,13,61
-id,"Indonesia, Malaysia",Doseday: Catatan Suntik GLP-1,Pengingat dosis & berat badan,"semaglutide,tirzepatide,glp1,diet,turun,suntikan,pena,efek,samping,bmi,jurnal,peptida,obat,pelacak",29,29,98
-hi,India,Doseday: GLP-1 इंजेक्शन ट्रैकर,डोज़ रिमाइंडर और वज़न लॉग,"peptide,semaglutide,tirzepatide,glp1,वजन,घटाना,दवा,खुराक,सुई,पेन,बीएमआई,डायरी,tracker",30,25,85
-ru,"Russia, CIS",Doseday: GLP-1 и пептиды,"Дневник уколов, доз и веса","семаглутид,тирзепатид,glp1,похудение,шприц,ручка,напоминание,побочные,эффекты,имт,трекер,инъекции",24,26,97
+Locale,Storefronts,App Name (30),Subtitle (30),Keywords (100),Name len,Subtitle len,Keywords len,Description footer
+en-US,United States,Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,medication",30,29,97,"Terms of Use: https://doseday.vercel.app/terms
+Privacy Policy: https://doseday.vercel.app/privacy"
+en-GB,"United Kingdom, Ireland",Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"jab,semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,journal",30,29,98,"Terms of Use: https://doseday.vercel.app/terms
+Privacy Policy: https://doseday.vercel.app/privacy"
+en-CA,Canada,Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,medication",30,29,97,"Terms of Use: https://doseday.vercel.app/terms
+Privacy Policy: https://doseday.vercel.app/privacy"
+en-AU,"Australia, New Zealand",Doseday: GLP-1 Peptide Tracker,Shot Log & Injection Reminder,"jab,semaglutide,tirzepatide,glp1,weight,loss,dose,pen,site,rotation,side,effects,diary,bmi,journal",30,29,98,"Terms of Use: https://doseday.vercel.app/terms
+Privacy Policy: https://doseday.vercel.app/privacy"
+de-DE,"Germany, Austria, Switzerland",Doseday: GLP-1 Peptid-Tracker,Abnehmspritze & Dosis-Tagebuch,"semaglutid,tirzepatid,glp1,erinnerung,gewicht,abnehmen,injektion,pen,nebenwirkungen,bmi,protokoll",29,30,97,"Nutzungsbedingungen: https://doseday.vercel.app/terms
+Datenschutzerklärung: https://doseday.vercel.app/privacy"
+fr-FR,"France, Belgium, Switzerland",Doseday: Suivi GLP-1 & Peptide,"Injections, rappel dose, poids","sémaglutide,tirzépatide,glp1,piqûre,perte,stylo,effets,secondaires,imc,traitement,minceur,journal",30,30,97,"Conditions d’utilisation: https://doseday.vercel.app/terms
+Politique de confidentialité: https://doseday.vercel.app/privacy"
+fr-CA,Canada (French),Doseday: Suivi GLP-1 & Peptide,"Injections, rappel dose, poids","sémaglutide,tirzépatide,glp1,piqûre,perte,stylo,effets,secondaires,imc,traitement,minceur,journal",30,30,97,"Conditions d’utilisation: https://doseday.vercel.app/terms
+Politique de confidentialité: https://doseday.vercel.app/privacy"
+es-ES,Spain,Doseday: GLP-1 y Péptidos,Registro de inyecciones y peso,"semaglutida,tirzepatida,glp1,dosis,recordatorio,adelgazar,pluma,efectos,secundarios,imc,diario",25,30,94,"Términos de uso: https://doseday.vercel.app/terms
+Política de privacidad: https://doseday.vercel.app/privacy"
+es-MX,"Mexico, Latin America",Doseday: GLP-1 y Péptidos,Registro de inyecciones y peso,"semaglutida,tirzepatida,glp1,dosis,recordatorio,bajar,pluma,efectos,secundarios,imc,diario,control",25,30,98,"Términos de uso: https://doseday.vercel.app/terms
+Política de privacidad: https://doseday.vercel.app/privacy"
+it,Italy,Doseday: Tracker GLP-1 Peptidi,"Diario iniezioni, dosi e peso","semaglutide,tirzepatide,glp1,promemoria,dimagrire,penna,effetti,collaterali,bmi,farmaci,controllo",30,29,97,"Termini d’uso: https://doseday.vercel.app/terms
+Informativa sulla privacy: https://doseday.vercel.app/privacy"
+pt-BR,Brazil,Doseday: GLP-1 e Peptídeos,Controle de injeções e peso,"tirzepatide,semaglutida,tirzepatida,glp1,canetinha,caneta,emagrecedora,emagrecer,lembrete,dose,imc",26,27,98,"Termos de Uso: https://doseday.vercel.app/terms
+Política de Privacidade: https://doseday.vercel.app/privacy"
+ja,Japan,Doseday: GLP-1・ペプチド注射記録,投与量・体重・副作用をかんたん管理,"セマグルチド,チルゼパチド,glp1,ダイエット,リマインダー,ペン,bmi,痩せる,メディカルダイエット,トラッカー,服薬,注射管理,体重記録,肥満",23,17,75,"利用規約: https://doseday.vercel.app/terms
+プライバシーポリシー: https://doseday.vercel.app/privacy"
+ko,South Korea,Doseday: GLP-1 다이어트 주사 기록,약 알림·용량·체중·부작용 관리,"세마글루타이드,티르제파타이드,glp1,펜,비만,bmi,체중감량,트래커,복약,펩타이드,주사관리,투약,체중기록,다이어트기록",25,17,66,"이용약관: https://doseday.vercel.app/terms
+개인정보 처리방침: https://doseday.vercel.app/privacy"
+ar-SA,"Saudi Arabia, UAE, Middle East",Doseday: متابعة GLP-1,الحقن والجرعات والوزن,"سيماجلوتايد,تيرزيباتيد,glp1,تخسيس,إبرة,تذكير,قلم,أعراض,جانبية,مؤشر,كتلة,الجسم,رشاقة,ببتيد,دواء",21,21,94,"شروط الاستخدام: https://doseday.vercel.app/terms
+سياسة الخصوصية: https://doseday.vercel.app/privacy"
+tr,Türkiye,Doseday: GLP-1 Peptit Takibi,"Enjeksiyon, doz ve kilo","semaglutid,tirzepatid,tirzepatide,glp1,zayıflama,iğne,hatırlatıcı,kalem,yan,etki,bmi,günlük,ilaç",28,23,96,"Kullanım Koşulları: https://doseday.vercel.app/terms
+Gizlilik Politikası: https://doseday.vercel.app/privacy"
+zh-Hans,"China mainland, Singapore",Doseday: GLP-1注射记录,司美格鲁肽减重针剂量与体重管理,"替尔泊肽,glp1,减肥针,减肥,打针,提醒,副作用,体重记录,bmi,多肽,注射笔,用药提醒,减肥记录,瘦身,减脂",18,15,58,"使用条款: https://doseday.vercel.app/terms
+隐私政策: https://doseday.vercel.app/privacy"
+zh-Hant,"Taiwan, Hong Kong",Doseday: GLP-1減肥針注射紀錄,劑量提醒、體重與副作用追蹤,"司美格魯肽,替爾泊肽,glp1,減重,打針,吃藥提醒,bmi,胜肽,注射筆,體重紀錄,瘦身,用藥,減肥記錄,體重管理,減脂",21,13,61,"使用條款: https://doseday.vercel.app/terms
+隱私權政策: https://doseday.vercel.app/privacy"
+id,"Indonesia, Malaysia",Doseday: Catatan Suntik GLP-1,Pengingat dosis & berat badan,"semaglutide,tirzepatide,glp1,diet,turun,suntikan,pena,efek,samping,bmi,jurnal,peptida,obat,pelacak",29,29,98,"Ketentuan Penggunaan: https://doseday.vercel.app/terms
+Kebijakan Privasi: https://doseday.vercel.app/privacy"
+hi,India,Doseday: GLP-1 इंजेक्शन ट्रैकर,डोज़ रिमाइंडर और वज़न लॉग,"peptide,semaglutide,tirzepatide,glp1,वजन,घटाना,दवा,खुराक,सुई,पेन,बीएमआई,डायरी,tracker",30,25,85,"उपयोग की शर्तें: https://doseday.vercel.app/terms
+गोपनीयता नीति: https://doseday.vercel.app/privacy"
+ru,"Russia, CIS",Doseday: GLP-1 и пептиды,"Дневник уколов, доз и веса","семаглутид,тирзепатид,glp1,похудение,шприц,ручка,напоминание,побочные,эффекты,имт,трекер,инъекции",24,26,97,"Условия использования: https://doseday.vercel.app/terms
+Политика конфиденциальности: https://doseday.vercel.app/privacy"
