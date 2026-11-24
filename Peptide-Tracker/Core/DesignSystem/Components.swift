@@ -218,12 +218,12 @@ struct CountStepper: View {
                     .contentTransition(.numericText(value: Double(value)))
             }
             HStack(spacing: 0) {
-                stepButton(icon: .minus, label: "Decrease \(accessibilityName)", delta: -step)
+                stepButton(icon: .minus, label: String(localized: "Decrease \(accessibilityName)"), delta: -step)
                     .disabled(value <= range.lowerBound)
                 Rectangle()
                     .fill(AppTheme.ColorToken.separator)
                     .frame(width: 1, height: 18)
-                stepButton(icon: .plus, label: "Increase \(accessibilityName)", delta: step)
+                stepButton(icon: .plus, label: String(localized: "Increase \(accessibilityName)"), delta: step)
                     .disabled(value >= range.upperBound)
             }
             .frame(height: 40)

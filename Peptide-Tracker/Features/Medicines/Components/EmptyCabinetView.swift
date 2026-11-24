@@ -9,8 +9,8 @@ struct EmptyCabinetView: View {
         VStack(spacing: 26) {
             EmptyStateView(
                 illustration: .emptyState,
-                title: "No medicines yet",
-                message: "Add one and we’ll remind you before it runs out."
+                title: String(localized: "No medicines yet"),
+                message: String(localized: "Add one and we’ll remind you before it runs out.")
             ) {
                 Button("Add your first medicine", action: onAdd)
                     .buttonStyle(.primary(height: 52))
@@ -24,13 +24,13 @@ struct EmptyCabinetView: View {
 /// Three numbered steps: add, count down, heads-up.
 struct HowItWorksCard: View {
     private let steps: [(title: String, detail: String)] = [
-        ("Add what you have", "How many you have now and how many you take a day."),
-        ("We count down", "Your stock drops with each day’s doses."),
-        ("Get a heads-up", "One reminder a few days before you run out."),
+        (String(localized: "Add what you have"), String(localized: "How many you have now and how many you take a day.")),
+        (String(localized: "We count down"), String(localized: "Your stock drops with each day’s doses.")),
+        (String(localized: "Get a heads-up"), String(localized: "One reminder a few days before you run out.")),
     ]
 
     var body: some View {
-        GroupedSection(title: "How it works") {
+        GroupedSection(title: String(localized: "How it works")) {
             ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
                 HStack(spacing: 12) {
                     Text("\(index + 1)")

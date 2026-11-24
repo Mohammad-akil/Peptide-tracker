@@ -72,7 +72,7 @@ enum DoseActivityController {
         guard !doses.isEmpty else { return nil }
         let taken = doses.filter(\.isTaken).count
         guard let next = store.nextDueDose(now: now) else {
-            return .init(medicineID: nil, minutes: 0, title: "All done today", detail: "\(taken) of \(doses.count) doses taken", dueAt: now, symbol: "checkmark.circle.fill", taken: taken, total: doses.count)
+            return .init(medicineID: nil, minutes: 0, title: String(localized: "All done today"), detail: String(localized: "\(taken) of \(doses.count) doses taken"), dueAt: now, symbol: "checkmark.circle.fill", taken: taken, total: doses.count)
         }
         let medicine = next.medicine
         var detail = medicine.unit.format(medicine.unitsPerIntake)
@@ -164,8 +164,8 @@ struct DosesLeftIntent: AppIntent {
         store.reloadFromDisk()
         let left = store.doses(on: .now).filter { !$0.isTaken }
         guard !left.isEmpty else { return .result(dialog: "Nothing left today. You’re all caught up.") }
-        let list = left.prefix(4).map { "\(store.settings.notificationName(for: $0.medicine)) at \($0.time.label)" }
-        let more = left.count > 4 ? ", and \(left.count - 4) more" : ""
+        let list = left.prefix(4).map { String(localized: "\(store.settings.notificationName(for: $0.medicine)) at \($0.time.label)") }
+        let more = left.count > 4 ? String(localized: ", and \(left.count - 4) more") : ""
         return .result(dialog: "\(left.count) left: \(list.joined(separator: ", "))\(more).")
     }
 }

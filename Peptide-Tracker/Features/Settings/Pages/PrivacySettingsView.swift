@@ -13,7 +13,7 @@ struct PrivacySettingsView: View {
 
         SettingsPageScaffold(page: .privacy) {
             GroupedSection(footer: lockFooter) {
-                ControlRow(symbol: AppLock.methodSymbol, tint: Color(hex: 0x30D158), title: "App Lock", showsDivider: false) {
+                ControlRow(symbol: AppLock.methodSymbol, tint: Color(hex: 0x30D158), title: String(localized: "App Lock"), showsDivider: false) {
                     Toggle("App Lock", isOn: Binding(
                         get: { store.settings.appLock },
                         set: { setAppLock($0) }
@@ -25,10 +25,10 @@ struct PrivacySettingsView: View {
             }
 
             GroupedSection(footer: store.settings.showsMedicineName
-                ? "Reminders and widgets show each medicine’s name, even on the Lock Screen."
-                : "Reminders say “A medicine runs out in 3 days” and widgets show the type (“Injection”) instead of the name."
+                ? String(localized: "Reminders and widgets show each medicine’s name, even on the Lock Screen.")
+                : String(localized: "Reminders say “A medicine runs out in 3 days” and widgets show the type (“Injection”) instead of the name.")
             ) {
-                ControlRow(symbol: "eye.slash.fill", tint: Color(hex: 0x5E5CE6), title: "Hide medicine names", showsDivider: false) {
+                ControlRow(symbol: "eye.slash.fill", tint: Color(hex: 0x5E5CE6), title: String(localized: "Hide medicine names"), showsDivider: false) {
                     Toggle("Hide medicine names", isOn: Binding(
                         get: { !store.settings.showsMedicineName },
                         set: { hidden in withAnimation(.snappy) { store.settings.showsMedicineName = !hidden } }
@@ -38,8 +38,8 @@ struct PrivacySettingsView: View {
                 }
             }
 
-            GroupedSection(footer: "Pick a plainer icon, like Graphite or Mono, so the Home Screen gives less away.") {
-                SettingsSheetRow(title: "App icon", value: AppIconOption.current.title, showsDivider: false, action: { showsIconPicker = true }) {
+            GroupedSection(footer: String(localized: "Pick a plainer icon, like Graphite or Mono, so the Home Screen gives less away.")) {
+                SettingsSheetRow(title: String(localized: "App icon"), value: AppIconOption.current.title, showsDivider: false, action: { showsIconPicker = true }) {
                     AppIconOption.current.preview
                         .resizable()
                         .scaledToFit()
@@ -52,19 +52,19 @@ struct PrivacySettingsView: View {
 
     private var lockFooter: String {
         guard AppLock.isAvailable || store.settings.appLock else {
-            return "Set a passcode in the iPhone’s Settings to use App Lock."
+            return String(localized: "Set a passcode in the iPhone’s Settings to use App Lock.")
         }
-        return "Asks for \(AppLock.methodName) when \(Bundle.main.appName) opens, and hides it in the app switcher."
+        return String(localized: "Asks for \(AppLock.methodName) when \(Bundle.main.appName) opens, and hides it in the app switcher.")
     }
 
     /// Turning the lock on or off needs the owner, so it asks first.
     private func setAppLock(_ isOn: Bool) {
         Task {
-            let reason = isOn ? "Turn on App Lock for \(Bundle.main.appName)." : "Turn off App Lock for \(Bundle.main.appName)."
+            let reason = isOn ? String(localized: "Turn on App Lock for \(Bundle.main.appName).") : String(localized: "Turn off App Lock for \(Bundle.main.appName).")
             guard await AppLock.shared.authenticate(reason: reason) else { return }
             withAnimation(.snappy) { store.settings.appLock = isOn }
             if !isOn { AppLock.shared.disable() }
-            router.showToast(isOn ? "App Lock on" : "App Lock off")
+            router.showToast(isOn ? String(localized: "App Lock on") : String(localized: "App Lock off"))
         }
     }
 }

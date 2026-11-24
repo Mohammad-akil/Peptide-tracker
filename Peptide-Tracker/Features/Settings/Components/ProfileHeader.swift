@@ -29,7 +29,7 @@ struct ProfileHeader: View {
                 nameDraft = store.settings.userName
                 isEditingName = true
             } label: {
-                Text(name.isEmpty ? "Add your name" : name)
+                Text(name.isEmpty ? String(localized: "Add your name") : name)
                     .font(.system(size: 24, weight: .bold))
                     .kerning(-0.3)
                     .foregroundStyle(name.isEmpty ? AppTheme.ColorToken.accent : AppTheme.ColorToken.primaryText)

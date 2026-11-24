@@ -47,7 +47,7 @@ struct WeightUnitToggle: View {
     var body: some View {
         SectionPicker(
             selection: $unit.animation(.snappy),
-            title: { $0 == .kg ? "Kilograms" : "Pounds" },
+            title: { $0 == .kg ? String(localized: "Kilograms") : String(localized: "Pounds") },
             track: AppTheme.ColorToken.cardBackground
         )
         .onChange(of: unit) { HapticFeedback.selection() }

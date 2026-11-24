@@ -8,20 +8,20 @@ enum DoseLayout: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .list: "List"
-        case .timeline: "Timeline"
-        case .squarePillbox: "Square pillbox"
-        case .roundPillbox: "Round pillbox"
+        case .list: String(localized: "List")
+        case .timeline: String(localized: "Timeline")
+        case .squarePillbox: String(localized: "Square pillbox")
+        case .roundPillbox: String(localized: "Round pillbox")
         }
     }
 
     /// The line under it in Settings → Doses.
     var detail: String {
         switch self {
-        case .list: "Doses grouped by time, as a list."
-        case .timeline: "Doses down the day, with a line for now."
-        case .squarePillbox: "A square compartment for each time, like a pill organiser."
-        case .roundPillbox: "The same compartments, round."
+        case .list: String(localized: "Doses grouped by time, as a list.")
+        case .timeline: String(localized: "Doses down the day, with a line for now.")
+        case .squarePillbox: String(localized: "A square compartment for each time, like a pill organiser.")
+        case .roundPillbox: String(localized: "The same compartments, round.")
         }
     }
 }
@@ -164,9 +164,9 @@ struct DoseTimeline: View {
     }
 
     private func status(_ slot: Slot, isPast: Bool) -> String {
-        if slot.isDone { return "Done" }
-        if isPast { return slot.pending.count < slot.doses.count ? "Partly taken" : "Not taken yet" }
-        return "Later"
+        if slot.isDone { return String(localized: "Done") }
+        if isPast { return slot.pending.count < slot.doses.count ? String(localized: "Partly taken") : String(localized: "Not taken yet") }
+        return String(localized: "Later")
     }
 
     private var nowLine: some View {
@@ -235,7 +235,7 @@ private struct TimelineDoseRow: View {
             .padding(.trailing, -8)
             .disabled(isFuture)
             .opacity(isFuture ? 0.35 : 1)
-            .accessibilityLabel(dose.isTaken ? "\(dose.medicine.name) taken" : "Mark \(dose.medicine.name) taken")
+            .accessibilityLabel(dose.isTaken ? String(localized: "\(dose.medicine.name) taken") : String(localized: "Mark \(dose.medicine.name) taken"))
             .accessibilityAddTraits(dose.isTaken ? .isSelected : [])
         }
         .padding(.horizontal, 14)
@@ -246,7 +246,7 @@ private struct TimelineDoseRow: View {
     /// "1 pill", "8:02" once taken, "Missed" on a past day.
     private var value: String {
         if let takenAt = dose.takenAt { return takenAt.clockTime }
-        if isMissed { return "Missed" }
+        if isMissed { return String(localized: "Missed") }
         return dose.medicine.unit.format(dose.medicine.unitsPerIntake)
     }
 

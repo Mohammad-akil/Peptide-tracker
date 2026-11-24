@@ -9,20 +9,20 @@ import SwiftUI
 extension MedicineStore {
     /// "9:00 · 5d before", or "Off".
     var remindersSummary: String {
-        guard settings.notificationsEnabled else { return "Off" }
-        return "\(settings.defaultReminderTime.label) · \(settings.defaultDaysBefore)d before"
+        guard settings.notificationsEnabled else { return String(localized: "Off") }
+        return String(localized: "\(settings.defaultReminderTime.label) · \(settings.defaultDaysBefore)d before")
     }
 
     var pharmacySummary: String {
         let name = settings.pharmacyName.trimmingCharacters(in: .whitespaces)
-        return name.isEmpty ? "Add" : name
+        return name.isEmpty ? String(localized: "Add") : name
     }
 
     /// "Just me", or the person's name.
     var trackingSummary: String {
         let name = settings.personName.trimmingCharacters(in: .whitespaces)
         if settings.trackingFor != .me, !name.isEmpty { return name }
-        return settings.trackingFor == .me ? "Just me" : "Someone else"
+        return settings.trackingFor == .me ? String(localized: "Just me") : String(localized: "Someone else")
     }
 
     /// The last 30 days' rate ("92%"), once anything was due.
@@ -80,11 +80,11 @@ struct RemindersGroupView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .remindersGroup) {
-            GroupedSection(footer: "When refill reminders arrive, what they say, and how you tick off doses.") {
+            GroupedSection(footer: String(localized: "When refill reminders arrive, what they say, and how you tick off doses.")) {
                 SettingsLinkRow(page: .reminders, value: store.remindersSummary)
-                SettingsLinkRow(page: .notifications, value: store.settings.showsMedicineName ? nil : "Names hidden")
-                SettingsLinkRow(page: .doses, value: store.settings.tracksDoses ? doseLayout.title : "Off")
-                SettingsLinkRow(page: .travel, value: store.settings.keepsHomeTime ? "Home time" : nil, showsDivider: false)
+                SettingsLinkRow(page: .notifications, value: store.settings.showsMedicineName ? nil : String(localized: "Names hidden"))
+                SettingsLinkRow(page: .doses, value: store.settings.tracksDoses ? doseLayout.title : String(localized: "Off"))
+                SettingsLinkRow(page: .travel, value: store.settings.keepsHomeTime ? String(localized: "Home time") : nil, showsDivider: false)
             }
         }
     }
@@ -102,24 +102,24 @@ struct HealthGroupView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .health) {
-            GroupedSection(title: "Tracking") {
+            GroupedSection(title: String(localized: "Tracking")) {
                 SettingsSheetRow(
-                    title: "Mood",
-                    value: store.checkIn(on: .now)?.mood.title ?? "Not logged",
+                    title: String(localized: "Mood"),
+                    value: store.checkIn(on: .now)?.mood.title ?? String(localized: "Not logged"),
                     action: { showsMood = true }
                 ) {
                     SettingsTile(symbol: "face.smiling.inverse", tint: Color(hex: 0xBF5AF2))
                 }
                 SettingsSheetRow(
-                    title: "Weight",
+                    title: String(localized: "Weight"),
                     value: store.latestWeight.map { store.settings.weightUnit.format($0.kilograms) },
                     action: { showsWeight = true }
                 ) {
                     SettingsTile(symbol: "scalemass.fill", tint: Color(hex: 0x30B0C7))
                 }
                 SettingsSheetRow(
-                    title: "Side effects",
-                    value: store.sideEffects.isEmpty ? "Log" : "\(store.sideEffects(lastDays: 30).count) this month",
+                    title: String(localized: "Side effects"),
+                    value: store.sideEffects.isEmpty ? String(localized: "Log") : String(localized: "\(store.sideEffects(lastDays: 30).count) this month"),
                     showsDivider: store.medicines.contains { $0.type == .injection } || store.settings.tracksSharps,
                     action: { showsSideEffects = true }
                 ) {
@@ -127,7 +127,7 @@ struct HealthGroupView: View {
                 }
                 if store.medicines.contains(where: { $0.type == .injection }) || store.settings.tracksSharps {
                     SettingsSheetRow(
-                        title: "Sharps container",
+                        title: String(localized: "Sharps container"),
                         value: store.sharpsSummary,
                         showsDivider: false,
                         action: { showsSharps = true }
@@ -137,7 +137,7 @@ struct HealthGroupView: View {
                 }
             }
 
-            GroupedSection(title: "Calculators", footer: "Estimates with their sources. Save a result to follow your trend over time.") {
+            GroupedSection(title: String(localized: "Calculators"), footer: String(localized: "Estimates with their sources. Save a result to follow your trend over time.")) {
                 ForEach(Array(HealthCalculator.allCases.enumerated()), id: \.element) { index, kind in
                     SettingsSheetRow(
                         title: kind.title,
@@ -167,10 +167,10 @@ struct CareTeamGroupView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .careTeam) {
-            GroupedSection(footer: "Who you track for, your pharmacy, and the people who look after you.") {
+            GroupedSection(footer: String(localized: "Who you track for, your pharmacy, and the people who look after you.")) {
                 SettingsLinkRow(page: .tracking, value: store.trackingSummary)
                 SettingsLinkRow(page: .pharmacy, value: store.pharmacySummary)
-                SettingsLinkRow(page: .contacts, value: store.contacts.isEmpty ? "Add" : "\(store.contacts.count)", showsDivider: false)
+                SettingsLinkRow(page: .contacts, value: store.contacts.isEmpty ? String(localized: "Add") : "\(store.contacts.count)", showsDivider: false)
             }
         }
     }
@@ -187,32 +187,32 @@ struct DataGroupView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .data) {
-            GroupedSection(title: "Reports", footer: "PDFs of your medicines and how you’re doing, handy for doctor visits.") {
+            GroupedSection(title: String(localized: "Reports"), footer: String(localized: "PDFs of your medicines and how you’re doing, handy for doctor visits.")) {
                 SettingsLinkRow(page: .report, value: store.reportSummary)
                 ShareLink(
                     item: MedicineListPDF(medicines: store.medicinesByUrgency, pharmacyName: store.settings.pharmacyName, date: .now),
-                    preview: SharePreview("Medicine list", image: Image(systemName: "doc.text"))
+                    preview: SharePreview(String(localized: "Medicine list"), image: Image(systemName: "doc.text"))
                 ) {
-                    SettingsRowLabel(symbol: "doc.text.fill", tint: Color(hex: 0xFF9F0A), title: "Export medicine list", showsChevron: true)
+                    SettingsRowLabel(symbol: "doc.text.fill", tint: Color(hex: 0xFF9F0A), title: String(localized: "Export medicine list"), showsChevron: true)
                 }
                 .buttonStyle(RowPressStyle())
                 .disabled(store.medicines.isEmpty)
             }
 
-            GroupedSection(title: "Your data", footer: "Every dose, medicine, refill, mood, weight and calculator result, as spreadsheets. Everything stays on this iPhone until you share it.") {
+            GroupedSection(title: String(localized: "Your data"), footer: String(localized: "Every dose, medicine, refill, mood, weight and calculator result, as spreadsheets. Everything stays on this iPhone until you share it.")) {
                 ShareLink(
                     items: DataExportFile.all(from: store),
                     subject: Text("Doseday data"),
                     preview: { file in SharePreview(file.kind.fileName, image: Image(systemName: "tablecells")) }
                 ) {
-                    SettingsRowLabel(symbol: "square.and.arrow.down.fill", tint: Color(hex: 0x30D158), title: "Download your data", showsChevron: true)
+                    SettingsRowLabel(symbol: "square.and.arrow.down.fill", tint: Color(hex: 0x30D158), title: String(localized: "Download your data"), showsChevron: true)
                 }
                 .buttonStyle(RowPressStyle())
             }
 
-            GroupedSection(footer: "Deletes every medicine, dose, refill, contact and setting on this iPhone. You can’t undo this.") {
+            GroupedSection(footer: String(localized: "Deletes every medicine, dose, refill, contact and setting on this iPhone. You can’t undo this.")) {
                 Button { confirmsErase = true } label: {
-                    SettingsRowLabel(symbol: "trash.fill", tint: AppTheme.ColorToken.destructive, title: "Delete all data")
+                    SettingsRowLabel(symbol: "trash.fill", tint: AppTheme.ColorToken.destructive, title: String(localized: "Delete all data"))
                 }
                 .buttonStyle(RowPressStyle())
             }
@@ -222,7 +222,7 @@ struct DataGroupView: View {
                 store.eraseEverything()
                 profileVersion += 1
                 router.path = []
-                router.showToast("All data deleted")
+                router.showToast(String(localized: "All data deleted"))
             }
         } message: {
             Text("Every medicine, dose, refill, contact and setting is removed from this iPhone. You can’t undo this.")
@@ -239,11 +239,11 @@ struct AppearanceGroupView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .appearance) {
-            GroupedSection(footer: "System follows your iPhone's Light and Dark Mode.") {
+            GroupedSection(footer: String(localized: "System follows your iPhone's Light and Dark Mode.")) {
                 AppearanceThemeRow()
             }
-            GroupedSection(footer: "How \(Bundle.main.appName) looks on your Home Screen.") {
-                SettingsSheetRow(title: "App icon", value: appIcon.title, showsDivider: false, action: { showsIconPicker = true }) {
+            GroupedSection(footer: String(localized: "How \(Bundle.main.appName) looks on your Home Screen.")) {
+                SettingsSheetRow(title: String(localized: "App icon"), value: appIcon.title, showsDivider: false, action: { showsIconPicker = true }) {
                     appIcon.preview
                         .resizable()
                         .scaledToFit()

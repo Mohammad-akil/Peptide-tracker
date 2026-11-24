@@ -22,7 +22,7 @@ struct DailyCheckInCard: View {
                 }
                 Spacer(minLength: 8)
                 if streak > 0 {
-                    Label("\(streak) \(streak == 1 ? "day" : "days")", systemImage: "flame.fill")
+                    Label(streak == 1 ? String(localized: "1 day") : String(localized: "\(streak) days"), systemImage: "flame.fill")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Urgency.low.ink)
                         .padding(.horizontal, 10)
@@ -62,7 +62,7 @@ struct DailyCheckInCard: View {
                 }
                 .frame(width: 42, height: 42)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(doses.isEmpty ? "No doses today" : "\(taken) of \(doses.count) doses taken")
+                    Text(doses.isEmpty ? "No doses today" : String(localized: "\(taken) of \(doses.count) doses taken"))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(AppTheme.ColorToken.primaryText)
                         .contentTransition(.numericText(value: Double(taken)))

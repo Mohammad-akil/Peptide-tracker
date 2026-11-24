@@ -7,11 +7,11 @@ import UniformTypeIdentifiers
 /// a Story/Post switch in the top bar, theme swatches, and Save / Share
 /// buttons that export the selected card as a 1080px-wide image.
 struct ShareCardSheet: View {
-    var title = "Share progress"
+    var title = String(localized: "Share progress")
     var variants: [ShareCardVariant]
     /// The card to open on, if it's in `variants`.
     var initialID: String?
-    var caption: String? = "Staying on track with Doseday."
+    var caption: String? = String(localized: "Staying on track with Doseday.")
 
     @Environment(\.dismiss) private var dismiss
     @AppStorage("shareCardFormat") private var formatRaw = ShareCardFormat.story.rawValue
@@ -193,9 +193,9 @@ struct ShareCardSheet: View {
 
     private var saveLabel: String {
         switch saveState {
-        case .saved: "Saved"
-        case .failed: "Try again"
-        case .idle, .saving: "Save"
+        case .saved: String(localized: "Saved")
+        case .failed: String(localized: "Try again")
+        case .idle, .saving: String(localized: "Save")
         }
     }
 

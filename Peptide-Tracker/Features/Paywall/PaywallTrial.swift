@@ -15,8 +15,8 @@ enum TrialReminder {
             _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
         }
         let content = UNMutableNotificationContent()
-        content.title = "Your free trial ends in \(daysBeforeEnd) days"
-        content.body = "Then it’s \(price) \(period). Cancel anytime in Settings before then if Pro isn’t for you."
+        content.title = String(localized: "Your free trial ends in \(daysBeforeEnd) days")
+        content.body = String(localized: "Then it’s \(price) \(period). Cancel anytime in Settings before then if Pro isn’t for you.")
         content.sound = .default
         let seconds = Double(trialDays - daysBeforeEnd) * 86_400
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(60, seconds), repeats: false)

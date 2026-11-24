@@ -81,8 +81,8 @@ struct InjectionSiteSheet: View {
                     .foregroundStyle(Urgency.low.ink)
             } else if site == suggested {
                 Label(
-                    lastUsed.map { "Suggested next · last used \($0.relativeDay(now: now))" }
-                        ?? "Suggested next · not used yet",
+                    lastUsed.map { String(localized: "Suggested next · last used \($0.relativeDay(now: now))") }
+                        ?? String(localized: "Suggested next · not used yet"),
                     systemImage: "arrow.triangle.2.circlepath"
                 )
                 .foregroundStyle(AppTheme.ColorToken.accentInk)

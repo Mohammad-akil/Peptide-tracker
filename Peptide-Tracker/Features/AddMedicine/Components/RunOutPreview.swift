@@ -5,6 +5,10 @@ import SwiftUI
 struct RunOutPreview: View {
     let draft: MedicineDraft
     let showsErrors: Bool
+    /// Offsets don't mirror, so the track's x positions take the sign of the
+    /// reading direction (Arabic runs Today → Out from right to left).
+    @Environment(\.layoutDirection) private var layoutDirection
+    private var dx: CGFloat { layoutDirection == .rightToLeft ? -1 : 1 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -28,8 +32,8 @@ struct RunOutPreview: View {
     private var message: Text {
         guard let medicine = draft.previewMedicine() else {
             return Text(showsErrors && draft.perDayError != nil
-                        ? "Fix the daily amount to see your run-out date."
-                        : "Add how much you have and your daily amount to see when you’ll run out.")
+                        ? String(localized: "Fix the daily amount to see your run-out date.")
+                        : String(localized: "Add how much you have and your daily amount to see when you’ll run out."))
         }
         guard medicine.stock > 0 else {
             return Text("Add how many \(medicine.unit.plural) you have to see when you’ll run out.")
@@ -37,11 +41,9 @@ struct RunOutPreview: View {
         let runOut = medicine.runOutDate()
         let reminder = medicine.reminderDate()
         if reminder <= .now {
-            return Text("You’ll run out on ") + Text(runOut.dayMonth).bold()
-                + Text(". That’s inside your heads-up window, so it’s time to refill.")
+            return Text("You’ll run out on **\(runOut.dayMonth)**. That’s inside your heads-up window, so it’s time to refill.")
         }
-        return Text("You’ll run out on ") + Text(runOut.dayMonth).bold()
-            + Text(". We’ll remind you on ") + Text("\(reminder.dayMonth) at \(medicine.reminderTime.label)").bold() + Text(".")
+        return Text("You’ll run out on **\(runOut.dayMonth)**. We’ll remind you on **\(reminder.dayMonth) at \(medicine.reminderTime.label)**.")
     }
 
     private func track(for medicine: Medicine) -> some View {
@@ -52,21 +54,21 @@ struct RunOutPreview: View {
         return GeometryReader { proxy in
             let width = proxy.size.width - 12
             ZStack(alignment: .topLeading) {
-                Capsule().fill(AppTheme.ColorToken.accent.opacity(0.25)).frame(height: 4).offset(x: 6, y: 6).frame(width: width)
-                Capsule().fill(AppTheme.ColorToken.accent).frame(width: width * fraction, height: 4).offset(x: 6, y: 6)
+                Capsule().fill(AppTheme.ColorToken.accent.opacity(0.25)).frame(height: 4).offset(x: 6 * dx, y: 6).frame(width: width)
+                Capsule().fill(AppTheme.ColorToken.accent).frame(width: width * fraction, height: 4).offset(x: 6 * dx, y: 6)
                 Circle().fill(AppTheme.ColorToken.accent).frame(width: 12, height: 12).offset(y: 2)
                 Circle()
                     .fill(.white)
                     .overlay(Circle().strokeBorder(AppTheme.ColorToken.accent, lineWidth: 3))
                     .frame(width: 16, height: 16)
-                    .offset(x: 6 + width * fraction - 8)
-                Circle().fill(AppTheme.ColorToken.destructive).frame(width: 12, height: 12).offset(x: width, y: 2)
+                    .offset(x: (6 + width * fraction - 8) * dx)
+                Circle().fill(AppTheme.ColorToken.destructive).frame(width: 12, height: 12).offset(x: width * dx, y: 2)
 
                 Text("Today").offset(y: 20)
                 Text("Reminder \(medicine.reminderDate().dayMonth)")
                     .fixedSize()
                     .frame(width: 0)
-                    .offset(x: 6 + width * fraction, y: 20)
+                    .offset(x: (6 + width * fraction) * dx, y: 20)
                     .opacity(fraction > 0.18 && fraction < 0.82 ? 1 : 0)
                 Text("Out \(medicine.runOutDate().dayMonth)")
                     .frame(maxWidth: .infinity, alignment: .trailing)

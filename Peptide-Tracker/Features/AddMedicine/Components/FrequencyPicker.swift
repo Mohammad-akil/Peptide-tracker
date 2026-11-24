@@ -8,7 +8,7 @@ struct FrequencyPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            GroupedSection(title: "Which days") {
+            GroupedSection(title: String(localized: "Which days")) {
                 ForEach(Array(DoseFrequency.Kind.allCases.enumerated()), id: \.element) { index, kind in
                     row(kind, showsDivider: index < DoseFrequency.Kind.allCases.count - 1)
                 }
@@ -65,8 +65,8 @@ struct FrequencyPicker: View {
             EmptyView()
         case .everyNDays(let n):
             if frequency.kind == .everyFewDays {
-                FormRow(title: "Every") {
-                    CountStepper(value: Binding(get: { n }, set: { frequency = .everyNDays($0) }), range: 2...30, accessibilityName: "days between doses")
+                FormRow(title: String(localized: "Every")) {
+                    CountStepper(value: Binding(get: { n }, set: { frequency = .everyNDays($0) }), range: 2...30, accessibilityName: String(localized: "days between doses"))
                     Text("days")
                         .font(.system(size: 16))
                         .foregroundStyle(AppTheme.ColorToken.secondaryText)
@@ -78,12 +78,12 @@ struct FrequencyPicker: View {
             weekdayPicker(days)
                 .padding(16)
         case .cycle(let on, let off):
-            FormRow(title: "Days on") {
-                CountStepper(value: Binding(get: { on }, set: { frequency = .cycle(on: $0, off: off) }), range: 1...90, accessibilityName: "days on")
+            FormRow(title: String(localized: "Days on")) {
+                CountStepper(value: Binding(get: { on }, set: { frequency = .cycle(on: $0, off: off) }), range: 1...90, accessibilityName: String(localized: "days on"))
             }
             .padding(.horizontal, 16)
-            FormRow(title: "Days off") {
-                CountStepper(value: Binding(get: { off }, set: { frequency = .cycle(on: on, off: $0) }), range: 1...90, accessibilityName: "days off")
+            FormRow(title: String(localized: "Days off")) {
+                CountStepper(value: Binding(get: { off }, set: { frequency = .cycle(on: on, off: $0) }), range: 1...90, accessibilityName: String(localized: "days off"))
             }
             .padding(.horizontal, 16)
             startRow
@@ -91,7 +91,7 @@ struct FrequencyPicker: View {
     }
 
     private var startRow: some View {
-        FormRow(title: frequency.kind == .cycle ? "Cycle starts" : "Next dose", showsDivider: false) {
+        FormRow(title: frequency.kind == .cycle ? String(localized: "Cycle starts") : String(localized: "Next dose"), showsDivider: false) {
             DatePicker("Start", selection: $start, displayedComponents: .date)
                 .labelsHidden()
         }
@@ -126,9 +126,9 @@ struct FrequencyPicker: View {
 
     private var footer: String? {
         switch frequency.kind {
-        case .weekly, .everyFewDays: "Pick the day of your next dose; the schedule repeats from there."
-        case .cycle: "Doses repeat for the days on, then pause for the days off."
-        case .weekdays: "Doses happen only on the days you pick."
+        case .weekly, .everyFewDays: String(localized: "Pick the day of your next dose; the schedule repeats from there.")
+        case .cycle: String(localized: "Doses repeat for the days on, then pause for the days off.")
+        case .weekdays: String(localized: "Doses happen only on the days you pick.")
         case .daily: nil
         }
     }

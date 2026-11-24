@@ -28,7 +28,7 @@ enum WeightUnit: String, Codable, CaseIterable, Identifiable {
 
     /// "72.4 kg", "159.6 lb"
     func format(_ kg: Double) -> String {
-        "\(value(fromKilograms: kg).formatted(.number.precision(.fractionLength(1)))) \(rawValue)"
+        String(localized: "\(value(fromKilograms: kg).formatted(.number.precision(.fractionLength(1)))) \(rawValue)")
     }
 }
 
@@ -37,5 +37,5 @@ enum BodySex: String, Codable, CaseIterable, Identifiable {
     case female, male
 
     var id: String { rawValue }
-    var title: String { self == .female ? "Female" : "Male" }
+    var title: String { self == .female ? String(localized: "Female") : String(localized: "Male") }
 }

@@ -123,7 +123,7 @@ private struct DoseRow: View {
             .padding(.trailing, -8)
             .disabled(isFuture)
             .opacity(isFuture ? 0.35 : 1)
-            .accessibilityLabel(dose.isTaken ? "\(dose.medicine.name) taken" : "Mark \(dose.medicine.name) taken")
+            .accessibilityLabel(dose.isTaken ? String(localized: "\(dose.medicine.name) taken") : String(localized: "Mark \(dose.medicine.name) taken"))
             .accessibilityAddTraits(dose.isTaken ? .isSelected : [])
         }
         .padding(.horizontal, 16)
@@ -136,7 +136,7 @@ private struct DoseRow: View {
     /// "1 pill", "8:02" once taken, "Missed" on a past day.
     private var value: String {
         if let takenAt = dose.takenAt { return takenAt.clockTime }
-        if isMissed { return "Missed" }
+        if isMissed { return String(localized: "Missed") }
         return dose.medicine.unit.format(dose.medicine.unitsPerIntake)
     }
 

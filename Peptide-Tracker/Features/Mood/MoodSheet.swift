@@ -127,8 +127,8 @@ struct MoodHistoryView: View {
         let common = counts.max { ($0.value, $0.key.rawValue) < ($1.value, $1.key.rawValue) }?.key
 
         return HStack(spacing: 10) {
-            stat(value: "\(moods.count)", label: "days logged")
-            stat(value: "\(store.checkInStreak())", label: "day streak")
+            stat(value: "\(moods.count)", label: String(localized: "days logged"))
+            stat(value: "\(store.checkInStreak())", label: String(localized: "day streak"))
             VStack(alignment: .leading, spacing: 4) {
                 if let common {
                     common.illustration
@@ -138,7 +138,7 @@ struct MoodHistoryView: View {
                 } else {
                     Text("–").font(.system(size: 24, weight: .heavy))
                 }
-                Text(common.map { "mostly \($0.title.lowercased())" } ?? "no moods yet")
+                Text(common.map { String(localized: "mostly \($0.title.lowercased())") } ?? "no moods yet")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
             }

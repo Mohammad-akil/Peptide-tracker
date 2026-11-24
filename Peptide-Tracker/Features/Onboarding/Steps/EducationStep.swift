@@ -9,14 +9,14 @@ struct EducationStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             OnboardingHeader(
-                eyebrow: "Built to help you learn",
-                title: "Doseday can help your GLP-1 journey with educational tools.",
-                reason: "Feel more confident by learning how these medications work."
+                eyebrow: String(localized: "Built to help you learn"),
+                title: String(localized: "Doseday can help your GLP-1 journey with educational tools."),
+                reason: String(localized: "Feel more confident by learning how these medications work.")
             )
             VStack(alignment: .leading, spacing: 12) {
-                point(.list, "Short guides on how GLP-1s work").stagger(0)
-                point(.syringe, "Injection tips and site rotation").stagger(1)
-                point(.timeline, "What to expect as your dose steps up").stagger(2)
+                point(.list, String(localized: "Short guides on how GLP-1s work")).stagger(0)
+                point(.syringe, String(localized: "Injection tips and site rotation")).stagger(1)
+                point(.timeline, String(localized: "What to expect as your dose steps up")).stagger(2)
             }
             ConfidenceChart().stagger(3)
         }
@@ -70,13 +70,13 @@ private struct ConfidenceChart: View {
                         )
                 }
                 ForEach(Self.weeks, id: \.self) { week in
-                    LineMark(x: .value("Week", week), y: .value("Confidence", Self.alone(week)), series: .value("Plan", "On your own"))
+                    LineMark(x: .value("Week", week), y: .value("Confidence", Self.alone(week)), series: .value("Plan", String(localized: "On your own")))
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(Self.withoutColor)
                         .lineStyle(StrokeStyle(lineWidth: 2.5, lineJoin: .round, dash: [5, 5]))
                 }
                 ForEach(Self.weeks, id: \.self) { week in
-                    LineMark(x: .value("Week", week), y: .value("Confidence", Self.withDoseday(week)), series: .value("Plan", "With Doseday"))
+                    LineMark(x: .value("Week", week), y: .value("Confidence", Self.withDoseday(week)), series: .value("Plan", String(localized: "With Doseday")))
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(AppTheme.ColorToken.accent)
                         .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
@@ -97,7 +97,7 @@ private struct ConfidenceChart: View {
             }
             .chartXAxis {
                 AxisMarks(values: [0, 4, 8]) { value in
-                    AxisValueLabel { Text(value.as(Int.self) == 0 ? "Start" : "Week \(value.as(Int.self) ?? 0)") }
+                    AxisValueLabel { Text(value.as(Int.self) == 0 ? "Start" : String(localized: "Week \(value.as(Int.self) ?? 0)")) }
                         .font(.system(size: 11))
                         .foregroundStyle(AppTheme.ColorToken.tertiaryText)
                 }
@@ -111,10 +111,10 @@ private struct ConfidenceChart: View {
             }
 
             HStack(spacing: 14) {
-                legend("With Doseday") {
+                legend(String(localized: "With Doseday")) {
                     Capsule().fill(AppTheme.ColorToken.accent).frame(width: 18, height: 4)
                 }
-                legend("On your own") {
+                legend(String(localized: "On your own")) {
                     Capsule().fill(Self.withoutColor).frame(width: 18, height: 3)
                 }
             }

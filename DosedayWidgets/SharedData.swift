@@ -41,7 +41,7 @@ enum SharedData {
             if settings?.showsMedicineName == false {
                 medicines = medicines.map { medicine in
                     var medicine = medicine
-                    medicine.name = medicine.type == "other" ? "Medicine" : medicine.type.capitalized
+                    medicine.name = medicine.type == "other" ? String(localized: "Medicine") : medicine.type.capitalized
                     return medicine
                 }
             }
@@ -164,7 +164,7 @@ enum SharedData {
         case bad = 1, low, okay, good, great
         var id: Int { rawValue }
         var title: String { String(describing: self).capitalized }
-        var image: Image { Image("mood-\(String(describing: self))") }
+        var image: Image { Image(String(localized: "mood-\(String(describing: self))")) }
         var tint: Color {
             switch self {
             case .great: Color(red: 0.42, green: 0.27, blue: 0.85)

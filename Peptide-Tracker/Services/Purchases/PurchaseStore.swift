@@ -22,16 +22,16 @@ final class PurchaseStore {
 
         var title: String {
             switch self {
-            case .monthly: "Monthly"
-            case .yearly: "Yearly"
+            case .monthly: String(localized: "Monthly")
+            case .yearly: String(localized: "Yearly")
             }
         }
 
         /// Under the price on a plan tile.
         var period: String {
             switch self {
-            case .monthly: "per month"
-            case .yearly: "per year"
+            case .monthly: String(localized: "per month")
+            case .yearly: String(localized: "per year")
             }
         }
 
@@ -155,13 +155,13 @@ final class PurchaseStore {
 
     /// What they'll pay and when, said plainly under the buy button.
     func disclosure(for plan: Plan) -> String {
-        guard isLoaded(plan) else { return "Loading prices from the App Store…" }
+        guard isLoaded(plan) else { return String(localized: "Loading prices from the App Store…") }
         let price = price(for: plan)
         let period = plan == .yearly ? "year" : "month"
         if let days = trialDays[plan] {
-            return "Free for \(days) days, then \(price) per \(period). Cancel anytime in Settings."
+            return String(localized: "Free for \(days) days, then \(price) per \(period). Cancel anytime in Settings.")
         }
-        return "\(price) per \(period). Renews until cancelled in Settings."
+        return String(localized: "\(price) per \(period). Renews until cancelled in Settings.")
     }
 
     // MARK: Store
@@ -208,11 +208,11 @@ final class PurchaseStore {
 
     func purchase(_ plan: Plan) async -> PurchaseOutcome {
         guard Purchases.isConfigured else {
-            return .failed("Purchases aren’t set up in this build.")
+            return .failed(String(localized: "Purchases aren’t set up in this build."))
         }
         if packages[plan] == nil { await loadProducts() }
         guard let package = packages[plan] else {
-            return .failed("The App Store isn’t available right now. Try again in a moment.")
+            return .failed(String(localized: "The App Store isn’t available right now. Try again in a moment."))
         }
         isPurchasing = true
         defer { isPurchasing = false }
@@ -220,7 +220,7 @@ final class PurchaseStore {
             let result = try await Purchases.shared.purchase(package: package)
             if result.userCancelled { return .cancelled }
             apply(result.customerInfo)
-            return isPro ? .purchased : .failed("The purchase went through but Pro didn’t unlock. Tap Restore to try again.")
+            return isPro ? .purchased : .failed(String(localized: "The purchase went through but Pro didn’t unlock. Tap Restore to try again."))
         } catch {
             if (error as NSError).code == ErrorCode.paymentPendingError.rawValue { return .pending }
             if (error as NSError).code == ErrorCode.purchaseCancelledError.rawValue { return .cancelled }

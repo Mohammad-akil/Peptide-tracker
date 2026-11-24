@@ -22,18 +22,18 @@ enum InjectionSite: String, Codable, CaseIterable, Identifiable {
 
         var title: String {
             switch self {
-            case .abdomen: "Abdomen"
-            case .thigh: "Thigh"
-            case .arm: "Back of arm"
-            case .glute: "Glute"
-            case .shoulder: "Shoulder"
-            case .chest: "Chest"
-            case .frontArm: "Front of arm"
-            case .forearm: "Forearm"
-            case .flank: "Side"
-            case .back: "Back"
+            case .abdomen: String(localized: "Abdomen")
+            case .thigh: String(localized: "Thigh")
+            case .arm: String(localized: "Back of arm")
+            case .glute: String(localized: "Glute")
+            case .shoulder: String(localized: "Shoulder")
+            case .chest: String(localized: "Chest")
+            case .frontArm: String(localized: "Front of arm")
+            case .forearm: String(localized: "Forearm")
+            case .flank: String(localized: "Side")
+            case .back: String(localized: "Back")
             case .hamstring: "Back of thigh"
-            case .calf: "Calf"
+            case .calf: String(localized: "Calf")
             }
         }
 
@@ -77,7 +77,7 @@ enum InjectionSite: String, Codable, CaseIterable, Identifiable {
 
     /// "Left abdomen", "Right back of arm"
     var title: String {
-        let side = side == .left ? "Left" : "Right"
+        let side = side == .left ? String(localized: "Left") : String(localized: "Right")
         return "\(side) \(area.title.lowercased())"
     }
 

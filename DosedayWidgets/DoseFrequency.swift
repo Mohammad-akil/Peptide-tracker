@@ -24,11 +24,11 @@ enum DoseFrequency: Codable, Hashable {
 
         var title: String {
             switch self {
-            case .daily: "Every day"
-            case .weekly: "Once a week"
-            case .everyFewDays: "Every few days"
-            case .weekdays: "On certain days"
-            case .cycle: "Days on, days off"
+            case .daily: String(localized: "Every day")
+            case .weekly: String(localized: "Once a week")
+            case .everyFewDays: String(localized: "Every few days")
+            case .weekdays: String(localized: "On certain days")
+            case .cycle: String(localized: "Days on, days off")
             }
         }
 
@@ -91,11 +91,11 @@ enum DoseFrequency: Codable, Hashable {
     /// "5 days on, 2 off".
     var title: String {
         switch self {
-        case .daily: "Every day"
-        case .everyNDays(7): "Once a week"
-        case .everyNDays(let n): "Every \(n) days"
+        case .daily: String(localized: "Every day")
+        case .everyNDays(7): String(localized: "Once a week")
+        case .everyNDays(let n): String(localized: "Every \(n) days")
         case .weekdays(let days): Self.weekdayList(days)
-        case .cycle(let on, let off): "\(on) days on, \(off) off"
+        case .cycle(let on, let off): String(localized: "\(on) days on, \(off) off")
         }
     }
 
@@ -106,7 +106,7 @@ enum DoseFrequency: Codable, Hashable {
     }
 
     static func weekdayList(_ days: Set<Int>) -> String {
-        if days.count == 7 { return "Every day" }
+        if days.count == 7 { return String(localized: "Every day") }
         return weekdaysMondayFirst.filter { days.contains($0.day) }.map(\.symbol).joined(separator: ", ")
     }
 

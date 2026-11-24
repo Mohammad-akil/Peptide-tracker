@@ -287,6 +287,7 @@ enum StudioButtonWindow {
               let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first
         else { return }
         let window = StudioPassthroughWindow(windowScene: scene)
+        window.overrideUserInterfaceStyle = AppearanceMode.current.interfaceStyle
         let host = UIHostingController(
             rootView: StudioDownloadButton { frame in window.touchableFrame = frame }
                 .environment(router)

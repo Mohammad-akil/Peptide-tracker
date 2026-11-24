@@ -12,15 +12,15 @@ struct ComparisonStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             OnboardingHeader(
-                eyebrow: "Why Doseday",
-                title: "Make your GLP-1 work for you.",
-                reason: "Enjoy a smoother experience, from managing side effects to hitting your weight loss milestones with less stress."
+                eyebrow: String(localized: "Why Doseday"),
+                title: String(localized: "Make your GLP-1 work for you."),
+                reason: String(localized: "Enjoy a smoother experience, from managing side effects to hitting your weight loss milestones with less stress.")
             )
             WeightComparisonChart(answers: answers).stagger(0)
             VStack(alignment: .leading, spacing: 12) {
-                point(.bell, "Never miss a dose or a refill", tint: Color(hex: 0xFF9F0A)).stagger(1)
-                point(.heart, "Log side effects and spot patterns", tint: Color(hex: 0xFF3B30)).stagger(2)
-                point(.timeline, "See every milestone as you hit it", tint: Color(hex: 0x30B07A)).stagger(3)
+                point(.bell, String(localized: "Never miss a dose or a refill"), tint: Color(hex: 0xFF9F0A)).stagger(1)
+                point(.heart, String(localized: "Log side effects and spot patterns"), tint: Color(hex: 0xFF3B30)).stagger(2)
+                point(.timeline, String(localized: "See every milestone as you hit it"), tint: Color(hex: 0x30B07A)).stagger(3)
             }
         }
     }
@@ -141,7 +141,7 @@ private struct WeightComparisonChart: View {
                 AxisMarks(values: [0, weeks / 2, weeks]) { value in
                     AxisValueLabel {
                         let week = value.as(Int.self) ?? 0
-                        Text(week == 0 ? "Today" : "Week \(week)")
+                        Text(week == 0 ? "Today" : String(localized: "Week \(week)"))
                     }
                     .font(.system(size: 11))
                     .foregroundStyle(AppTheme.ColorToken.tertiaryText)
@@ -156,10 +156,10 @@ private struct WeightComparisonChart: View {
             }
 
             HStack(spacing: 14) {
-                legend("With Doseday") {
+                legend(String(localized: "With Doseday")) {
                     Capsule().fill(AppTheme.ColorToken.accent).frame(width: 18, height: 4)
                 }
-                legend("Without an app") {
+                legend(String(localized: "Without an app")) {
                     Capsule().fill(Self.withoutColor).frame(width: 18, height: 3)
                 }
             }

@@ -24,16 +24,16 @@ struct SideEffectEntry: Identifiable, Codable, Hashable {
 
         var title: String {
             switch self {
-            case .nausea: "Nausea"
-            case .fatigue: "Tiredness"
-            case .headache: "Headache"
-            case .appetite: "Low appetite"
-            case .constipation: "Constipation"
-            case .diarrhea: "Diarrhoea"
-            case .dizziness: "Dizziness"
-            case .sleep: "Poor sleep"
-            case .siteReaction: "Site reaction"
-            case .other: "Other"
+            case .nausea: String(localized: "Nausea")
+            case .fatigue: String(localized: "Tiredness")
+            case .headache: String(localized: "Headache")
+            case .appetite: String(localized: "Low appetite")
+            case .constipation: String(localized: "Constipation")
+            case .diarrhea: String(localized: "Diarrhoea")
+            case .dizziness: String(localized: "Dizziness")
+            case .sleep: String(localized: "Poor sleep")
+            case .siteReaction: String(localized: "Site reaction")
+            case .other: String(localized: "Other")
             }
         }
 
@@ -72,9 +72,9 @@ struct SideEffectEntry: Identifiable, Codable, Hashable {
         var id: Int { rawValue }
         var title: String {
             switch self {
-            case .mild: "Mild"
-            case .moderate: "Moderate"
-            case .severe: "Severe"
+            case .mild: String(localized: "Mild")
+            case .moderate: String(localized: "Moderate")
+            case .severe: String(localized: "Severe")
             }
         }
 
@@ -101,15 +101,15 @@ struct SideEffectPattern: Identifiable {
     /// The sentence shown on the card.
     var sentence: String {
         guard let typicalOffset, offsetCount >= 2 else {
-            return "\(kind.title) logged \(count) \(count == 1 ? "time" : "times")."
+            return (count == 1 ? String(localized: "\(kind.title) logged once.") : String(localized: "\(kind.title) logged \(count) times."))
         }
         let when = switch typicalOffset {
-        case 0: "on dose days"
-        case 1: "the day after a dose"
-        default: "\(typicalOffset) days after a dose"
+        case 0: String(localized: "on dose days")
+        case 1: String(localized: "the day after a dose")
+        default: String(localized: "\(typicalOffset) days after a dose")
         }
-        let dose = medicineName.map { " of \($0)" } ?? ""
-        return "\(kind.title) is most often logged \(when)\(dose) (\(offsetCount) of \(count) times)."
+        let dose = medicineName.map { String(localized: " of \($0)") } ?? ""
+        return String(localized: "\(kind.title) is most often logged \(when)\(dose) (\(offsetCount) of \(count) times).")
     }
 
     /// Patterns over `entries`, most frequent first. `doseDays` are the days

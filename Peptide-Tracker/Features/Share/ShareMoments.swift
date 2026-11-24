@@ -75,15 +75,15 @@ struct ShareMoment {
     var variants: [ShareCardVariant] {
         var list: [ShareCardVariant] = []
         if todayDue > 0 {
-            list.append(.init(id: Kind.today.rawValue, name: "Today", systemImage: "checkmark.circle.fill") { TodayShareCard(data: self, format: $0, theme: $1) })
+            list.append(.init(id: Kind.today.rawValue, name: String(localized: "Today"), systemImage: "checkmark.circle.fill") { TodayShareCard(data: self, format: $0, theme: $1) })
         }
         if streak > 0 {
-            list.append(.init(id: Kind.streak.rawValue, name: "Streak", systemImage: "flame.fill") { StreakShareCard(data: self, format: $0, theme: $1) })
+            list.append(.init(id: Kind.streak.rawValue, name: String(localized: "Streak"), systemImage: "flame.fill") { StreakShareCard(data: self, format: $0, theme: $1) })
         }
-        list.append(.init(id: Kind.week.rawValue, name: "This week", systemImage: "chart.bar.fill") { WeekShareCard(data: self, format: $0, theme: $1) })
-        list.append(.init(id: Kind.month.rawValue, name: "This month", systemImage: "calendar") { MonthShareCard(data: self, format: $0, theme: $1) })
+        list.append(.init(id: Kind.week.rawValue, name: String(localized: "This week"), systemImage: "chart.bar.fill") { WeekShareCard(data: self, format: $0, theme: $1) })
+        list.append(.init(id: Kind.month.rawValue, name: String(localized: "This month"), systemImage: "calendar") { MonthShareCard(data: self, format: $0, theme: $1) })
         if moodsLogged > 0 {
-            list.append(.init(id: Kind.mood.rawValue, name: "Mood", systemImage: "face.smiling") { MoodShareCard(data: self, format: $0, theme: $1) })
+            list.append(.init(id: Kind.mood.rawValue, name: String(localized: "Mood"), systemImage: "face.smiling") { MoodShareCard(data: self, format: $0, theme: $1) })
         }
         return list
     }
@@ -101,12 +101,12 @@ struct TodayShareCard: View {
     private var isDone: Bool { data.todayDue > 0 && data.todayTaken >= data.todayDue }
 
     var body: some View {
-        ShareCardScaffold(format: format, theme: theme, eyebrow: "Today", eyebrowIcon: "sun.max.fill", footnote: data.dateLabel) {
+        ShareCardScaffold(format: format, theme: theme, eyebrow: String(localized: "Today"), eyebrowIcon: "sun.max.fill", footnote: data.dateLabel) {
             VStack(spacing: format.isStory ? 26 : 14) {
                 Spacer(minLength: 0)
                 ring
                 VStack(spacing: 6) {
-                    Text(isDone ? "All doses taken" : "\(data.todayTaken) of \(data.todayDue) taken")
+                    Text(isDone ? "All doses taken" : String(localized: "\(data.todayTaken) of \(data.todayDue) taken"))
                         .font(ShareCardFont.rounded(format.isStory ? 30 : 24, .heavy))
                         .foregroundStyle(theme.primary)
                     Text(isDone ? "Another day on track." : "Keeping on track, one dose at a time.")
@@ -117,8 +117,8 @@ struct TodayShareCard: View {
                 Spacer(minLength: 0)
                 if format.isStory {
                     HStack(spacing: 10) {
-                        ShareCardStat(value: "\(data.todayTaken)/\(data.todayDue)", label: "Doses today", theme: theme)
-                        ShareCardStat(value: data.streak > 0 ? "\(data.streak)" : "–", label: "Day streak", theme: theme)
+                        ShareCardStat(value: "\(data.todayTaken)/\(data.todayDue)", label: String(localized: "Doses today"), theme: theme)
+                        ShareCardStat(value: data.streak > 0 ? "\(data.streak)" : "–", label: String(localized: "Day streak"), theme: theme)
                     }
                 }
             }
@@ -153,7 +153,7 @@ struct StreakShareCard: View {
     let theme: ShareCardTheme
 
     var body: some View {
-        ShareCardScaffold(format: format, theme: theme, eyebrow: "Streak", eyebrowIcon: "flame.fill", footnote: data.dateLabel) {
+        ShareCardScaffold(format: format, theme: theme, eyebrow: String(localized: "Streak"), eyebrowIcon: "flame.fill", footnote: data.dateLabel) {
             VStack(spacing: format.isStory ? 14 : 6) {
                 Spacer(minLength: 0)
                 Image(systemName: "flame.fill")
@@ -220,7 +220,7 @@ struct WeekShareCard: View {
     let theme: ShareCardTheme
 
     var body: some View {
-        ShareCardScaffold(format: format, theme: theme, eyebrow: "This week", eyebrowIcon: "chart.bar.fill", footnote: data.dateLabel) {
+        ShareCardScaffold(format: format, theme: theme, eyebrow: String(localized: "This week"), eyebrowIcon: "chart.bar.fill", footnote: data.dateLabel) {
             VStack(alignment: .leading, spacing: format.isStory ? 18 : 10) {
                 Spacer(minLength: 0)
                 VStack(alignment: .leading, spacing: 2) {
@@ -238,8 +238,8 @@ struct WeekShareCard: View {
                 Spacer(minLength: 0)
                 if format.isStory {
                     HStack(spacing: 10) {
-                        ShareCardStat(value: "\(data.weekTaken)", label: "Doses taken", theme: theme)
-                        ShareCardStat(value: "\(data.week.filter(\.isFull).count)/7", label: "Perfect days", theme: theme)
+                        ShareCardStat(value: "\(data.weekTaken)", label: String(localized: "Doses taken"), theme: theme)
+                        ShareCardStat(value: "\(data.week.filter(\.isFull).count)/7", label: String(localized: "Perfect days"), theme: theme)
                     }
                 }
             }
@@ -339,7 +339,7 @@ struct MoodShareCard: View {
     let theme: ShareCardTheme
 
     var body: some View {
-        ShareCardScaffold(format: format, theme: theme, eyebrow: "My week", eyebrowIcon: "face.smiling", footnote: data.dateLabel) {
+        ShareCardScaffold(format: format, theme: theme, eyebrow: String(localized: "My week"), eyebrowIcon: "face.smiling", footnote: data.dateLabel) {
             VStack(spacing: format.isStory ? 22 : 12) {
                 Spacer(minLength: 0)
                 if let top = data.topMood {

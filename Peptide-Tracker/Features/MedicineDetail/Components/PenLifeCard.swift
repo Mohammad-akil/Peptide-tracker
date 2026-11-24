@@ -20,7 +20,7 @@ struct PenLifeCard: View {
 
     private var noun: String {
         switch medicine.type {
-        case .injection: "pen or vial"
+        case .injection: String(localized: "pen or vial")
         case .inhaler: "inhaler"
         case .cream: "tube"
         default: "bottle"
@@ -29,9 +29,9 @@ struct PenLifeCard: View {
 
     var body: some View {
         GroupedSection(
-            title: "In use",
+            title: String(localized: "In use"),
             trailing: trailing,
-            footer: "Copy the “use within” time from the leaflet. You get a reminder the day before it’s due to be thrown away."
+            footer: String(localized: "Copy the “use within” time from the leaflet. You get a reminder the day before it’s due to be thrown away.")
         ) {
             if let opened = medicine.openedAt, medicine.discardDate != nil {
                 statusRow(opened: opened)
@@ -49,7 +49,7 @@ struct PenLifeCard: View {
                         ForEach(Self.usableOptions, id: \.self) { Text("\($0) days").tag($0) }
                     }
                 } label: {
-                    menuLabel((medicine.usableDaysAfterOpening ?? 0) > 0 ? "\(medicine.usableDaysAfterOpening!) days" : "Not tracked")
+                    menuLabel((medicine.usableDaysAfterOpening ?? 0) > 0 ? String(localized: "\(medicine.usableDaysAfterOpening!) days") : String(localized: "Not tracked"))
                 }
             }
             .padding(.horizontal, 16)
@@ -69,7 +69,7 @@ struct PenLifeCard: View {
                             ForEach(Self.prepOptions, id: \.self) { Text("\($0) min before").tag($0) }
                         }
                     } label: {
-                        menuLabel(medicine.hasPrepReminder ? "\(medicine.prepMinutes!) min before" : "Off")
+                        menuLabel(medicine.hasPrepReminder ? String(localized: "\(medicine.prepMinutes!) min before") : String(localized: "Off"))
                     }
                 }
                 .padding(.horizontal, 16)
@@ -80,7 +80,7 @@ struct PenLifeCard: View {
             Button {
                 HapticFeedback.selection()
                 store.markOpened(medicine.id)
-                router.showToast("New \(noun) opened today")
+                router.showToast(String(localized: "New \(noun) opened today"))
             } label: {
                 Label("Opened a new \(noun)", systemImage: "sparkles")
                     .font(.system(size: 17))
@@ -96,8 +96,8 @@ struct PenLifeCard: View {
 
     private var trailing: String? {
         guard let days = medicine.daysUntilDiscard(now: now) else { return nil }
-        if days < 0 { return "Past use-by" }
-        return days == 0 ? "Use by today" : "\(days) \(days == 1 ? "day" : "days") left"
+        if days < 0 { return String(localized: "Past use-by") }
+        return days == 0 ? String(localized: "Use by today") : (days == 1 ? String(localized: "1 day left") : String(localized: "\(days) days left"))
     }
 
     private func statusRow(opened: Date) -> some View {
@@ -112,7 +112,7 @@ struct PenLifeCard: View {
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
             }
             Spacer(minLength: 8)
-            UrgencyChip(urgency: urgency, text: days < 0 ? "Expired" : days == 0 ? "Today" : "\(days)d")
+            UrgencyChip(urgency: urgency, text: days < 0 ? String(localized: "Expired") : days == 0 ? String(localized: "Today") : "\(days)d")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)

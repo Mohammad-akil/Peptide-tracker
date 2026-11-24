@@ -19,9 +19,9 @@ struct InjectionSitesCard: View {
         let heat = heatCounts(history)
 
         GroupedSection(
-            title: "Injection sites",
-            trailing: showsHeatmap ? "Last \(Self.heatDays) days" : "Next: \(suggested.title)",
-            footer: history.isEmpty ? "When you tick off an injection on Today, you pick where it went. Sites then rotate so each one gets a rest." : nil
+            title: String(localized: "Injection sites"),
+            trailing: showsHeatmap ? String(localized: "Last \(Self.heatDays) days") : String(localized: "Next: \(suggested.title)"),
+            footer: history.isEmpty ? String(localized: "When you tick off an injection on Today, you pick where it went. Sites then rotate so each one gets a rest.") : nil
         ) {
             if !history.isEmpty {
                 Picker("View", selection: $showsHeatmap.animation(.snappy)) {
@@ -88,7 +88,7 @@ struct InjectionSitesCard: View {
             HStack(spacing: 10) {
                 Text(site.title).font(.system(size: 17))
                 if reactionCount > 0 {
-                    Chip(text: "\(reactionCount) \(reactionCount == 1 ? "reaction" : "reactions")", foreground: Urgency.critical.ink, background: Urgency.critical.wash, bold: true)
+                    Chip(text: reactionCount == 1 ? String(localized: "1 reaction") : String(localized: "\(reactionCount) reactions"), foreground: Urgency.critical.ink, background: Urgency.critical.wash, bold: true)
                 }
                 Spacer(minLength: 8)
                 Text("\(count)×")

@@ -28,11 +28,11 @@ struct HeightQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "What’s your height?",
-                reason: "Your height helps us calculate your BMI and personalize your goal."
+                title: String(localized: "What’s your height?"),
+                reason: String(localized: "Your height helps us calculate your BMI and personalize your goal.")
             )
 
-            Text(answers.usesImperialHeight ? "\(feet.wrappedValue) ft \(inches.wrappedValue) in" : "\(cm.wrappedValue) cm")
+            Text(answers.usesImperialHeight ? String(localized: "\(feet.wrappedValue) ft \(inches.wrappedValue) in") : String(localized: "\(cm.wrappedValue) cm"))
                 .font(.system(size: 44, weight: .heavy))
                 .monospacedDigit()
                 .contentTransition(.numericText())
@@ -84,5 +84,5 @@ struct HeightQuestion: View {
 enum HeightUnit: String, CaseIterable {
     case centimeters, inches
 
-    var title: String { self == .inches ? "Inches" : "Centimeters" }
+    var title: String { self == .inches ? String(localized: "Inches") : String(localized: "Centimeters") }
 }

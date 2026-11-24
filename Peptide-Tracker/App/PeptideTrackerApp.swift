@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct PeptideTrackerApp: App {
     @AppStorage(AppearanceMode.storageKey) private var appearanceModeRaw = AppearanceMode.system.rawValue
+    @AppStorage(AppLanguage.storageKey) private var appLanguageRaw = ""
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
 
@@ -17,11 +18,22 @@ struct PeptideTrackerApp: App {
     private static let logoExitDuration: Duration = .milliseconds(250)
     private static let contentRevealDuration: Duration = .milliseconds(300)
 
+    init() {
+        // Before any view reads a string, so the first frame is already in
+        // the chosen language.
+        AppLanguage.applyStoredChoice()
+    }
+
+    private var appLanguage: AppLanguage { AppLanguage(rawValue: appLanguageRaw) ?? .deviceDefault }
+
     var body: some Scene {
         WindowGroup {
             ZStack {
                 if let startsWithOnboarding {
                     RootView(startsWithOnboarding: startsWithOnboarding)
+                        // A language switch rebuilds the tree so every string
+                        // is read again from the new language.
+                        .id(appLanguageRaw)
                         .opacity(isRevealingApp ? 1 : 0)
                         .scaleEffect(isRevealingApp ? 1 : 1.008)
                 }
@@ -37,6 +49,8 @@ struct PeptideTrackerApp: App {
             .environment(appDelegate.store)
             .environment(appDelegate.router)
             .environment(appDelegate.purchases)
+            .environment(\.locale, appLanguageRaw.isEmpty ? .current : appLanguage.locale)
+            .environment(\.layoutDirection, appLanguage.layoutDirection)
             .tint(AppTheme.ColorToken.accent)
             // SF Pro Rounded everywhere: every `.system` font picks it up.
             .fontDesign(.rounded)

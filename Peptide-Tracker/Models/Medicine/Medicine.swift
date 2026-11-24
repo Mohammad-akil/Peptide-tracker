@@ -83,7 +83,7 @@ struct Medicine: Identifiable, Codable, Hashable {
     }
 
     /// "a day", or "each dose day" for weekly and custom schedules.
-    private var perDayPhrase: String { frequency.isDaily ? "a day" : "each dose day" }
+    private var perDayPhrase: String { frequency.isDaily ? String(localized: "a day") : String(localized: "each dose day") }
 
     /// Out when there isn't enough left for the next dose.
     var urgency: Urgency { Urgency(daysLeft: daysLeft, isOut: stock < unitsPerIntake) }
@@ -127,28 +127,28 @@ struct Medicine: Identifiable, Codable, Hashable {
 
     /// "500 mg · 2 a day"
     var cardSubtitle: String {
-        let amount = frequency.isDaily ? "\(perDay) a day" : "\(perDay) · \(frequency.title)"
+        let amount = frequency.isDaily ? String(localized: "\(perDay) a day") : "\(perDay) · \(frequency.title)"
         return [strength, amount].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     /// "500 mg · 2 pills a day"
     var detailSubtitle: String {
-        [strength, "\(unit.format(perDay)) \(perDayPhrase)"].filter { !$0.isEmpty }.joined(separator: " · ")
+        [strength, String(localized: "\(unit.format(perDay)) \(perDayPhrase)", comment: "Amount and how often, e.g. 2 pills a day")].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     /// "Twice daily"
     var scheduleTitle: String {
         if !frequency.isDaily { return frequency.title }
         return switch intakeTimes.count {
-        case 0, 1: "Once daily"
-        case 2: "Twice daily"
-        default: "\(intakeTimes.count) times daily"
+        case 0, 1: String(localized: "Once daily")
+        case 2: String(localized: "Twice daily")
+        default: String(localized: "\(intakeTimes.count) times daily")
         }
     }
 
     /// "13 days", "1 day", "Run out"
     var daysLeftLabel: String {
-        urgency == .out ? "Run out" : "\(daysLeft) \(daysLeft == 1 ? "day" : "days")"
+        urgency == .out ? String(localized: "Run out") : (daysLeft == 1 ? String(localized: "1 day") : String(localized: "\(daysLeft) days"))
     }
 
     /// "8:00 · 20:00"
@@ -263,10 +263,10 @@ struct TimeOfDay: Codable, Hashable, Comparable {
     /// "Morning", "Evening"…
     var periodName: String {
         switch hour {
-        case 5..<12: "Morning"
-        case 12..<17: "Afternoon"
-        case 17..<21: "Evening"
-        default: "Night"
+        case 5..<12: String(localized: "Morning")
+        case 12..<17: String(localized: "Afternoon")
+        case 17..<21: String(localized: "Evening")
+        default: String(localized: "Night")
         }
     }
 

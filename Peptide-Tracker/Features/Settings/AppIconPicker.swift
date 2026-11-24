@@ -10,7 +10,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var title: String { self == .roseGold ? "Rose Gold" : rawValue.capitalized }
+    var title: String { self == .roseGold ? String(localized: "Rose Gold") : rawValue.capitalized }
 
     /// The name used in the asset catalog ("RoseGold").
     private var assetName: String { self == .roseGold ? "RoseGold" : rawValue.capitalized }
@@ -143,7 +143,7 @@ struct AppIconPicker: View {
         HapticFeedback.selection()
         guard option != selection else { return }
         guard UIApplication.shared.supportsAlternateIcons else {
-            errorMessage = "This device doesn’t support changing the app icon."
+            errorMessage = String(localized: "This device doesn’t support changing the app icon.")
             return
         }
         let previous = selection

@@ -49,7 +49,7 @@ struct TodayView: View {
                             pinNextDose(now: now)
                             dayDoneCard(now: now)
                         } else {
-                            CompactNote(symbol: "checklist", tint: AppTheme.ColorToken.accent, title: "Dose tracking is off", action: "Turn on") {
+                            CompactNote(symbol: "checklist", tint: AppTheme.ColorToken.accent, title: String(localized: "Dose tracking is off"), action: String(localized: "Turn on")) {
                                 router.selectedTab = .settings
                             }
                         }
@@ -128,31 +128,31 @@ struct TodayView: View {
         let needing = store.medicinesNeedingRefill(now: now)
         let notificationsOff = systemNotificationsDenied || !store.settings.notificationsEnabled
         if notificationsOff {
-            CompactNote(symbol: "bell.slash.fill", tint: Urgency.low.tint, title: "Reminders are off", action: "Turn on", onAction: turnOn)
+            CompactNote(symbol: "bell.slash.fill", tint: Urgency.low.tint, title: String(localized: "Reminders are off"), action: String(localized: "Turn on"), onAction: turnOn)
         }
         ForEach(store.medicinesNearDiscard(now: now)) { medicine in
             let days = medicine.daysUntilDiscard(now: now) ?? 0
             CompactNote(
                 symbol: "calendar.badge.exclamationmark",
                 tint: Urgency.low.tint,
-                title: days < 0 ? "\(medicine.name) is past its use-by" : days == 0 ? "Last day for this \(medicine.name)" : "\(medicine.name): \(days) \(days == 1 ? "day" : "days") left once opened",
-                action: "New one"
+                title: days < 0 ? String(localized: "\(medicine.name) is past its use-by") : days == 0 ? String(localized: "Last day for this \(medicine.name)") : (days == 1 ? String(localized: "\(medicine.name): 1 day left once opened") : String(localized: "\(medicine.name): \(days) days left once opened")),
+                action: String(localized: "New one")
             ) {
                 store.markOpened(medicine.id)
-                router.showToast("New \(medicine.name) opened today")
+                router.showToast(String(localized: "New \(medicine.name) opened today"))
             }
         }
         if store.settings.tracksSharps, store.sharpsFraction >= 0.9 {
             CompactNote(
                 symbol: "trash.square.fill",
                 tint: Urgency.critical.tint,
-                title: store.sharpsFraction >= 1 ? "Sharps container is full" : "Sharps container nearly full",
-                action: "View"
+                title: store.sharpsFraction >= 1 ? String(localized: "Sharps container is full") : String(localized: "Sharps container nearly full"),
+                action: String(localized: "View")
             ) { showsSharps = true }
             .sheet(isPresented: $showsSharps) { SharpsSheet() }
         }
         if !needing.isEmpty {
-            GroupedSection(title: "Needs refill", trailing: "\(needing.count)") {
+            GroupedSection(title: String(localized: "Needs refill"), trailing: "\(needing.count)") {
                 ForEach(Array(needing.enumerated()), id: \.element.id) { index, medicine in
                     RefillAlert(medicine: medicine, showsDivider: index < needing.count - 1)
                 }
@@ -221,7 +221,7 @@ struct TodayView: View {
                 } else {
                     DoseActivityController.start(store: store)
                     isPinned = true
-                    router.showToast("Next dose pinned to Lock Screen")
+                    router.showToast(String(localized: "Next dose pinned to Lock Screen"))
                 }
             } label: {
                 Label(isPinned ? "Unpin from Lock Screen" : "Pin next dose to Lock Screen", systemImage: isPinned ? "pin.slash" : "pin.fill")
@@ -325,7 +325,7 @@ struct TodayView: View {
         .buttonStyle(.plain)
         .compatGlass(interactive: true, in: .circle)
         .matchedTransitionSource(id: Self.moodZoomID, in: calendarZoom) { $0.background(.clear).clipShape(RoundedRectangle(cornerRadius: 22)) }
-        .accessibilityLabel(store.checkIn(on: now).map { "Mood: \($0.mood.title)" } ?? "Log your mood")
+        .accessibilityLabel(store.checkIn(on: now).map { String(localized: "Mood: \($0.mood.title)") } ?? "Log your mood")
         .sheet(isPresented: $showsMood) {
             MoodSheet()
                 .presentationDetents([.large])
@@ -405,7 +405,7 @@ private struct RefillAlert: View {
 
     /// "3 days", "Run out", "On order"
     private var status: String {
-        medicine.isOrdered ? "On order" : medicine.daysLeftLabel
+        medicine.isOrdered ? String(localized: "On order") : medicine.daysLeftLabel
     }
 }
 
@@ -515,11 +515,11 @@ enum ReminderKind {
 
     var title: String {
         switch self {
-        case .out: "Run out"
-        case .critical: "Running out"
-        case .low: "Getting low"
-        case .ordered: "Ordered"
-        case .scheduled: "Reminder set"
+        case .out: String(localized: "Run out")
+        case .critical: String(localized: "Running out")
+        case .low: String(localized: "Getting low")
+        case .ordered: String(localized: "Ordered")
+        case .scheduled: String(localized: "Reminder set")
         }
     }
 }
@@ -619,10 +619,10 @@ private struct RemindersList: View {
 
     /// "Running out · reminder sent 12 Nov", "Ordered · waiting for pickup"
     private func detail(_ medicine: Medicine, kind: ReminderKind) -> String {
-        if kind == .ordered { return "Ordered · waiting to be picked up" }
-        if kind == .out { return "Run out · refill now" }
+        if kind == .ordered { return String(localized: "Ordered · waiting to be picked up") }
+        if kind == .out { return String(localized: "Run out · refill now") }
         let date = medicine.reminderDate(now: now)
-        return "\(kind.title) · reminder \(date <= now ? "sent" : "on") \(date.dayMonth)"
+        return (date <= now ? String(localized: "\(kind.title) · reminder sent \(date.dayMonth)") : String(localized: "\(kind.title) · reminder on \(date.dayMonth)"))
     }
 }
 
@@ -636,8 +636,8 @@ private struct TodayEmptyState: View {
     var body: some View {
         EmptyStateView(
             illustration: .welcome,
-            title: "Nothing to track yet",
-            message: "Add the medicines you take and Today will show what to do and when."
+            title: String(localized: "Nothing to track yet"),
+            message: String(localized: "Add the medicines you take and Today will show what to do and when.")
         ) {
             Button("Add your first medicine", action: onAdd)
                 .buttonStyle(.primary(height: 52))

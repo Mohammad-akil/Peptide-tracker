@@ -24,7 +24,7 @@ enum ShareCardFormat: String, CaseIterable, Identifiable {
         }
     }
 
-    var label: String { self == .story ? "Story" : "Post" }
+    var label: String { self == .story ? String(localized: "Story") : String(localized: "Post") }
     var isStory: Bool { self == .story }
 }
 
@@ -38,10 +38,10 @@ enum ShareCardTheme: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .brand: "Doseday"
-        case .dark: "Dark"
-        case .light: "Light"
-        case .clear: "Clear"
+        case .brand: String(localized: "Doseday")
+        case .dark: String(localized: "Dark")
+        case .light: String(localized: "Light")
+        case .clear: String(localized: "Clear")
         }
     }
 

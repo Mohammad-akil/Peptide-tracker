@@ -9,7 +9,7 @@ struct TrackingSettingsView: View {
         @Bindable var store = store
 
         SettingsPageScaffold(page: .tracking) {
-            GroupedSection(title: "Medicines for") {
+            GroupedSection(title: String(localized: "Medicines for")) {
                 ForEach(Array(TrackingFor.allCases.enumerated()), id: \.element) { index, choice in
                     CheckRow(
                         title: choice.title,
@@ -21,7 +21,7 @@ struct TrackingSettingsView: View {
 
             if store.settings.trackingFor != .me {
                 GroupedSection(footer: footer) {
-                    FieldRow(title: "Their name", placeholder: "Add", text: $store.settings.personName, showsDivider: false)
+                    FieldRow(title: String(localized: "Their name"), placeholder: String(localized: "Add"), text: $store.settings.personName, showsDivider: false)
                         .textInputAutocapitalization(.words)
                         .textContentType(.givenName)
                 }
@@ -33,10 +33,10 @@ struct TrackingSettingsView: View {
     /// "Reminders say “Mum’s Metformin”."
     private var footer: String {
         let name = store.settings.personName.trimmingCharacters(in: .whitespaces)
-        let example = name.isEmpty ? "Mum’s" : "\(name)’s"
+        let example = name.isEmpty ? String(localized: "Mum’s") : "\(name)’s"
         return store.settings.trackingFor == .someoneElse
-            ? "Reminders say “\(example) Metformin”."
-            : "Reminders for their medicines say “\(example) Metformin”."
+            ? String(localized: "Reminders say “\(example) Metformin”.")
+            : String(localized: "Reminders for their medicines say “\(example) Metformin”.")
     }
 }
 

@@ -41,7 +41,7 @@ struct RefillSheet: View {
             .padding(.top, 24)
 
             HStack(spacing: 18) {
-                roundStepButton(.minus, label: "Remove \(step)") { self.amount = max(amount - step, step) }
+                roundStepButton(.minus, label: String(localized: "Remove \(step)")) { self.amount = max(amount - step, step) }
                     .disabled(amount <= step)
                 VStack(spacing: 4) {
                     Text("\(amount)")
@@ -55,7 +55,7 @@ struct RefillSheet: View {
                 }
                 .frame(width: 130)
                 .accessibilityElement(children: .combine)
-                roundStepButton(.plus, label: "Add \(step)") { self.amount = min(amount + step, 9999) }
+                roundStepButton(.plus, label: String(localized: "Add \(step)")) { self.amount = min(amount + step, 9999) }
             }
             .padding(.top, 22)
             .padding(.bottom, 16)
@@ -85,10 +85,10 @@ struct RefillSheet: View {
             .padding(.bottom, 16)
 
             VStack(spacing: 0) {
-                changeRow("Runs out", from: medicine.runOutDate().dayMonth, to: after.runOutDate().dayMonth, showsDivider: true)
+                changeRow(String(localized: "Runs out"), from: medicine.runOutDate().dayMonth, to: after.runOutDate().dayMonth, showsDivider: true)
                 changeRow(
                     "Reminder",
-                    from: reminderBefore <= now || medicine.isOrdered ? "Sent" : reminderBefore.dayMonth,
+                    from: reminderBefore <= now || medicine.isOrdered ? String(localized: "Sent") : reminderBefore.dayMonth,
                     to: after.reminderDate(now: now).dayMonth,
                     showsDivider: false
                 )
@@ -101,7 +101,7 @@ struct RefillSheet: View {
 
             Button {
                 store.refill(medicineID, adding: amount)
-                router.showToast("Refilled. Next reminder \(after.reminderDate(now: now).weekdayDayMonth).")
+                router.showToast(String(localized: "Refilled. Next reminder \(after.reminderDate(now: now).weekdayDayMonth)."))
                 router.celebrate()
                 ReviewPrompter.happyMoment(.refillLogged)
                 dismiss()
@@ -139,6 +139,7 @@ struct RefillSheet: View {
             HStack(spacing: 8) {
                 Text(from).strikethrough().foregroundStyle(AppTheme.ColorToken.secondaryText)
                 Icon(.arrowR, size: 14).foregroundStyle(AppTheme.ColorToken.secondaryText)
+                    .flipsForRightToLeftLayoutDirection(true)
                 Text(to).bold()
             }
         }

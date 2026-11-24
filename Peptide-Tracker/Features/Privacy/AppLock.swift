@@ -28,18 +28,18 @@ final class AppLock {
         let context = LAContext()
         _ = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
         return switch context.biometryType {
-        case .faceID: "Face ID"
-        case .touchID: "Touch ID"
-        case .opticID: "Optic ID"
-        default: "Passcode"
+        case .faceID: String(localized: "Face ID")
+        case .touchID: String(localized: "Touch ID")
+        case .opticID: String(localized: "Optic ID")
+        default: String(localized: "Passcode")
         }
     }
 
     static var methodSymbol: String {
         switch methodName {
-        case "Face ID": "faceid"
-        case "Touch ID": "touchid"
-        case "Optic ID": "opticid"
+        case String(localized: "Face ID"): "faceid"
+        case String(localized: "Touch ID"): "touchid"
+        case String(localized: "Optic ID"): "opticid"
         default: "lock.fill"
         }
     }
@@ -101,7 +101,7 @@ final class AppLock {
     func unlock() async {
         guard isLocked, !isAuthenticating else { return }
         isAuthenticating = true
-        let unlocked = await authenticate(reason: "Unlock \(Bundle.main.appName) to see your medicines.")
+        let unlocked = await authenticate(reason: String(localized: "Unlock \(Bundle.main.appName) to see your medicines."))
         isAuthenticating = false
         if unlocked {
             withAnimation(.easeOut(duration: 0.25)) { isLocked = false }
@@ -130,6 +130,7 @@ enum LockWindow {
               let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first
         else { return }
         let window = UIWindow(windowScene: scene)
+        window.overrideUserInterfaceStyle = AppearanceMode.current.interfaceStyle
         let host = UIHostingController(
             rootView: LockScreenView()
                 .fontDesign(.rounded)

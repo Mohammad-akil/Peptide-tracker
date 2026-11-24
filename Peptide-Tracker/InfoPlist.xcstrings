@@ -1,0 +1,246 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Doseday"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Peptide-Tracker"
+          }
+        }
+      }
+    },
+    "NSFaceIDUsageDescription" : {
+      "comment" : "Privacy - Face ID Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم Doseday بصمة الوجه لفتح التطبيق عند تفعيل قفل التطبيق، حتى لا يرى أدويتك أحد غيرك."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday nutzt Face ID, um die App zu entsperren, wenn die App-Sperre aktiv ist, damit nur du deine Medikamente sehen kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Doseday uses Face ID to unlock the app when App Lock is on, so only you can see your medicines."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday usa Face ID para desbloquear la app cuando el bloqueo está activado, para que solo tú puedas ver tus medicamentos."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday usa Face ID para desbloquear la app cuando el bloqueo está activado, para que solo tú puedas ver tus medicamentos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday utilise Face ID pour déverrouiller l’app quand le verrouillage est activé, afin que vous seul puissiez voir vos médicaments."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday utilise Face ID pour déverrouiller l’app quand le verrouillage est activé, afin que vous seul puissiez voir vos médicaments."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप लॉक चालू होने पर Doseday ऐप खोलने के लिए Face ID का उपयोग करता है, ताकि आपकी दवाएँ सिर्फ़ आप देख सकें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday menggunakan Face ID untuk membuka app saat Kunci App aktif, agar hanya kamu yang bisa melihat obatmu."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday usa Face ID per sbloccare l’app quando il blocco è attivo, così solo tu puoi vedere i tuoi farmaci."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosedayはアプリロックがオンのとき、Face IDでアプリのロックを解除します。あなただけが薬を見られるようにするためです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday는 앱 잠금이 켜져 있을 때 Face ID로 앱을 잠금 해제해, 나만 내 약을 볼 수 있게 합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Doseday usa o Face ID para desbloquear o app quando o Bloqueio do App está ativado, para que só você veja seus remédios."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday использует Face ID, чтобы открывать приложение при включённой блокировке, — так ваши лекарства видите только вы."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday, Uygulama Kilidi açıkken uygulamanın kilidini Face ID ile açar; böylece ilaçlarını yalnızca sen görebilirsin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启应用锁后，Doseday 会使用面容 ID 解锁 App，只有你能看到你的药物。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟應用鎖後，Doseday 會使用Face ID 解鎖 App，只有你能看到你的藥物。"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "comment" : "Privacy - Photo Library Additions Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحفظ Doseday بطاقات تقدمك في الصور."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday speichert deine Fortschrittskarten in Fotos."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Doseday saves your progress cards to Photos."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday guarda tus tarjetas de progreso en Fotos."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday guarda tus tarjetas de progreso en Fotos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday enregistre vos cartes de progression dans Photos."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday enregistre vos cartes de progression dans Photos."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday आपके प्रोग्रेस कार्ड Photos में सहेजता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday menyimpan kartu kemajuanmu ke Foto."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday salva le tue schede di progresso in Foto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosedayは進捗カードを写真に保存します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday는 진행 카드를 사진에 저장합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Doseday salva seus cartões de progresso em Fotos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday сохраняет ваши карточки прогресса в Фото."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday ilerleme kartlarını Fotoğraflar’a kaydeder."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday 会将进度卡片保存到“照片”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doseday 會將進度卡片保存到「照片」。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.3"
+}

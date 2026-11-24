@@ -248,10 +248,10 @@ private struct PillboxCompartment: View {
 
     /// "Morning", "Taken", "Missed", "2 left"
     private var status: String {
-        if compartment.isDone { return "Taken" }
-        if isMissed { return "Missed" }
+        if compartment.isDone { return String(localized: "Taken") }
+        if isMissed { return String(localized: "Missed") }
         let left = compartment.doses.filter { !$0.isTaken }.count
-        return left == compartment.doses.count ? compartment.time.periodName : "\(left) left"
+        return left == compartment.doses.count ? compartment.time.periodName : String(localized: "\(left) left")
     }
 
     private var statusInk: Color {
@@ -289,7 +289,7 @@ private struct PillboxCompartment: View {
                 router.push(.medicine(dose.medicine.id))
             }
         }
-        .accessibilityLabel(dose.isTaken ? "\(dose.medicine.name) taken" : "Mark \(dose.medicine.name) taken")
+        .accessibilityLabel(dose.isTaken ? String(localized: "\(dose.medicine.name) taken") : String(localized: "Mark \(dose.medicine.name) taken"))
         .accessibilityAddTraits(dose.isTaken ? .isSelected : [])
     }
 }

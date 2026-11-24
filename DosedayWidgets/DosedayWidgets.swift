@@ -60,8 +60,8 @@ struct TodayWidget: Widget {
                 .widgetURL(URL(string: "doseday://today"))
                 .containerBackground(for: .widget) { Color(.systemBackground) }
         }
-        .configurationDisplayName("Today’s doses")
-        .description("See what’s next and tick doses off without opening the app.")
+        .configurationDisplayName(String(localized: "Today’s doses"))
+        .description(String(localized: "See what’s next and tick doses off without opening the app."))
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
@@ -97,7 +97,7 @@ struct TodayWidgetView: View {
             }
             Spacer(minLength: 6)
             if let next {
-                Text(next.at <= entry.date ? "Due now" : "Next · \(next.time.label)")
+                Text(next.at <= entry.date ? "Due now" : String(localized: "Next · \(next.time.label)"))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(next.at <= entry.date ? Color.red : secondaryInk)
                 Text(next.medicine.name)
@@ -128,7 +128,7 @@ struct TodayWidgetView: View {
                 ring(size: 62, lineWidth: 8)
                 Text("Today")
                     .font(.system(size: 15, weight: .bold))
-                Text(doses.isEmpty ? "No doses" : "\(taken) of \(doses.count) taken")
+                Text(doses.isEmpty ? "No doses" : String(localized: "\(taken) of \(doses.count) taken"))
                     .font(.system(size: 12))
                     .foregroundStyle(secondaryInk)
             }
@@ -186,7 +186,7 @@ struct TodayWidgetView: View {
                     .foregroundStyle(dose.isTaken ? accent : secondaryInk)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(dose.isTaken ? "Taken, \(dose.medicine.name)" : "Mark \(dose.medicine.name) taken")
+            .accessibilityLabel(dose.isTaken ? String(localized: "Taken, \(dose.medicine.name)") : String(localized: "Mark \(dose.medicine.name) taken"))
         }
     }
 
@@ -223,7 +223,7 @@ struct TodayWidgetView: View {
                 .widgetAccentable()
             if let next {
                 Text(next.medicine.name).font(.system(size: 15, weight: .bold)).lineLimit(1)
-                Text(next.at <= entry.date ? "Due now" : "at \(next.time.label)")
+                Text(next.at <= entry.date ? "Due now" : String(localized: "at \(next.time.label)"))
                     .font(.system(size: 13))
             } else {
                 Text(doses.isEmpty ? "No doses today" : "All doses taken").font(.system(size: 15, weight: .bold))
@@ -255,7 +255,7 @@ struct MoodWidget: Widget {
                 .containerBackground(for: .widget) { Color(.systemBackground) }
         }
         .configurationDisplayName("Mood")
-        .description("Log how you feel with one tap.")
+        .description(String(localized: "Log how you feel with one tap."))
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -328,7 +328,7 @@ struct SupplyWidget: Widget {
                 .containerBackground(for: .widget) { Color(.systemBackground) }
         }
         .configurationDisplayName("Supply")
-        .description("The medicine that runs out soonest.")
+        .description(String(localized: "The medicine that runs out soonest."))
         .supportedFamilies([.systemSmall, .accessoryCircular])
     }
 }

@@ -23,11 +23,11 @@ enum WeightRange: String, CaseIterable, Hashable {
 
     var subtitle: String {
         switch self {
-        case .month: "Last 30 days"
-        case .quarter: "Last 90 days"
-        case .half: "Last 6 months"
-        case .year: "Last year"
-        case .all: "Since your first weigh-in"
+        case .month: String(localized: "Last 30 days")
+        case .quarter: String(localized: "Last 90 days")
+        case .half: String(localized: "Last 6 months")
+        case .year: String(localized: "Last year")
+        case .all: String(localized: "Since your first weigh-in")
         }
     }
 
@@ -59,7 +59,7 @@ struct BodyStatsCard: View {
                 .padding(.top, 16)
                 .padding(.bottom, 6)
 
-            SettingsSheetRow(title: "Height", value: settings.heightCm.map { Self.heightLabel(cm: $0, imperial: unit == .lb) } ?? "Add", action: { editsHeight = true }) {
+            SettingsSheetRow(title: String(localized: "Height"), value: settings.heightCm.map { Self.heightLabel(cm: $0, imperial: unit == .lb) } ?? String(localized: "Add"), action: { editsHeight = true }) {
                 SettingsTile(symbol: "ruler.fill", tint: Color(hex: 0x30B0C7))
             }
 
@@ -90,8 +90,8 @@ struct BodyStatsCard: View {
             .accessibilityElement(children: .combine)
 
             SettingsSheetRow(
-                title: "Goal weight",
-                value: settings.goalWeightKg.map { unit.format($0) } ?? "Set a goal",
+                title: String(localized: "Goal weight"),
+                value: settings.goalWeightKg.map { unit.format($0) } ?? String(localized: "Set a goal"),
                 showsDivider: settings.weeklyGoalKg != nil,
                 action: { editsGoal = true }
             ) {
@@ -126,7 +126,7 @@ struct BodyStatsCard: View {
 
     /// "172 cm", or "5′ 8″" for people who weigh in pounds.
     static func heightLabel(cm: Double, imperial: Bool) -> String {
-        guard imperial else { return "\(Int(cm.rounded())) cm" }
+        guard imperial else { return String(localized: "\(Int(cm.rounded())) cm") }
         let inches = Int((cm / 2.54).rounded())
         return "\(inches / 12)′ \(inches % 12)″"
     }

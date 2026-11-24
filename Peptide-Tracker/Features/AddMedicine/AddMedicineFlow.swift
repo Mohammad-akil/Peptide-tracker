@@ -158,8 +158,8 @@ struct AddMedicineFlow: View {
         let matches = catalogPick == nil ? MedicineCatalog.search(draft.name) : []
         return VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "What medicine would you like to add?",
-                reason: "Use the name on the box or your prescription."
+                title: String(localized: "What medicine would you like to add?"),
+                reason: String(localized: "Use the name on the box or your prescription.")
             )
             InputCard {
                 TextField("e.g. Metformin", text: $draft.name)
@@ -171,7 +171,7 @@ struct AddMedicineFlow: View {
                     .onSubmit { if canContinue { advance() } }
             }
             if !matches.isEmpty {
-                GroupedSection(title: "Suggestions") {
+                GroupedSection(title: String(localized: "Suggestions")) {
                     ForEach(Array(matches.enumerated()), id: \.element.id) { index, match in
                         suggestionRow(match, showsDivider: index < matches.count - 1)
                     }
@@ -228,11 +228,11 @@ struct AddMedicineFlow: View {
     private var brandStep: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "What’s the brand name?",
-                reason: "Optional. Handy when the box says something different from the medicine’s name."
+                title: String(localized: "What’s the brand name?"),
+                reason: String(localized: "Optional. Handy when the box says something different from the medicine’s name.")
             )
             VStack(alignment: .leading, spacing: 18) {
-                labelled("Brand name") {
+                labelled(String(localized: "Brand name")) {
                     InputCard {
                         TextField("e.g. Glucophage", text: $draft.brandName)
                             .font(.system(size: 18, weight: .medium))
@@ -272,8 +272,8 @@ struct AddMedicineFlow: View {
     private var typeStep: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "What type of medicine is it?",
-                reason: "This sets how we count it: pills, puffs, millilitres and so on."
+                title: String(localized: "What type of medicine is it?"),
+                reason: String(localized: "This sets how we count it: pills, puffs, millilitres and so on.")
             )
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                 ForEach(MedicineType.allCases) { type in
@@ -281,7 +281,7 @@ struct AddMedicineFlow: View {
                 }
             }
             if draft.type == .other {
-                OnboardingField(label: "What type is it?", placeholder: "e.g. Patch, spray, gel", text: $draft.customTypeName)
+                OnboardingField(label: String(localized: "What type is it?"), placeholder: String(localized: "e.g. Patch, spray, gel"), text: $draft.customTypeName)
                     .focused($isTyping)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -300,15 +300,15 @@ struct AddMedicineFlow: View {
     // MARK: 4 Reason
 
     private let commonReasons = [
-        "Blood pressure", "Diabetes", "Cholesterol", "Heart", "Thyroid",
-        "Pain", "Allergies", "Sleep", "Vitamins", "Mental health",
+        String(localized: "Blood pressure"), "Diabetes", "Cholesterol", "Heart", "Thyroid",
+        "Pain", "Allergies", "Sleep", "Vitamins", String(localized: "Mental health"),
     ]
 
     private var reasonStep: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "What are you taking it for?",
-                reason: "Optional. It helps tell your medicines apart."
+                title: String(localized: "What are you taking it for?"),
+                reason: String(localized: "Optional. It helps tell your medicines apart.")
             )
             InputCard {
                 TextField("e.g. Blood pressure", text: $draft.reason)
@@ -326,26 +326,26 @@ struct AddMedicineFlow: View {
     private var scheduleStep: some View {
         VStack(alignment: .leading, spacing: 24) {
             OnboardingHeader(
-                title: "How often do you take it?",
-                reason: "Pick which days, how many times on those days, then when you take each dose."
+                title: String(localized: "How often do you take it?"),
+                reason: String(localized: "Pick which days, how many times on those days, then when you take each dose.")
             )
             FrequencyPicker(frequency: $draft.frequency, start: $draft.scheduleStart)
             // Apple's pick-one list: rows with a checkmark on the chosen one.
-            GroupedSection(title: "Times that day") {
+            GroupedSection(title: String(localized: "Times that day")) {
                 ForEach(1...4, id: \.self) { count in
                     frequency(count, showsDivider: count < 4)
                 }
             }
-            GroupedSection(title: "Dose times") {
+            GroupedSection(title: String(localized: "Dose times")) {
                 ForEach(draft.doseTimes.indices, id: \.self) { index in
                     ControlRow(
                         symbol: "clock.fill",
                         tint: Color(hex: 0x30B0C7),
-                        title: "Dose \(index + 1)",
+                        title: String(localized: "Dose \(index + 1)"),
                         showsDivider: index < draft.doseTimes.count - 1
                     ) {
                         DatePicker(
-                            "Dose \(index + 1)",
+                            String(localized: "Dose \(index + 1)"),
                             selection: Binding(
                                 // Guarded: a row can outlive its time while the count shrinks.
                                 get: { draft.doseTimes.indices.contains(index) ? draft.doseTimes[index].on(.now) : .now },
@@ -359,9 +359,9 @@ struct AddMedicineFlow: View {
                 }
             }
             .animation(.snappy, value: draft.doseTimes.count)
-            GroupedSection(title: "Each time", footer: eachTimeFooter) {
+            GroupedSection(title: String(localized: "Each time"), footer: eachTimeFooter) {
                 FormRow(title: draft.type.unit.plural.capitalizedFirst, showsDivider: false) {
-                    CountStepper(value: $perDose, range: 1...20, accessibilityName: "\(draft.type.unit.plural) each time")
+                    CountStepper(value: $perDose, range: 1...20, accessibilityName: String(localized: "\(draft.type.unit.plural) each time"))
                 }
                 .padding(.horizontal, 16)
             }
@@ -370,16 +370,16 @@ struct AddMedicineFlow: View {
 
     /// "That’s 2 pills a day. Usual serving: 1 capsule."
     private var eachTimeFooter: String {
-        let total = "That’s \(draft.type.unit.format(draft.perDay)) \(draft.frequency.isDaily ? "a day" : "each dose day")."
+        let total = (draft.frequency.isDaily ? String(localized: "That’s \(draft.type.unit.format(draft.perDay)) a day.") : String(localized: "That’s \(draft.type.unit.format(draft.perDay)) each dose day."))
 
         // Only while the type is still the catalogue's, so the units agree.
         guard let pick = catalogPick, pick.type == draft.type else { return total }
-        return "\(total) Usual serving: \(pick.serving)."
+        return String(localized: "\(total) Usual serving: \(pick.serving).")
     }
 
     private func frequency(_ count: Int, showsDivider: Bool) -> some View {
         let isSelected = draft.dosesPerDay == count
-        let title = count == 1 ? "Once a day" : count == 2 ? "Twice a day" : "\(count) times a day"
+        let title = count == 1 ? String(localized: "Once a day") : count == 2 ? String(localized: "Twice a day") : String(localized: "\(count) times a day")
         return Button {
             HapticFeedback.selection()
             withAnimation(.snappy) { draft.dosesPerDay = count }
@@ -416,8 +416,8 @@ struct AddMedicineFlow: View {
     private var supplyStep: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "How many do you have right now?",
-                reason: "We count down from here and warn you before you run out."
+                title: String(localized: "How many do you have right now?"),
+                reason: String(localized: "We count down from here and warn you before you run out.")
             )
             VStack(alignment: .leading, spacing: 8) {
                 FormRow(title: draft.type.stockLabel, showsDivider: false) {
@@ -432,7 +432,7 @@ struct AddMedicineFlow: View {
                 }
             }
             VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(title: "Common pack sizes")
+                SectionLabel(title: String(localized: "Common pack sizes"))
                 HStack(spacing: 8) {
                     ForEach(draft.type.commonPackSizes, id: \.self) { size in
                         Button {
@@ -460,20 +460,20 @@ struct AddMedicineFlow: View {
 
     private var finishStep: some View {
         VStack(alignment: .leading, spacing: 24) {
-            OnboardingHeader(title: "Almost done", reason: "Add anything else you’d like, then save.")
+            OnboardingHeader(title: String(localized: "Almost done"), reason: String(localized: "Add anything else you’d like, then save."))
 
             GroupedSection { summary }
 
             // Settings-style list: a coloured tile per row, controls opening
             // inside the list.
-            GroupedSection(title: "Details") {
+            GroupedSection(title: String(localized: "Details")) {
                 instructionsRows
                 remindersRows
                 iconRows
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(title: "Your reminder")
+                SectionLabel(title: String(localized: "Your reminder"))
                 if draft.remindersOn {
                     RunOutPreview(draft: draft, showsErrors: false)
                 } else {
@@ -518,7 +518,7 @@ struct AddMedicineFlow: View {
     @ViewBuilder
     private var instructionsRows: some View {
         let isOpen = expandedOption == .instructions
-        SettingsRow(symbol: "list.clipboard.fill", tint: Color(hex: 0xFF9F0A), title: "Instructions", showsDivider: true) {
+        SettingsRow(symbol: "list.clipboard.fill", tint: Color(hex: 0xFF9F0A), title: String(localized: "Instructions"), showsDivider: true) {
             toggle(.instructions)
         } trailing: {
             Text(draft.instructions.isEmpty ? "None" : draft.instructions)
@@ -533,7 +533,7 @@ struct AddMedicineFlow: View {
                     .font(.system(size: 17))
                     .lineLimit(1...4)
                 SuggestionChips(
-                    options: ["With food", "Before bed", "On an empty stomach", "With a full glass of water"],
+                    options: [String(localized: "With food"), String(localized: "Before bed"), String(localized: "On an empty stomach"), String(localized: "With a full glass of water")],
                     selection: $draft.instructions
                 )
             }
@@ -547,7 +547,7 @@ struct AddMedicineFlow: View {
 
     @ViewBuilder
     private var remindersRows: some View {
-        SettingsRow(symbol: "bell.fill", tint: Color(hex: 0xFF453A), title: "Refill reminders", showsDivider: true) {
+        SettingsRow(symbol: "bell.fill", tint: Color(hex: 0xFF453A), title: String(localized: "Refill reminders"), showsDivider: true) {
             withAnimation(.snappy) { draft.remindersOn.toggle() }
         } trailing: {
             Toggle("Refill reminders", isOn: $draft.remindersOn)
@@ -556,10 +556,10 @@ struct AddMedicineFlow: View {
         }
         if draft.remindersOn {
             Group {
-                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: "Days before") {
-                    CountStepper(value: $draft.reminderDaysBefore, range: 0...30, accessibilityName: "days before")
+                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: String(localized: "Days before")) {
+                    CountStepper(value: $draft.reminderDaysBefore, range: 0...30, accessibilityName: String(localized: "days before"))
                 }
-                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: "Time") {
+                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: String(localized: "Time")) {
                     DatePicker(
                         "Time",
                         selection: Binding(
@@ -579,7 +579,7 @@ struct AddMedicineFlow: View {
     @ViewBuilder
     private var iconRows: some View {
         let isOpen = expandedOption == .icon
-        SettingsRow(symbol: "paintpalette.fill", tint: Color(hex: 0xBF5AF2), title: "Icon colour", showsDivider: isOpen) {
+        SettingsRow(symbol: "paintpalette.fill", tint: Color(hex: 0xBF5AF2), title: String(localized: "Icon colour"), showsDivider: isOpen) {
             toggle(.icon)
         } trailing: {
             MedicineIconView(type: draft.type, color: draft.color, size: 28, isVibrant: true)
@@ -641,7 +641,7 @@ struct AddMedicineFlow: View {
         let isFirst = store.medicines.isEmpty
         let medicine = draft.build()
         store.add(medicine)
-        router.show(.success("\(medicine.name) added", message: savedMessage(for: medicine)))
+        router.show(.success(String(localized: "\(medicine.name) added"), message: savedMessage(for: medicine)))
         router.celebrate()
         onSaved(isFirst)
         dismiss()
@@ -651,8 +651,8 @@ struct AddMedicineFlow: View {
     private func savedMessage(for medicine: Medicine) -> String? {
         guard draft.remindersOn, medicine.stock > 0 else { return nil }
         let reminder = medicine.reminderDate()
-        guard reminder > .now else { return "It’s already time to refill." }
-        return "We’ll remind you on \(reminder.dayMonth) at \(medicine.reminderTime.label)."
+        guard reminder > .now else { return String(localized: "It’s already time to refill.") }
+        return String(localized: "We’ll remind you on \(reminder.dayMonth) at \(medicine.reminderTime.label).")
     }
 }
 

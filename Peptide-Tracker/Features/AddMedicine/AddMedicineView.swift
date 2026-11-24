@@ -36,7 +36,7 @@ struct AddMedicineView: View {
                     FrequencyPicker(frequency: $draft.frequency, start: $draft.scheduleStart)
                     reminderSection
                     VStack(alignment: .leading, spacing: 8) {
-                        SectionLabel(title: "Your reminder")
+                        SectionLabel(title: String(localized: "Your reminder"))
                         if draft.remindersOn {
                             RunOutPreview(draft: draft, showsErrors: showsErrors || draft.stock > 0)
                         } else {
@@ -91,7 +91,7 @@ struct AddMedicineView: View {
             HStack(spacing: 14) {
                 MedicineIconView(type: draft.type, color: draft.color, size: 52, isVibrant: true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(draft.trimmedName.isEmpty ? "New medicine" : draft.trimmedName)
+                    Text(draft.trimmedName.isEmpty ? String(localized: "New medicine") : draft.trimmedName)
                         .font(.system(size: 19, weight: .semibold))
                         .lineLimit(1)
                     Text(draft.build().typeTitle)
@@ -104,7 +104,7 @@ struct AddMedicineView: View {
             .padding(.vertical, 12)
             .rowDivider(true, inset: 16)
 
-            SettingsRow(symbol: "paintpalette.fill", tint: Color(hex: 0xBF5AF2), title: "Icon colour", showsDivider: showsColours) {
+            SettingsRow(symbol: "paintpalette.fill", tint: Color(hex: 0xBF5AF2), title: String(localized: "Icon colour"), showsDivider: showsColours) {
                 HapticFeedback.selection()
                 showsColours.toggle()
             } trailing: {
@@ -122,7 +122,7 @@ struct AddMedicineView: View {
 
     private var typeSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(title: "Type")
+            SectionLabel(title: String(localized: "Type"))
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                 ForEach(MedicineType.allCases) { type in
                     TypeTile(type: type, isSelected: draft.type == type) {
@@ -134,8 +134,8 @@ struct AddMedicineView: View {
             }
             if draft.type == .other {
                 GroupedSection {
-                    ControlRow(symbol: "cross.case.fill", tint: Color(hex: 0x8E8E93), title: "Type name", showsDivider: false) {
-                        field("e.g. Patch", text: $draft.customTypeName, focus: .typeName)
+                    ControlRow(symbol: "cross.case.fill", tint: Color(hex: 0x8E8E93), title: String(localized: "Type name"), showsDivider: false) {
+                        field(String(localized: "e.g. Patch"), text: $draft.customTypeName, focus: .typeName)
                     }
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -145,23 +145,23 @@ struct AddMedicineView: View {
 
     private var medicineSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            GroupedSection(title: "Medicine") {
-                ControlRow(symbol: "pills.fill", tint: Color(hex: 0x0A84FF), title: "Name") {
+            GroupedSection(title: String(localized: "Medicine")) {
+                ControlRow(symbol: "pills.fill", tint: Color(hex: 0x0A84FF), title: String(localized: "Name")) {
                     field("Required", text: $draft.name, focus: .name, next: .brand)
                         .textInputAutocapitalization(.words)
                 }
-                ControlRow(symbol: "tag.fill", tint: Color(hex: 0x5E5CE6), title: "Brand") {
+                ControlRow(symbol: "tag.fill", tint: Color(hex: 0x5E5CE6), title: String(localized: "Brand")) {
                     field("Optional", text: $draft.brandName, focus: .brand, next: .strength)
                         .textInputAutocapitalization(.words)
                 }
-                ControlRow(symbol: "scalemass.fill", tint: Color(hex: 0x30B0C7), title: "Strength") {
+                ControlRow(symbol: "scalemass.fill", tint: Color(hex: 0x30B0C7), title: String(localized: "Strength")) {
                     field("Optional", text: $draft.strength, focus: .strength, next: .reason)
                 }
-                ControlRow(symbol: "heart.fill", tint: Color(hex: 0xFF375F), title: "Taking it for") {
+                ControlRow(symbol: "heart.fill", tint: Color(hex: 0xFF375F), title: String(localized: "Taking it for")) {
                     field("Optional", text: $draft.reason, focus: .reason, next: .instructions)
                 }
-                ControlRow(symbol: "list.clipboard.fill", tint: Color(hex: 0xFF9F0A), title: "Instructions", showsDivider: false) {
-                    field("e.g. With food", text: $draft.instructions, focus: .instructions)
+                ControlRow(symbol: "list.clipboard.fill", tint: Color(hex: 0xFF9F0A), title: String(localized: "Instructions"), showsDivider: false) {
+                    field(String(localized: "e.g. With food"), text: $draft.instructions, focus: .instructions)
                 }
             }
             if showsErrors, let error = draft.nameError {
@@ -172,7 +172,7 @@ struct AddMedicineView: View {
 
     private var supplySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            GroupedSection(title: "Supply", footer: draft.type.supplyHint) {
+            GroupedSection(title: String(localized: "Supply"), footer: draft.type.supplyHint) {
                 ControlRow(symbol: "shippingbox.fill", tint: Color(hex: 0x30D158), title: draft.type.stockLabel) {
                     CountStepper(value: $draft.stock, range: 0...9999, accessibilityName: draft.type.stockLabel.lowercased(), isTypeable: true)
                 }
@@ -188,17 +188,17 @@ struct AddMedicineView: View {
 
     /// The same rows as the add flow's Refill reminders.
     private var reminderSection: some View {
-        GroupedSection(title: "Reminder") {
-            ControlRow(symbol: "bell.fill", tint: Color(hex: 0xFF453A), title: "Refill reminders", showsDivider: draft.remindersOn) {
+        GroupedSection(title: String(localized: "Reminder")) {
+            ControlRow(symbol: "bell.fill", tint: Color(hex: 0xFF453A), title: String(localized: "Refill reminders"), showsDivider: draft.remindersOn) {
                 Toggle("Refill reminders", isOn: $draft.remindersOn)
                     .labelsHidden()
                     .tint(AppTheme.ColorToken.accent)
             }
             if draft.remindersOn {
-                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: "Days before") {
-                    CountStepper(value: $draft.reminderDaysBefore, range: 0...30, accessibilityName: "days before")
+                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: String(localized: "Days before")) {
+                    CountStepper(value: $draft.reminderDaysBefore, range: 0...30, accessibilityName: String(localized: "days before"))
                 }
-                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: "Time", showsDivider: false) {
+                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: String(localized: "Time"), showsDivider: false) {
                     DatePicker(
                         "Time",
                         selection: Binding(

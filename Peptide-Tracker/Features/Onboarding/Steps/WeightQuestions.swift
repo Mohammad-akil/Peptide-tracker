@@ -8,8 +8,8 @@ struct WeightQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "What’s your current weight?",
-                reason: "We’ll use it with your height to work out your BMI and track your progress."
+                title: String(localized: "What’s your current weight?"),
+                reason: String(localized: "We’ll use it with your height to work out your BMI and track your progress.")
             )
             Text(answers.weightUnit.format(answers.currentWeightKg ?? OnboardingAnswers.defaultWeightKg))
                 .font(.system(size: 44, weight: .heavy))
@@ -49,14 +49,14 @@ struct StartQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "Tell us where you started.",
-                reason: "Add the weight you were when you started your journey, along with your start date."
+                title: String(localized: "Tell us where you started."),
+                reason: String(localized: "Add the weight you were when you started your journey, along with your start date.")
             )
             progressCard
                 .stagger(0)
             VStack(spacing: 0) {
-                editRow(.timeline, "Start weight", answers.startWeightKg.map(answers.weightUnit.format) ?? "Add", edit: .weight, showsDivider: true)
-                editRow(.cal, "Start date", answers.startDate.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "Add", edit: .date, showsDivider: false)
+                editRow(.timeline, String(localized: "Start weight"), answers.startWeightKg.map(answers.weightUnit.format) ?? String(localized: "Add"), edit: .weight, showsDivider: true)
+                editRow(.cal, String(localized: "Start date"), answers.startDate.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? String(localized: "Add"), edit: .date, showsDivider: false)
             }
             .groupedCard()
             .stagger(1)
@@ -71,11 +71,11 @@ struct StartQuestion: View {
     /// Start → now, and the change between them, once both are known.
     private var progressCard: some View {
         HStack(spacing: 0) {
-            stat("Start", answers.startWeightKg.map(answers.weightUnit.format) ?? "Not set")
-            Image(systemName: "arrow.right")
+            stat("Start", answers.startWeightKg.map(answers.weightUnit.format) ?? String(localized: "Not set"))
+            Image(systemName: "arrow.forward")
                 .font(.system(size: 17, weight: .bold))
                 .foregroundStyle(AppTheme.ColorToken.accent)
-            stat("Now", answers.currentWeightKg.map(answers.weightUnit.format) ?? "Not set")
+            stat("Now", answers.currentWeightKg.map(answers.weightUnit.format) ?? String(localized: "Not set"))
         }
         .padding(.vertical, 18)
         .frame(maxWidth: .infinity)
@@ -97,7 +97,7 @@ struct StartQuestion: View {
         let delta = start - now
         guard abs(delta) >= 0.05 else { return nil }
         let amount = answers.weightUnit.format(abs(delta))
-        return delta > 0 ? "\(amount) down so far" : "\(amount) up since you started"
+        return delta > 0 ? String(localized: "\(amount) down so far") : String(localized: "\(amount) up since you started")
     }
 
     private func stat(_ label: String, _ value: String) -> some View {
@@ -160,7 +160,7 @@ struct StartQuestion: View {
                     }
                 case .date:
                     DatePicker(
-                        "Start date",
+                        String(localized: "Start date"),
                         selection: Binding(get: { answers.startDate ?? .now }, set: { answers.startDate = $0 }),
                         in: ...Date.now,
                         displayedComponents: .date

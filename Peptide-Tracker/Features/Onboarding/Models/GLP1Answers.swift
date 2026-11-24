@@ -6,8 +6,8 @@ enum GLP1Journey: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .taking: "I’m already taking a GLP-1"
-        case .notStarted: "I haven’t started a GLP-1 yet"
+        case .taking: String(localized: "I’m already taking a GLP-1")
+        case .notStarted: String(localized: "I haven’t started a GLP-1 yet")
         }
     }
 }
@@ -18,9 +18,9 @@ enum GLP1Route: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .injection: "Injection"
-        case .pill: "Pill"
-        case .notSure: "Not sure yet"
+        case .injection: String(localized: "Injection")
+        case .pill: String(localized: "Pill")
+        case .notSure: String(localized: "Not sure yet")
         }
     }
 }
@@ -34,41 +34,41 @@ enum GLP1Medication: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .zepbound: "Zepbound"
-        case .mounjaro: "Mounjaro"
-        case .ozempic: "Ozempic"
-        case .wegovy: "Wegovy"
-        case .wegovyPill: "Wegovy pill"
-        case .rybelsus: "Rybelsus"
-        case .saxenda: "Saxenda"
-        case .trulicity: "Trulicity"
-        case .victoza: "Victoza"
-        case .liraglutide: "Liraglutide (generic)"
-        case .xultophy: "Xultophy"
-        case .soliqua: "Soliqua"
-        case .compoundedTirzepatide: "Tirzepatide"
-        case .compoundedSemaglutide: "Semaglutide"
-        case .other: "Other"
-        case .dontKnow: "I don’t know"
+        case .zepbound: String(localized: "Zepbound")
+        case .mounjaro: String(localized: "Mounjaro")
+        case .ozempic: String(localized: "Ozempic")
+        case .wegovy: String(localized: "Wegovy")
+        case .wegovyPill: String(localized: "Wegovy pill")
+        case .rybelsus: String(localized: "Rybelsus")
+        case .saxenda: String(localized: "Saxenda")
+        case .trulicity: String(localized: "Trulicity")
+        case .victoza: String(localized: "Victoza")
+        case .liraglutide: String(localized: "Liraglutide (generic)")
+        case .xultophy: String(localized: "Xultophy")
+        case .soliqua: String(localized: "Soliqua")
+        case .compoundedTirzepatide: String(localized: "Tirzepatide")
+        case .compoundedSemaglutide: String(localized: "Semaglutide")
+        case .other: String(localized: "Other")
+        case .dontKnow: String(localized: "I don’t know")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .zepbound, .mounjaro: "Tirzepatide · weekly injection"
-        case .ozempic: "Semaglutide · weekly injection"
-        case .wegovy: "Semaglutide · weekly injection"
-        case .wegovyPill: "Semaglutide · daily pill"
-        case .rybelsus: "Semaglutide · daily pill"
-        case .saxenda, .victoza: "Liraglutide · daily injection"
-        case .trulicity: "Dulaglutide · weekly injection"
-        case .liraglutide: "Liraglutide · daily injection"
-        case .xultophy: "Insulin degludec + liraglutide · daily"
-        case .soliqua: "Insulin glargine + lixisenatide · daily"
-        case .compoundedTirzepatide: "Compounded · weekly injection"
-        case .compoundedSemaglutide: "Compounded · weekly injection"
-        case .other: "Type the name of your medication"
-        case .dontKnow: "That’s fine, you can add it later"
+        case .zepbound, .mounjaro: String(localized: "Tirzepatide · weekly injection")
+        case .ozempic: String(localized: "Semaglutide · weekly injection")
+        case .wegovy: String(localized: "Semaglutide · weekly injection")
+        case .wegovyPill: String(localized: "Semaglutide · daily pill")
+        case .rybelsus: String(localized: "Semaglutide · daily pill")
+        case .saxenda, .victoza: String(localized: "Liraglutide · daily injection")
+        case .trulicity: String(localized: "Dulaglutide · weekly injection")
+        case .liraglutide: String(localized: "Liraglutide · daily injection")
+        case .xultophy: String(localized: "Insulin degludec + liraglutide · daily")
+        case .soliqua: String(localized: "Insulin glargine + lixisenatide · daily")
+        case .compoundedTirzepatide: String(localized: "Compounded · weekly injection")
+        case .compoundedSemaglutide: String(localized: "Compounded · weekly injection")
+        case .other: String(localized: "Type the name of your medication")
+        case .dontKnow: String(localized: "That’s fine, you can add it later")
         }
     }
 
@@ -80,7 +80,7 @@ enum GLP1Medication: String, Codable, CaseIterable {
 
     /// "0.25 mg", "16 units".
     func doseLabel(_ dose: Double) -> String {
-        "\(dose.formatted(.number.precision(.fractionLength(0...2)))) \(doseUnit)"
+        String(localized: "\(dose.formatted(.number.precision(.fractionLength(0...2)))) \(doseUnit)")
     }
 
     /// The choices worth showing for how the user takes it. Other and
@@ -120,10 +120,10 @@ enum GLP1Device: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .singleUsePen: "Single use pen"
-        case .autoInjector: "Autoinjector"
-        case .syringeAndVial: "Syringe and vial"
-        case .other: "Other"
+        case .singleUsePen: String(localized: "Single use pen")
+        case .autoInjector: String(localized: "Autoinjector")
+        case .syringeAndVial: String(localized: "Syringe and vial")
+        case .other: String(localized: "Other")
         }
     }
 }
@@ -134,10 +134,10 @@ enum GLP1Frequency: CaseIterable {
 
     var title: String {
         switch self {
-        case .daily: "Every day"
-        case .weekly: "Every 7 days"
-        case .everyTwoWeeks: "Every 14 days"
-        case .custom: "Custom"
+        case .daily: String(localized: "Every day")
+        case .weekly: String(localized: "Every 7 days")
+        case .everyTwoWeeks: String(localized: "Every 14 days")
+        case .custom: String(localized: "Custom")
         }
     }
 
@@ -166,9 +166,9 @@ enum GoalPace: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .steady: "Slow and steady"
-        case .balanced: "Recommended"
-        case .fast: "Fast"
+        case .steady: String(localized: "Slow and steady")
+        case .balanced: String(localized: "Recommended")
+        case .fast: String(localized: "Fast")
         }
     }
 
@@ -182,9 +182,9 @@ enum GoalPace: Int, CaseIterable {
 
     var message: String {
         switch self {
-        case .steady: "Gentle and sustainable. Perfect for building habits that last."
-        case .balanced: "A healthy, realistic pace that fits most lifestyles. Great choice!"
-        case .fast: "Ambitious! Faster loss can bring more side effects, so check in with your doctor along the way."
+        case .steady: String(localized: "Gentle and sustainable. Perfect for building habits that last.")
+        case .balanced: String(localized: "A healthy, realistic pace that fits most lifestyles. Great choice!")
+        case .fast: String(localized: "Ambitious! Faster loss can bring more side effects, so check in with your doctor along the way.")
         }
     }
 }
@@ -196,23 +196,23 @@ enum SideEffectConcern: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .nausea: "Nausea"
-        case .heartburn: "Heartburn"
-        case .muscleLoss: "Muscle loss"
-        case .injectionAnxiety: "Injection anxiety"
-        case .other: "Other"
-        case .notConcerned: "I’m not concerned"
+        case .nausea: String(localized: "Nausea")
+        case .heartburn: String(localized: "Heartburn")
+        case .muscleLoss: String(localized: "Muscle loss")
+        case .injectionAnxiety: String(localized: "Injection anxiety")
+        case .other: String(localized: "Other")
+        case .notConcerned: String(localized: "I’m not concerned")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .nausea: "Feeling sick, especially after a dose"
-        case .heartburn: "Reflux or a burning feeling"
-        case .muscleLoss: "Keeping strength while losing weight"
-        case .injectionAnxiety: "Nerves about giving the shot"
-        case .other: "Type what’s on your mind"
-        case .notConcerned: "Nothing in particular right now"
+        case .nausea: String(localized: "Feeling sick, especially after a dose")
+        case .heartburn: String(localized: "Reflux or a burning feeling")
+        case .muscleLoss: String(localized: "Keeping strength while losing weight")
+        case .injectionAnxiety: String(localized: "Nerves about giving the shot")
+        case .other: String(localized: "Type what’s on your mind")
+        case .notConcerned: String(localized: "Nothing in particular right now")
         }
     }
 
@@ -234,14 +234,14 @@ enum GoalReason: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .confidence: "I want to feel more confident in my body"
-        case .freshStart: "I’m ready for a fresh start"
-        case .energy: "I want to boost my energy"
-        case .metabolicHealth: "I want to improve my metabolic health"
-        case .lovedOnes: "I want to show up for the people I love"
-        case .event: "I have a special event or milestone coming up"
-        case .clothes: "I want to feel good wearing the clothes I love again"
-        case .other: "Something else"
+        case .confidence: String(localized: "I want to feel more confident in my body")
+        case .freshStart: String(localized: "I’m ready for a fresh start")
+        case .energy: String(localized: "I want to boost my energy")
+        case .metabolicHealth: String(localized: "I want to improve my metabolic health")
+        case .lovedOnes: String(localized: "I want to show up for the people I love")
+        case .event: String(localized: "I have a special event or milestone coming up")
+        case .clothes: String(localized: "I want to feel good wearing the clothes I love again")
+        case .other: String(localized: "Something else")
         }
     }
 

@@ -14,6 +14,7 @@ struct GetStartedView: View {
     @State private var showsText = false
     @State private var floats = false
     @State private var pulses = false
+    @State private var isLanguagePickerPresented = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -53,6 +54,13 @@ struct GetStartedView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
+        .overlay(alignment: .topTrailing) {
+            LanguageChip { isLanguagePickerPresented = true }
+                .padding(.trailing, 20)
+                .padding(.top, 8)
+                .opacity(showsText ? 1 : 0)
+        }
+        .sheet(isPresented: $isLanguagePickerPresented) { LanguagePickerSheet() }
         .onAppear(perform: play)
     }
 

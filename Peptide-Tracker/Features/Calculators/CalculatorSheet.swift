@@ -84,9 +84,9 @@ struct CalculatorSheet: View {
                 case .bmi:
                     bmiResult(BodyMaths.bmi(weightKg: weightKg, heightCm: Double(heightCm)))
                 case .bmr:
-                    bigNumber(bmr(weightKg), unit: "kcal / day", caption: "at complete rest")
+                    bigNumber(bmr(weightKg), unit: String(localized: "kcal / day"), caption: String(localized: "at complete rest"))
                 case .tdee:
-                    bigNumber(BodyMaths.tdee(bmr: bmr(weightKg), activity: activity), unit: "kcal / day", caption: "to keep your weight, at \(activity.title.lowercased()) activity")
+                    bigNumber(BodyMaths.tdee(bmr: bmr(weightKg), activity: activity), unit: String(localized: "kcal / day"), caption: String(localized: "to keep your weight, at \(activity.title.lowercased()) activity"))
                 case .macros:
                     macrosResult(weightKg)
                 }
@@ -313,7 +313,7 @@ struct CalculatorSheet: View {
         let calories = macroCalories(weightKg)
         let grams = BodyMaths.macros(calories: calories, split: split)
         return VStack(alignment: .leading, spacing: 14) {
-            bigNumber(calories, unit: "kcal / day", caption: goal.title)
+            bigNumber(calories, unit: String(localized: "kcal / day"), caption: goal.title)
             HStack(spacing: 10) {
                 macroTile("Protein", grams.protein, percent: split.percentages.protein, tint: Color(hex: 0xFF453A))
                 macroTile("Carbs", grams.carbs, percent: split.percentages.carbs, tint: Color(hex: 0xFF9F0A))
@@ -350,9 +350,9 @@ struct CalculatorSheet: View {
 
     private var inputs: some View {
         VStack(alignment: .leading, spacing: 24) {
-            GroupedSection(title: "About you") {
+            GroupedSection(title: String(localized: "About you")) {
                 if kind.usesAgeAndSex {
-                    FormRow(title: "Sex") {
+                    FormRow(title: String(localized: "Sex")) {
                         Picker("Sex", selection: $sex) {
                             ForEach(BodySex.allCases) { Text($0.title).tag($0) }
                         }
@@ -360,13 +360,13 @@ struct CalculatorSheet: View {
                         .frame(width: 180)
                     }
                     .padding(.horizontal, 16)
-                    FormRow(title: "Age") {
+                    FormRow(title: String(localized: "Age")) {
                         CountStepper(value: $age, range: 18...100, accessibilityName: "age", isTypeable: true)
                     }
                     .padding(.horizontal, 16)
                 }
                 heightRow
-                FormRow(title: "Weight", showsDivider: false) {
+                FormRow(title: String(localized: "Weight"), showsDivider: false) {
                     HStack(spacing: 6) {
                         TextField("0", value: $weightValue, format: .number.precision(.fractionLength(0...1)))
                             .keyboardType(.decimalPad)
@@ -382,7 +382,7 @@ struct CalculatorSheet: View {
             }
 
             if kind.usesActivity {
-                GroupedSection(title: "Activity", footer: activity.detail) {
+                GroupedSection(title: String(localized: "Activity"), footer: activity.detail) {
                     menuRow("Level", selection: $activity, options: ActivityLevel.allCases, title: \.title, showsDivider: kind == .macros)
                     if kind == .macros {
                         menuRow("Goal", selection: $goal, options: CalorieGoal.allCases, title: \.title)
@@ -396,12 +396,12 @@ struct CalculatorSheet: View {
     @ViewBuilder
     private var heightRow: some View {
         if isMetric {
-            FormRow(title: "Height (cm)") {
-                CountStepper(value: $heightCm, range: 120...230, accessibilityName: "height in centimetres", isTypeable: true)
+            FormRow(title: String(localized: "Height (cm)")) {
+                CountStepper(value: $heightCm, range: 120...230, accessibilityName: String(localized: "height in centimetres"), isTypeable: true)
             }
             .padding(.horizontal, 16)
         } else {
-            FormRow(title: "Height") {
+            FormRow(title: String(localized: "Height")) {
                 HStack(spacing: 8) {
                     CountStepper(value: feet, range: 4...7, accessibilityName: "feet")
                     Text("ft").foregroundStyle(AppTheme.ColorToken.secondaryText)
@@ -490,6 +490,7 @@ struct CalculatorSheet: View {
 
 /// The four WHO bands as one bar, with a marker at this BMI.
 struct BMIScale: View {
+    @Environment(\.layoutDirection) private var layoutDirection
     let bmi: Double
 
     private let lower = 15.0
@@ -514,7 +515,7 @@ struct BMIScale: View {
                         .frame(width: 16, height: 16)
                         .overlay(Circle().stroke(AppTheme.ColorToken.primaryText, lineWidth: 2.5))
                         .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
-                        .offset(x: min(max((bmi - lower) / (upper - lower), 0), 1) * width - 8)
+                        .offset(x: (min(max((bmi - lower) / (upper - lower), 0), 1) * width - 8) * (layoutDirection == .rightToLeft ? -1 : 1))
                         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: bmi)
                 }
                 .frame(height: 16)

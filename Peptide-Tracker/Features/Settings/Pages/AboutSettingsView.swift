@@ -6,9 +6,9 @@ struct AboutSettingsView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .about) {
-            GroupedSection(title: "Your privacy") {
+            GroupedSection(title: String(localized: "Your privacy")) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Label("Your medicines, doses and refills are saved only on this iPhone. There’s no account, and nothing is sent to us or anyone else.", systemImage: "iphone")
+                    Label("Your medicines, doses and refills are saved on this iPhone and, with iCloud sync on, in your private iCloud. There’s no account, and nothing is sent to us or anyone else.", systemImage: "iphone")
                     Label("Reminders are scheduled on the device. An exported medicine list goes only where you share it.", systemImage: "bell")
                     Label("Deleting the app deletes everything it saved.", systemImage: "trash")
                 }
@@ -20,7 +20,7 @@ struct AboutSettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            GroupedSection(title: "Not medical advice") {
+            GroupedSection(title: String(localized: "Not medical advice")) {
                 Label("\(Bundle.main.appName) is a personal log and reminder. It doesn’t give medical advice or recommend doses. Always follow your doctor’s or pharmacist’s instructions.", systemImage: "stethoscope")
                     .font(.system(size: 15))
                     .lineSpacing(2)
@@ -31,13 +31,13 @@ struct AboutSettingsView: View {
             }
 
             GroupedSection {
-                linkRow("Privacy Policy", symbol: "hand.raised.fill", tint: Color(hex: 0x0A84FF), url: AppLinks.privacyPolicy)
-                linkRow("Terms of Use", symbol: "doc.text.fill", tint: Color(hex: 0x8E8E93), url: AppLinks.termsOfUse)
+                linkRow(String(localized: "Privacy Policy"), symbol: "hand.raised.fill", tint: Color(hex: 0x0A84FF), url: AppLinks.privacyPolicy)
+                linkRow(String(localized: "Terms of Use"), symbol: "doc.text.fill", tint: Color(hex: 0x8E8E93), url: AppLinks.termsOfUse)
                 linkRow("Website", symbol: "safari.fill", tint: Color(hex: 0x30B0C7), url: AppLinks.website, showsDivider: false)
             }
 
             GroupedSection {
-                SettingsRowLabel(symbol: "app.badge.fill", tint: AppTheme.ColorToken.accent, title: "Version", value: Self.version)
+                SettingsRowLabel(symbol: "app.badge.fill", tint: AppTheme.ColorToken.accent, title: String(localized: "Version"), value: Self.version)
             }
         }
     }

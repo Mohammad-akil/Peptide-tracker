@@ -42,8 +42,8 @@ struct SharpsSheet: View {
                     .padding(.top, 8)
                     .accessibilityElement(children: .combine)
 
-                    GroupedSection(footer: "Each injection you tick off counts as one needle. Counting starts when you turn this on or empty the container.") {
-                        ControlRow(symbol: "trash.square.fill", tint: Color(hex: 0xFF9F0A), title: "Track sharps", showsDivider: store.settings.tracksSharps) {
+                    GroupedSection(footer: String(localized: "Each injection you tick off counts as one needle. Counting starts when you turn this on or empty the container.")) {
+                        ControlRow(symbol: "trash.square.fill", tint: Color(hex: 0xFF9F0A), title: String(localized: "Track sharps"), showsDivider: store.settings.tracksSharps) {
                             Toggle("Track sharps", isOn: Binding(
                                 get: { store.settings.tracksSharps },
                                 set: { isOn in
@@ -60,7 +60,7 @@ struct SharpsSheet: View {
                             HStack {
                                 Text("Container holds").font(.system(size: 17))
                                 Spacer()
-                                CountStepper(value: $store.settings.sharpsCapacity, range: 10...500, step: 10, accessibilityName: "Container size")
+                                CountStepper(value: $store.settings.sharpsCapacity, range: 10...500, step: 10, accessibilityName: String(localized: "Container size"))
                             }
                             .padding(.horizontal, 16)
                             .frame(minHeight: 52)
@@ -70,7 +70,7 @@ struct SharpsSheet: View {
                     if store.settings.tracksSharps {
                         Button {
                             store.emptySharps()
-                            router.showToast("Sharps container emptied")
+                            router.showToast(String(localized: "Sharps container emptied"))
                         } label: {
                             Label("I emptied it", systemImage: "arrow.counterclockwise")
                         }
@@ -92,8 +92,9 @@ struct SharpsSheet: View {
             .navigationTitle("Sharps container")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    CompatCloseButton { dismiss() }
+                ToolbarItem(placement: .cancellationAction) {
+                    CompatToolbarRoleButton(role: .close) { dismiss() }
+                        .tint(AppTheme.ColorToken.primaryText)
                 }
             }
         }
@@ -106,16 +107,16 @@ struct SharpsSheet: View {
     }
 
     static func status(fraction: Double, emptiedAt: Date?) -> String {
-        let since = emptiedAt.map { " since \($0.dayMonth)" } ?? ""
-        if fraction >= 1 { return "Full\(since). Time to close it and swap for a new one." }
-        if fraction >= 0.9 { return "Nearly full\(since). Get a new container ready." }
-        return "Counting\(since)."
+        let since = emptiedAt.map { String(localized: " since \($0.dayMonth)") } ?? ""
+        if fraction >= 1 { return String(localized: "Full\(since). Time to close it and swap for a new one.") }
+        if fraction >= 0.9 { return String(localized: "Nearly full\(since). Get a new container ready.") }
+        return String(localized: "Counting\(since).")
     }
 }
 
 extension MedicineStore {
     /// "37 of 100", or "Off".
     var sharpsSummary: String {
-        settings.tracksSharps ? "\(sharpsUsed) of \(settings.sharpsCapacity)" : "Off"
+        settings.tracksSharps ? String(localized: "\(sharpsUsed) of \(settings.sharpsCapacity)") : String(localized: "Off")
     }
 }

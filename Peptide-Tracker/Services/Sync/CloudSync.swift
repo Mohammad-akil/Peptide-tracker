@@ -157,7 +157,7 @@ final class CloudSync {
                 status = .synced(now)
                 return
             }
-            status = .failed("iCloud is busy. Try again in a moment.")
+            status = .failed(String(localized: "iCloud is busy. Try again in a moment."))
         } catch {
             status = Self.status(for: error)
         }
@@ -194,8 +194,8 @@ final class CloudSync {
         guard let error = error as? CKError else { return .failed(error.localizedDescription) }
         switch error.code {
         case .notAuthenticated: return .noAccount
-        case .networkUnavailable, .networkFailure: return .failed("You’re offline. It’ll sync when you’re back online.")
-        case .quotaExceeded: return .failed("Your iCloud storage is full.")
+        case .networkUnavailable, .networkFailure: return .failed(String(localized: "You’re offline. It’ll sync when you’re back online."))
+        case .quotaExceeded: return .failed(String(localized: "Your iCloud storage is full."))
         default: return .failed(error.localizedDescription)
         }
     }
@@ -224,22 +224,22 @@ final class CloudSync {
     /// Short state for the Settings row.
     var summary: String {
         switch status {
-        case .off: "Off"
-        case .noAccount: "No iCloud"
-        case .failed: "Not synced"
-        case .syncing: "Syncing…"
-        case .idle, .synced: "On"
+        case .off: String(localized: "Off")
+        case .noAccount: String(localized: "No iCloud")
+        case .failed: String(localized: "Not synced")
+        case .syncing: String(localized: "Syncing…")
+        case .idle, .synced: String(localized: "On")
         }
     }
 
     /// One line for the iCloud page.
     var detail: String {
         switch status {
-        case .off: "Off"
-        case .idle: lastSynced.map { "Synced \($0.formatted(.relative(presentation: .named)))" } ?? "Waiting to sync"
-        case .syncing: "Syncing…"
-        case .synced(let date): "Synced \(date.formatted(.relative(presentation: .named)))"
-        case .noAccount: "Sign in to iCloud in the Settings app"
+        case .off: String(localized: "Off")
+        case .idle: lastSynced.map { String(localized: "Synced \($0.formatted(.relative(presentation: .named)))") } ?? String(localized: "Waiting to sync")
+        case .syncing: String(localized: "Syncing…")
+        case .synced(let date): String(localized: "Synced \(date.formatted(.relative(presentation: .named)))")
+        case .noAccount: String(localized: "Sign in to iCloud in the Settings app")
         case .failed(let message): message
         }
     }

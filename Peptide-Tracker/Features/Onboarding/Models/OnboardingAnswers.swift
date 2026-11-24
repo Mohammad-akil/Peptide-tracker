@@ -42,7 +42,7 @@ struct OnboardingAnswers {
 
     /// The medication as the setup screen names it: the typed name for Other.
     var medicationLabel: String {
-        guard let medication else { return "Not set" }
+        guard let medication else { return String(localized: "Not set") }
         let typed = otherMedication.trimmingCharacters(in: .whitespaces)
         return medication == .other && !typed.isEmpty ? typed : medication.title
     }

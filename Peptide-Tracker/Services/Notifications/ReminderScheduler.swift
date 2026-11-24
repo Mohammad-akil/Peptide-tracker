@@ -54,9 +54,9 @@ final class ReminderScheduler {
         let refill = UNNotificationCategory(
             identifier: Category.refill,
             actions: [
-                UNNotificationAction(identifier: Action.markRefilled, title: "Refilled",
+                UNNotificationAction(identifier: Action.markRefilled, title: String(localized: "Refilled"),
                                      icon: UNNotificationActionIcon(systemImageName: "arrow.up")),
-                UNNotificationAction(identifier: Action.markOrdered, title: "Ordered, check in later",
+                UNNotificationAction(identifier: Action.markOrdered, title: String(localized: "Ordered, check in later"),
                                      icon: UNNotificationActionIcon(systemImageName: "shippingbox")),
                 UNNotificationAction(identifier: Action.remindTomorrow, title: snooze.actionTitle,
                                      icon: UNNotificationActionIcon(systemImageName: "clock")),
@@ -66,9 +66,9 @@ final class ReminderScheduler {
         let dose = UNNotificationCategory(
             identifier: Category.dose,
             actions: [
-                UNNotificationAction(identifier: Action.markTaken, title: "Taken",
+                UNNotificationAction(identifier: Action.markTaken, title: String(localized: "Taken"),
                                      icon: UNNotificationActionIcon(systemImageName: "checkmark")),
-                UNNotificationAction(identifier: Action.snoozeDose, title: "Remind me in 10 minutes",
+                UNNotificationAction(identifier: Action.snoozeDose, title: String(localized: "Remind me in 10 minutes"),
                                      icon: UNNotificationActionIcon(systemImageName: "clock")),
             ],
             intentIdentifiers: []
@@ -140,16 +140,16 @@ final class ReminderScheduler {
         if settings.morningReminder, !medicines.isEmpty {
             try? await center.add(dailyRequest(
                 id: Prefix.daily + "morning",
-                title: "Good morning",
-                body: "Check today’s doses in \(Bundle.main.appName).",
+                title: String(localized: "Good morning"),
+                body: String(localized: "Check today’s doses in \(Bundle.main.appName)."),
                 at: settings.morningTime
             ))
         }
         if settings.sleepReminder, !medicines.isEmpty {
             try? await center.add(dailyRequest(
                 id: Prefix.daily + "sleep",
-                title: "Before bed",
-                body: "Any doses left for today? Tick them off so your count stays right.",
+                title: String(localized: "Before bed"),
+                body: String(localized: "Any doses left for today? Tick them off so your count stays right."),
                 at: settings.sleepTime
             ))
         }
@@ -185,7 +185,7 @@ final class ReminderScheduler {
     static func refillTitle(for medicine: Medicine, settings: AppSettings, at date: Date) -> String {
         let name = settings.notificationName(for: medicine)
         let days = Calendar.current.days(from: date, to: medicine.runOutDate())
-        return days > 0 ? "\(name) runs out in \(days) \(days == 1 ? "day" : "days")" : "\(name) has run out"
+        return days > 0 ? (days == 1 ? String(localized: "\(name) runs out in 1 day") : String(localized: "\(name) runs out in \(days) days")) : String(localized: "\(name) has run out")
     }
 
     private func refillRequest(for medicine: Medicine, settings: AppSettings, at date: Date, id: String) -> UNNotificationRequest {
@@ -251,12 +251,12 @@ final class ReminderScheduler {
 
         var requests: [UNNotificationRequest] = upcoming.map { dose in
             let content = UNMutableNotificationContent()
-            content.title = "Time for \(settings.notificationName(for: dose.medicine))"
+            content.title = String(localized: "Time for \(settings.notificationName(for: dose.medicine))")
             let amount = dose.medicine.unit.format(dose.medicine.unitsPerIntake)
             if dose.medicine.type == .injection, settings.tracksDoses, let site = sites.next() {
-                content.body = "\(amount) · Next site: \(site.title.lowercased()). Tap to log it."
+                content.body = String(localized: "\(amount) · Next site: \(site.title.lowercased()). Tap to log it.")
             } else {
-                content.body = "\(amount) · Tap to tick it off."
+                content.body = String(localized: "\(amount) · Tap to tick it off.")
             }
             content.sound = .default
             content.threadIdentifier = dose.medicine.id.uuidString
@@ -276,8 +276,8 @@ final class ReminderScheduler {
             let fireDate = dose.date.addingTimeInterval(-Double(minutes) * 60)
             guard fireDate > now else { continue }
             let content = UNMutableNotificationContent()
-            content.title = "Out of the fridge"
-            content.body = "Take \(settings.notificationName(for: dose.medicine)) out now. Dose at \(dose.time.label)."
+            content.title = String(localized: "Out of the fridge")
+            content.body = String(localized: "Take \(settings.notificationName(for: dose.medicine)) out now. Dose at \(dose.time.label).")
             content.sound = .default
             content.threadIdentifier = dose.medicine.id.uuidString
             content.userInfo = [Self.medicineIDKey: dose.medicine.id.uuidString]
@@ -315,8 +315,8 @@ final class ReminderScheduler {
         guard fireDate > now else { return nil }
         let content = UNMutableNotificationContent()
         let name = settings.notificationName(for: medicine)
-        content.title = Calendar.current.isDate(fireDate, inSameDayAs: discard) ? "\(name): last day of use" : "\(name): last day tomorrow"
-        content.body = "It’s been open since \(medicine.openedAt?.dayMonth ?? "a while"). Have a new one ready."
+        content.title = Calendar.current.isDate(fireDate, inSameDayAs: discard) ? String(localized: "\(name): last day of use") : String(localized: "\(name): last day tomorrow")
+        content.body = String(localized: "It’s been open since \(medicine.openedAt?.dayMonth ?? "a while"). Have a new one ready.")
         content.sound = .default
         content.threadIdentifier = medicine.id.uuidString
         content.userInfo = [Self.medicineIDKey: medicine.id.uuidString]

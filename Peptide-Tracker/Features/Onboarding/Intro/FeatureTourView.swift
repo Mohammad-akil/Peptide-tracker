@@ -13,20 +13,20 @@ struct FeatureTourView: View {
         FeaturePage(
             video: "onboarding-1",
             icon: .pill,
-            title: "Add what you take.",
-            text: "Pills, injections, creams, liquids and drops, with how much you have and how often you take it."
+            title: String(localized: "Add what you take."),
+            text: String(localized: "Pills, injections, creams, liquids and drops, with how much you have and how often you take it.")
         ),
         FeaturePage(
             video: "onboarding-2",
             icon: .timeline,
-            title: "Watch your supply count down.",
-            text: "See exactly how many days each medicine has left, updated with every dose."
+            title: String(localized: "Watch your supply count down."),
+            text: String(localized: "See exactly how many days each medicine has left, updated with every dose.")
         ),
         FeaturePage(
             video: "onboarding-3",
             icon: .bell,
-            title: "Get reminded in time to refill.",
-            text: "A reminder timed to how long your refill really takes, so you never run out."
+            title: String(localized: "Get reminded in time to refill."),
+            text: String(localized: "A reminder timed to how long your refill really takes, so you never run out.")
         ),
     ]
 

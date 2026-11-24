@@ -13,25 +13,25 @@ enum SettingsPage: Hashable {
 
     var title: String {
         switch self {
-        case .remindersGroup: "Reminders & doses"
-        case .health: "Health"
-        case .careTeam: "Care team"
-        case .data: "Reports & data"
-        case .appearance: "Appearance"
-        case .reminders: "Reminders"
-        case .notifications: "Notifications"
-        case .doses: "Doses"
-        case .pharmacy: "Pharmacy"
-        case .contacts: "Health contacts"
-        case .tracking: "Tracking for"
-        case .report: "Report"
-        case .help: "Help"
-        case .about: "About"
-        case .privacy: "Privacy"
-        case .travel: "Travel"
-        case .icloud: "iCloud sync"
+        case .remindersGroup: String(localized: "Reminders & doses")
+        case .health: String(localized: "Health")
+        case .careTeam: String(localized: "Care team")
+        case .data: String(localized: "Reports & data")
+        case .appearance: String(localized: "Appearance")
+        case .reminders: String(localized: "Reminders")
+        case .notifications: String(localized: "Notifications")
+        case .doses: String(localized: "Doses")
+        case .pharmacy: String(localized: "Pharmacy")
+        case .contacts: String(localized: "Health contacts")
+        case .tracking: String(localized: "Tracking for")
+        case .report: String(localized: "Report")
+        case .help: String(localized: "Help")
+        case .about: String(localized: "About")
+        case .privacy: String(localized: "Privacy")
+        case .travel: String(localized: "Travel")
+        case .icloud: String(localized: "iCloud sync")
         #if DEBUG
-        case .developer: "Developer"
+        case .developer: String(localized: "Developer")
         #endif
         }
     }

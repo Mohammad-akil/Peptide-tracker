@@ -12,10 +12,10 @@ struct DosesSettingsView: View {
 
         SettingsPageScaffold(page: .doses) {
             GroupedSection(footer: store.settings.tracksDoses
-                ? "Ticking off doses keeps your count exact."
-                : "We count down from your schedule instead, and Today shows no doses to tick."
+                ? String(localized: "Ticking off doses keeps your count exact.")
+                : String(localized: "We count down from your schedule instead, and Today shows no doses to tick.")
             ) {
-                ControlRow(symbol: "checkmark.circle.fill", tint: Color(hex: 0x30D158), title: "Track doses", showsDivider: false) {
+                ControlRow(symbol: "checkmark.circle.fill", tint: Color(hex: 0x30D158), title: String(localized: "Track doses"), showsDivider: false) {
                     Toggle("Track doses", isOn: $store.settings.tracksDoses.animation(.snappy))
                         .labelsHidden()
                         .tint(AppTheme.ColorToken.accent)
@@ -38,8 +38,8 @@ struct DosesSettingsView: View {
     private var siteRotation: some View {
         let areas = InjectionSite.Area.rotationAreas
         return GroupedSection(
-            title: "Injection site rotation",
-            footer: "Doseday suggests the site that has rested longest, in the areas you use. Turn off any you don’t inject."
+            title: String(localized: "Injection site rotation"),
+            footer: String(localized: "Doseday suggests the site that has rested longest, in the areas you use. Turn off any you don’t inject.")
         ) {
             ForEach(Array(areas.enumerated()), id: \.element) { index, area in
                 ControlRow(symbol: area.symbol, tint: Color(hex: 0xFF375F), title: area.title, showsDivider: index < areas.count - 1) {

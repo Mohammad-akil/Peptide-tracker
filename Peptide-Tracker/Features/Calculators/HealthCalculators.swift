@@ -11,19 +11,19 @@ enum HealthCalculator: String, CaseIterable, Identifiable, Codable {
 
     var title: String {
         switch self {
-        case .bmi: "BMI"
-        case .bmr: "BMR"
-        case .tdee: "Daily calories"
-        case .macros: "Macros"
+        case .bmi: String(localized: "BMI")
+        case .bmr: String(localized: "BMR")
+        case .tdee: String(localized: "Daily calories")
+        case .macros: String(localized: "Macros")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .bmi: "Body mass index from height and weight"
-        case .bmr: "Calories your body burns at rest"
-        case .tdee: "Calories you burn in a day, with activity"
-        case .macros: "Protein, carbs and fat for a calorie goal"
+        case .bmi: String(localized: "Body mass index from height and weight")
+        case .bmr: String(localized: "Calories your body burns at rest")
+        case .tdee: String(localized: "Calories you burn in a day, with activity")
+        case .macros: String(localized: "Protein, carbs and fat for a calorie goal")
         }
     }
 
@@ -49,7 +49,7 @@ enum HealthCalculator: String, CaseIterable, Identifiable, Codable {
     func format(_ value: Double) -> String {
         self == .bmi
             ? value.formatted(.number.precision(.fractionLength(1)))
-            : "\(Int(value.rounded()).formatted()) kcal"
+            : String(localized: "\(Int(value.rounded()).formatted()) kcal")
     }
 
     /// The drawn icon in Assets → Calculators ("calc-bmi" …).
@@ -63,9 +63,9 @@ enum HealthCalculator: String, CaseIterable, Identifiable, Codable {
     var source: (title: String, url: URL) {
         switch self {
         case .bmi:
-            ("World Health Organization – BMI", URL(string: "https://www.who.int/data/gho/data/themes/topics/topic-details/GHO/body-mass-index")!)
+            (String(localized: "World Health Organization – BMI"), URL(string: "https://www.who.int/data/gho/data/themes/topics/topic-details/GHO/body-mass-index")!)
         case .bmr, .tdee, .macros:
-            ("Mifflin MD, St Jeor ST et al. Am J Clin Nutr, 1990", URL(string: "https://pubmed.ncbi.nlm.nih.gov/2305711/")!)
+            (String(localized: "Mifflin MD, St Jeor ST et al. Am J Clin Nutr, 1990"), URL(string: "https://pubmed.ncbi.nlm.nih.gov/2305711/")!)
         }
     }
 }
@@ -77,23 +77,23 @@ enum ActivityLevel: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .sedentary: "Sedentary"
-        case .light: "Light"
-        case .moderate: "Moderate"
-        case .active: "Active"
-        case .veryActive: "Very active"
-        case .extraActive: "Extra active"
+        case .sedentary: String(localized: "Sedentary")
+        case .light: String(localized: "Light")
+        case .moderate: String(localized: "Moderate")
+        case .active: String(localized: "Active")
+        case .veryActive: String(localized: "Very active")
+        case .extraActive: String(localized: "Extra active")
         }
     }
 
     var detail: String {
         switch self {
-        case .sedentary: "Little or no exercise"
-        case .light: "Exercise 1–3 times a week"
-        case .moderate: "Exercise 4–5 times a week"
-        case .active: "Daily, or intense 3–4 times a week"
-        case .veryActive: "Intense exercise 6–7 times a week"
-        case .extraActive: "Very intense daily, or a physical job"
+        case .sedentary: String(localized: "Little or no exercise")
+        case .light: String(localized: "Exercise 1–3 times a week")
+        case .moderate: String(localized: "Exercise 4–5 times a week")
+        case .active: String(localized: "Daily, or intense 3–4 times a week")
+        case .veryActive: String(localized: "Intense exercise 6–7 times a week")
+        case .extraActive: String(localized: "Very intense daily, or a physical job")
         }
     }
 
@@ -117,11 +117,11 @@ enum CalorieGoal: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .loss: "Lose 0.5 kg (1 lb) a week"
-        case .mildLoss: "Lose 0.25 kg (0.5 lb) a week"
-        case .maintain: "Maintain weight"
-        case .mildGain: "Gain 0.25 kg (0.5 lb) a week"
-        case .gain: "Gain 0.5 kg (1 lb) a week"
+        case .loss: String(localized: "Lose 0.5 kg (1 lb) a week")
+        case .mildLoss: String(localized: "Lose 0.25 kg (0.5 lb) a week")
+        case .maintain: String(localized: "Maintain weight")
+        case .mildGain: String(localized: "Gain 0.25 kg (0.5 lb) a week")
+        case .gain: String(localized: "Gain 0.5 kg (1 lb) a week")
         }
     }
 
@@ -144,11 +144,11 @@ enum MacroSplit: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .balanced: "Balanced"
-        case .highProtein: "High protein"
-        case .lowCarb: "Low carb"
-        case .lowFat: "Low fat"
-        case .mediterranean: "Mediterranean"
+        case .balanced: String(localized: "Balanced")
+        case .highProtein: String(localized: "High protein")
+        case .lowCarb: String(localized: "Low carb")
+        case .lowFat: String(localized: "Low fat")
+        case .mediterranean: String(localized: "Mediterranean")
         }
     }
 
@@ -207,19 +207,19 @@ enum BMICategory: CaseIterable {
 
     var title: String {
         switch self {
-        case .under: "Underweight"
-        case .healthy: "Healthy range"
-        case .over: "Overweight"
-        case .obese: "Obesity"
+        case .under: String(localized: "Underweight")
+        case .healthy: String(localized: "Healthy range")
+        case .over: String(localized: "Overweight")
+        case .obese: String(localized: "Obesity")
         }
     }
 
     var range: String {
         switch self {
-        case .under: "Below 18.5"
-        case .healthy: "18.5 to 24.9"
-        case .over: "25 to 29.9"
-        case .obese: "30 and above"
+        case .under: String(localized: "Below 18.5")
+        case .healthy: String(localized: "18.5 to 24.9")
+        case .over: String(localized: "25 to 29.9")
+        case .obese: String(localized: "30 and above")
         }
     }
 

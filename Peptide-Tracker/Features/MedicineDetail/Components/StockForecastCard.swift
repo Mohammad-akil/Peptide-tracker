@@ -29,8 +29,8 @@ struct StockForecastCard: View {
     }
 
     var body: some View {
-        let points = projection(from: medicine.stock, series: "Now")
-            + (todaysRefill.map { projection(from: max(medicine.stock - $0.amount, 0), series: "Before") } ?? [])
+        let points = projection(from: medicine.stock, series: String(localized: "Now"))
+            + (todaysRefill.map { projection(from: max(medicine.stock - $0.amount, 0), series: String(localized: "Before")) } ?? [])
         let reminderDay = medicine.reminderDate(now: now).startOfDay
         let showsReminder = reminderDay >= now.startOfDay && reminderDay <= now.startOfDay.adding(days: days)
 

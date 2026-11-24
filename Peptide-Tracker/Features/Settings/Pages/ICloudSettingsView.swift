@@ -7,8 +7,8 @@ struct ICloudSettingsView: View {
 
     var body: some View {
         SettingsPageScaffold(page: .icloud) {
-            GroupedSection(footer: "Your medicines, doses, weights and check-ins are backed up to your private iCloud and kept in step on every iPhone and iPad signed in to it. Nobody else, including us, can see them.") {
-                ControlRow(symbol: "icloud.fill", tint: Color(hex: 0x32ADE6), title: "iCloud sync", showsDivider: false) {
+            GroupedSection(footer: String(localized: "Your medicines, doses, weights and check-ins are backed up to your private iCloud and kept in step on every iPhone and iPad signed in to it. Nobody else, including us, can see them.")) {
+                ControlRow(symbol: "icloud.fill", tint: Color(hex: 0x32ADE6), title: String(localized: "iCloud sync"), showsDivider: false) {
                     Toggle("iCloud sync", isOn: Binding(
                         get: { sync.isEnabled },
                         set: { enabled in withAnimation(.snappy) { sync.isEnabled = enabled } }
@@ -19,15 +19,15 @@ struct ICloudSettingsView: View {
             }
 
             if sync.isEnabled {
-                GroupedSection(footer: "It syncs a few seconds after each change you make, and you can sync any time here.") {
-                    SettingsRowLabel(symbol: statusSymbol, tint: statusTint, title: "Status", value: sync.detail)
+                GroupedSection(footer: String(localized: "It syncs a few seconds after each change you make, and you can sync any time here.")) {
+                    SettingsRowLabel(symbol: statusSymbol, tint: statusTint, title: String(localized: "Status"), value: sync.detail)
                         .rowDivider(true, inset: 58)
                         .contentTransition(.opacity)
                     Button {
                         HapticFeedback.selection()
                         Task { await sync.syncNow() }
                     } label: {
-                        SettingsRowLabel(symbol: "arrow.triangle.2.circlepath", tint: Color(hex: 0x30D158), title: "Sync now")
+                        SettingsRowLabel(symbol: "arrow.triangle.2.circlepath", tint: Color(hex: 0x30D158), title: String(localized: "Sync now"))
                     }
                     .buttonStyle(RowPressStyle())
                     .disabled(sync.status == .syncing)

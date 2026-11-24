@@ -12,8 +12,8 @@ struct SideEffectsQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "Which side effects are you most concerned about?",
-                reason: "If any, let us know so we can customize your experience. Choose all that apply."
+                title: String(localized: "Which side effects are you most concerned about?"),
+                reason: String(localized: "If any, let us know so we can customize your experience. Choose all that apply.")
             )
             VStack(spacing: 10) {
                 ForEach(Array(options.enumerated()), id: \.element) { index, option in
@@ -34,7 +34,7 @@ struct SideEffectsQuestion: View {
         ) {
             if isSelected && option == .other {
                 ChoiceDivider()
-                OnboardingField(label: "Your concern", placeholder: "e.g. Fatigue", text: $answers.otherConcern)
+                OnboardingField(label: String(localized: "Your concern"), placeholder: String(localized: "e.g. Fatigue"), text: $answers.otherConcern)
                     .textInputAutocapitalization(.sentences)
             }
         }

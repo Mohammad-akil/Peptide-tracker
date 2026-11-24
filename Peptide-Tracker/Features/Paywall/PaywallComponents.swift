@@ -77,10 +77,10 @@ enum PaywallActions {
         // Read before buying: the trial is used up once it starts.
         let trialDays = purchases.trialDays(for: plan)
         let price = purchases.price(for: plan)
-        router.show(.loading("Contacting the App Store…"))
+        router.show(.loading(String(localized: "Contacting the App Store…")))
         switch await purchases.purchase(plan) {
         case .purchased:
-            router.show(.success("Welcome to Pro", message: "Everything’s unlocked. Thank you!"))
+            router.show(.success(String(localized: "Welcome to Pro"), message: String(localized: "Everything’s unlocked. Thank you!")))
             router.celebrate()
             ReviewPrompter.happyMoment(.proUnlocked)
             if let trialDays {
@@ -88,11 +88,11 @@ enum PaywallActions {
             }
             return true
         case .pending:
-            router.show(.info("Waiting for approval", message: "Pro unlocks as soon as the purchase is approved."))
+            router.show(.info(String(localized: "Waiting for approval"), message: String(localized: "Pro unlocks as soon as the purchase is approved.")))
         case .cancelled:
             router.dismissToast()
         case .failed(let message):
-            router.show(.error("Purchase didn’t go through", message: message))
+            router.show(.error(String(localized: "Purchase didn’t go through"), message: message))
         }
         return false
     }
@@ -100,13 +100,13 @@ enum PaywallActions {
     /// Returns whether Pro is now unlocked.
     static func restore(purchases: PurchaseStore, router: AppRouter) async -> Bool {
         guard !purchases.isPurchasing else { return false }
-        router.show(.loading("Checking your purchases…"))
+        router.show(.loading(String(localized: "Checking your purchases…")))
         if await purchases.restore() {
-            router.show(.success("Pro restored", message: "Welcome back."))
+            router.show(.success(String(localized: "Pro restored"), message: String(localized: "Welcome back.")))
             router.celebrate()
             return true
         }
-        router.show(.warning("No earlier purchase found", message: "Nothing to restore for this Apple Account."))
+        router.show(.warning(String(localized: "No earlier purchase found"), message: String(localized: "Nothing to restore for this Apple Account.")))
         return false
     }
 }

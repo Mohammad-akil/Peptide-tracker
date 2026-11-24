@@ -144,7 +144,7 @@ struct MedicineDetailView: View {
     private func banner(for medicine: Medicine, now: Date) -> Banner? {
         if let orderedAt = medicine.orderedAt {
             return Banner(
-                text: "Ordered on \(orderedAt.weekdayDayMonth). Tap Refilled when you pick it up.",
+                text: String(localized: "Ordered on \(orderedAt.weekdayDayMonth). Tap Refilled when you pick it up."),
                 icon: .truck,
                 ink: AppTheme.ColorToken.accentInk,
                 wash: AppTheme.ColorToken.accentSoft
@@ -152,11 +152,11 @@ struct MedicineDetailView: View {
         }
         switch medicine.urgency {
         case .out:
-            return Banner(text: "You’re out. Refill now to restart your reminders.", icon: .alert,
+            return Banner(text: String(localized: "You’re out. Refill now to restart your reminders."), icon: .alert,
                           ink: medicine.urgency.ink, wash: medicine.urgency.wash)
         case .critical:
             let days = medicine.daysLeft
-            return Banner(text: "Runs out in \(days) \(days == 1 ? "day" : "days"). Order a refill today.",
+            return Banner(text: (days == 1 ? String(localized: "Runs out in 1 day. Order a refill today.") : String(localized: "Runs out in \(days) days. Order a refill today.")),
                           icon: .alert, ink: medicine.urgency.ink, wash: medicine.urgency.wash)
         default:
             return nil
@@ -168,15 +168,15 @@ struct MedicineDetailView: View {
         let phone = store.settings.pharmacyPhone.filter { $0.isNumber || $0 == "+" }
 
         return VStack(spacing: 0) {
-            ValueRow(title: "Schedule", value: medicine.scheduleList) {
+            ValueRow(title: String(localized: "Schedule"), value: medicine.scheduleList) {
                 router.sheet = .editMedicine(medicine.id)
             }
-            ValueRow(title: "Reminder", value: reminderValue(medicine, now: now)) {
+            ValueRow(title: String(localized: "Reminder"), value: reminderValue(medicine, now: now)) {
                 router.sheet = .editMedicine(medicine.id)
             }
             ValueRow(
-                title: "Pharmacy",
-                value: pharmacy.isEmpty ? "Add" : pharmacy,
+                title: String(localized: "Pharmacy"),
+                value: pharmacy.isEmpty ? String(localized: "Add") : pharmacy,
                 valueTint: pharmacy.isEmpty ? AppTheme.ColorToken.accent : AppTheme.ColorToken.secondaryText,
                 showsDivider: false
             ) {
@@ -193,11 +193,11 @@ struct MedicineDetailView: View {
 
     /// "Fri 9 Oct, 9:00", "Sent 29 Sep", "Paused"
     private func reminderValue(_ medicine: Medicine, now: Date) -> String {
-        if medicine.remindersPaused { return "Paused" }
-        if medicine.isOrdered { return "Paused until pickup" }
-        if medicine.urgency == .out { return "Sent" }
+        if medicine.remindersPaused { return String(localized: "Paused") }
+        if medicine.isOrdered { return String(localized: "Paused until pickup") }
+        if medicine.urgency == .out { return String(localized: "Sent") }
         let date = medicine.reminderDate(now: now)
-        return date <= now ? "Sent \(date.dayMonth)" : "\(date.weekdayDayMonth), \(medicine.reminderTime.label)"
+        return date <= now ? String(localized: "Sent \(date.dayMonth)") : "\(date.weekdayDayMonth), \(medicine.reminderTime.label)"
     }
 
     /// Ordered sits beside Refilled while a low medicine waits to be
@@ -210,7 +210,7 @@ struct MedicineDetailView: View {
                     Button {
                         HapticFeedback.selection()
                         store.markOrdered(medicine.id)
-                        router.showToast("Ordered. Reminders paused until pickup")
+                        router.showToast(String(localized: "Ordered. Reminders paused until pickup"))
                     } label: {
                         Text("Ordered")
                             .font(.system(size: 17, weight: .semibold))

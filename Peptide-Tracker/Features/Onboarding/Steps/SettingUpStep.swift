@@ -27,28 +27,28 @@ struct SettingUpStep: View {
     /// shows the first unticked one.
     private var items: [Item] {
         [
-            Item(title: "Creating your profile", status: "Creating your profile…", symbol: "person.crop.circle.fill", tint: Color(hex: 0x0A84FF)),
-            Item(title: "Your GLP-1 plan", status: "Setting up \(medicationName)…", symbol: "cross.vial.fill", tint: Color(hex: 0x34C759)),
-            Item(title: "Dose schedule", status: scheduleStatus, symbol: "calendar", tint: Color(hex: 0x30B0C7)),
-            Item(title: "Your goal", status: goalStatus, symbol: "target", tint: Color(hex: 0xFF9F0A)),
-            Item(title: "Side effect support", status: "Tailoring tips for you…", symbol: "heart.text.square.fill", tint: Color(hex: 0xFF2D55)),
-            Item(title: "Reminders", status: "Scheduling your reminders…", symbol: "bell.fill", tint: AppTheme.ColorToken.accent),
+            Item(title: String(localized: "Creating your profile"), status: String(localized: "Creating your profile…"), symbol: "person.crop.circle.fill", tint: Color(hex: 0x0A84FF)),
+            Item(title: String(localized: "Your GLP-1 plan"), status: String(localized: "Setting up \(medicationName)…"), symbol: "cross.vial.fill", tint: Color(hex: 0x34C759)),
+            Item(title: String(localized: "Dose schedule"), status: scheduleStatus, symbol: "calendar", tint: Color(hex: 0x30B0C7)),
+            Item(title: String(localized: "Your goal"), status: goalStatus, symbol: "target", tint: Color(hex: 0xFF9F0A)),
+            Item(title: String(localized: "Side effect support"), status: String(localized: "Tailoring tips for you…"), symbol: "heart.text.square.fill", tint: Color(hex: 0xFF2D55)),
+            Item(title: String(localized: "Reminders"), status: String(localized: "Scheduling your reminders…"), symbol: "bell.fill", tint: AppTheme.ColorToken.accent),
         ]
     }
 
     private var medicationName: String {
-        guard let medication = answers.medication, medication != .dontKnow else { return "your medication" }
+        guard let medication = answers.medication, medication != .dontKnow else { return String(localized: "your medication") }
         return answers.medicationLabel
     }
 
     private var scheduleStatus: String {
-        guard let days = answers.intervalDays else { return "Planning your doses…" }
-        return days == 1 ? "Planning a dose every day…" : "Planning a dose every \(days) days…"
+        guard let days = answers.intervalDays else { return String(localized: "Planning your doses…") }
+        return days == 1 ? String(localized: "Planning a dose every day…") : String(localized: "Planning a dose every \(days) days…")
     }
 
     private var goalStatus: String {
-        guard let goal = answers.goalWeightKg else { return "Personalizing your goal…" }
-        return "Setting your goal of \(answers.weightUnit.format(goal))…"
+        guard let goal = answers.goalWeightKg else { return String(localized: "Personalizing your goal…") }
+        return String(localized: "Setting your goal of \(answers.weightUnit.format(goal))…")
     }
 
     private func threshold(for index: Int) -> Double {
@@ -56,7 +56,7 @@ struct SettingUpStep: View {
     }
 
     private var statusText: String {
-        items.indices.first { progress < threshold(for: $0) }.map { items[$0].status } ?? "All set!"
+        items.indices.first { progress < threshold(for: $0) }.map { items[$0].status } ?? String(localized: "All set!")
     }
 
     var body: some View {

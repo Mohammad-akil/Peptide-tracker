@@ -17,7 +17,7 @@ struct RemindersSettingsView: View {
 
         SettingsPageScaffold(page: .reminders) {
             GroupedSection(footer: notificationsFooter) {
-                ControlRow(symbol: "bell.badge.fill", tint: Color(hex: 0xFF453A), title: "Notifications", showsDivider: false) {
+                ControlRow(symbol: "bell.badge.fill", tint: Color(hex: 0xFF453A), title: String(localized: "Notifications"), showsDivider: false) {
                     Toggle("Notifications", isOn: notificationsBinding)
                         .labelsHidden()
                         .tint(AppTheme.ColorToken.accent)
@@ -25,12 +25,12 @@ struct RemindersSettingsView: View {
             }
 
             GroupedSection(
-                title: "For new medicines",
-                footer: "Each medicine can have its own reminder. Change it from the medicine’s page."
+                title: String(localized: "For new medicines"),
+                footer: String(localized: "Each medicine can have its own reminder. Change it from the medicine’s page.")
             ) {
-                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: "Reminder time") {
+                ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: String(localized: "Reminder time")) {
                     DatePicker(
-                        "Reminder time",
+                        String(localized: "Reminder time"),
                         selection: Binding(
                             get: { store.settings.defaultReminderTime.on(.now) },
                             set: { store.settings.defaultReminderTime = TimeOfDay(date: $0) }
@@ -40,7 +40,7 @@ struct RemindersSettingsView: View {
                     .labelsHidden()
                     .environment(\.locale, Locale(identifier: "en_GB"))
                 }
-                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: "Heads-up", showsDivider: false) {
+                ControlRow(symbol: "calendar", tint: Color(hex: 0x0A84FF), title: String(localized: "Heads-up"), showsDivider: false) {
                     Menu {
                         Picker("Heads-up", selection: $store.settings.defaultDaysBefore) {
                             ForEach(Self.headsUpChoices, id: \.self) { days in
@@ -58,8 +58,8 @@ struct RemindersSettingsView: View {
                 }
             }
 
-            GroupedSection(footer: "If you haven’t marked a medicine as ordered or refilled, we remind you again each morning.") {
-                ControlRow(symbol: "arrow.clockwise", tint: Color(hex: 0xFF9F0A), title: "Remind again", showsDivider: false) {
+            GroupedSection(footer: String(localized: "If you haven’t marked a medicine as ordered or refilled, we remind you again each morning.")) {
+                ControlRow(symbol: "arrow.clockwise", tint: Color(hex: 0xFF9F0A), title: String(localized: "Remind again"), showsDivider: false) {
                     Toggle("Remind again until refilled", isOn: $store.settings.remindAgainUntilRefilled)
                         .labelsHidden()
                         .tint(AppTheme.ColorToken.accent)
@@ -81,14 +81,14 @@ struct RemindersSettingsView: View {
 
     /// "5 days before", "1 day before"
     static func daysBefore(_ days: Int) -> String {
-        "\(days) \(days == 1 ? "day" : "days") before"
+        days == 1 ? String(localized: "1 day before") : String(localized: "\(days) days before")
     }
 
     private var notificationsFooter: String {
-        if systemDenied { return "Notifications are off for this app in iOS Settings, so reminders can’t arrive." }
+        if systemDenied { return String(localized: "Notifications are off for this app in iOS Settings, so reminders can’t arrive.") }
         return store.settings.notificationsEnabled
-            ? "We send one heads-up before each medicine runs out."
-            : "Turn on to get a heads-up before a medicine runs out."
+            ? String(localized: "We send one heads-up before each medicine runs out.")
+            : String(localized: "Turn on to get a heads-up before a medicine runs out.")
     }
 
     /// On asks iOS first; if the user said no before, it points to Settings.

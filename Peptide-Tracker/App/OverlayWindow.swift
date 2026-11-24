@@ -15,6 +15,8 @@ enum OverlayWindow {
               let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first
         else { return }
         let window = PassthroughWindow(windowScene: scene)
+        // Follow the app's Light / Dark choice, not just the phone's.
+        window.overrideUserInterfaceStyle = AppearanceMode.current.interfaceStyle
         let host = UIHostingController(
             rootView: OverlayHost { frame in window.touchableFrame = frame }
                 .environment(router)

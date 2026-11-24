@@ -63,10 +63,10 @@ struct MedicineDraft {
 
     var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-    var nameError: String? { trimmedName.isEmpty ? "Add a name" : nil }
+    var nameError: String? { trimmedName.isEmpty ? String(localized: "Add a name") : nil }
 
     var perDayError: String? {
-        perDay < 1 ? "\(type.perDayLabel) must be at least 1" : nil
+        perDay < 1 ? String(localized: "\(type.perDayLabel) must be at least 1") : nil
     }
 
     var isValid: Bool { nameError == nil && perDayError == nil }

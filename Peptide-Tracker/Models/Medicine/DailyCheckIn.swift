@@ -24,11 +24,11 @@ struct DailyCheckIn: Identifiable, Codable, Hashable {
 
         var title: String {
             switch self {
-            case .great: "Great"
-            case .good: "Good"
-            case .okay: "Okay"
-            case .low: "Low"
-            case .bad: "Bad"
+            case .great: String(localized: "Great")
+            case .good: String(localized: "Good")
+            case .okay: String(localized: "Okay")
+            case .low: String(localized: "Low")
+            case .bad: String(localized: "Bad")
             }
         }
     }

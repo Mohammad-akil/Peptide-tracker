@@ -15,8 +15,8 @@ struct RefillsSection: View {
             Spacer(minLength: 0)
             EmptyStateView(
                 illustration: .noRefillsYet,
-                title: "No refills yet",
-                message: "When you mark a medicine as refilled, it shows up here with the date and amount."
+                title: String(localized: "No refills yet"),
+                message: String(localized: "When you mark a medicine as refilled, it shows up here with the date and amount.")
             )
             if !store.medicines.isEmpty { comingUp(now: now) }
             Spacer(minLength: 0)
@@ -33,7 +33,7 @@ struct RefillsSection: View {
         let horizon = now.startOfDay.adding(days: Self.horizonDays)
         let upcoming = store.medicinesByUrgency.filter { $0.runOutDate(now: now) <= horizon }
 
-        GroupedSection(title: "Coming up", trailing: upcoming.isEmpty ? nil : "\(upcoming.count)") {
+        GroupedSection(title: String(localized: "Coming up"), trailing: upcoming.isEmpty ? nil : "\(upcoming.count)") {
             if upcoming.isEmpty {
                 Text("Nothing runs out in the next three weeks.")
                     .font(.system(size: 17))
@@ -101,8 +101,8 @@ private struct UpcomingRefillRow: View {
 
     /// "20 Oct", "On order", "Ran out"
     private var value: String {
-        if medicine.isOrdered { return "On order" }
-        if medicine.urgency == .out { return "Ran out" }
+        if medicine.isOrdered { return String(localized: "On order") }
+        if medicine.urgency == .out { return String(localized: "Ran out") }
         return runOut.dayMonth
     }
 
@@ -112,9 +112,9 @@ private struct UpcomingRefillRow: View {
     }
 
     private var accessibilityValue: String {
-        if medicine.isOrdered { return "on order" }
-        if medicine.urgency == .out { return "ran out" }
-        return "runs out \(runOut.weekdayDayMonth)"
+        if medicine.isOrdered { return String(localized: "on order") }
+        if medicine.urgency == .out { return String(localized: "ran out") }
+        return String(localized: "runs out \(runOut.weekdayDayMonth)")
     }
 }
 
@@ -167,12 +167,12 @@ struct RefillRows: View {
 enum RefillListExport {
     @MainActor
     static func text(store: MedicineStore, now: Date) -> String {
-        var lines = ["Refill list · \(now.weekdayDayMonth)"]
-        if !store.settings.pharmacyName.isEmpty { lines.append("Pharmacy: \(store.settings.pharmacyName)") }
+        var lines = [String(localized: "Refill list · \(now.weekdayDayMonth)")]
+        if !store.settings.pharmacyName.isEmpty { lines.append(String(localized: "Pharmacy: \(store.settings.pharmacyName)")) }
         lines.append("")
         for medicine in store.medicinesByUrgency {
             let strength = medicine.strength.isEmpty ? "" : " \(medicine.strength)"
-            lines.append("• \(medicine.name)\(strength) — \(medicine.unit.format(medicine.stock)) left, runs out \(medicine.runOutDate(now: now).weekdayDayMonth)")
+            lines.append(String(localized: "• \(medicine.name)\(strength) — \(medicine.unit.format(medicine.stock)) left, runs out \(medicine.runOutDate(now: now).weekdayDayMonth)"))
         }
         return lines.joined(separator: "\n")
     }

@@ -13,18 +13,18 @@ struct AllRemindersView: View {
 
         var title: String {
             switch self {
-            case .needsAction: "Needs refill"
-            case .low: "Getting low"
-            case .ordered: "Ordered"
-            case .scheduled: "Coming up"
-            case .paused: "Paused"
+            case .needsAction: String(localized: "Needs refill")
+            case .low: String(localized: "Getting low")
+            case .ordered: String(localized: "Ordered")
+            case .scheduled: String(localized: "Coming up")
+            case .paused: String(localized: "Paused")
             }
         }
 
         var footer: String? {
             switch self {
-            case .ordered: "Reminders pause until you mark these refilled."
-            case .paused: "No refill reminders for these until you resume them."
+            case .ordered: String(localized: "Reminders pause until you mark these refilled.")
+            case .paused: String(localized: "No refill reminders for these until you resume them.")
             default: nil
             }
         }
@@ -39,8 +39,8 @@ struct AllRemindersView: View {
                 if store.medicines.isEmpty {
                     EmptyStateView(
                         illustration: .notifications,
-                        title: "No reminders yet",
-                        message: "Add a medicine and you’ll get a reminder a few days before it runs out."
+                        title: String(localized: "No reminders yet"),
+                        message: String(localized: "Add a medicine and you’ll get a reminder a few days before it runs out.")
                     ) { EmptyView() }
                 } else {
                     summary(grouped, now: now)
@@ -93,7 +93,7 @@ struct AllRemindersView: View {
                 .frame(width: 44, height: 44)
                 .background(store.settings.notificationsEnabled ? AppTheme.ColorToken.accent : Urgency.low.tint, in: .circle)
             VStack(alignment: .leading, spacing: 2) {
-                Text(needing > 0 ? "\(needing) \(needing == 1 ? "medicine needs" : "medicines need") a refill" : "Nothing needs a refill")
+                Text(needing > 0 ? (needing == 1 ? String(localized: "1 medicine needs a refill") : String(localized: "\(needing) medicines need a refill")) : "Nothing needs a refill")
                     .font(.system(size: 17, weight: .semibold))
                 Group {
                     if !store.settings.notificationsEnabled {
@@ -168,12 +168,12 @@ struct AllRemindersView: View {
 
     /// "Reminder sent 12 Nov", "Reminder Tue 24 Nov, 9:00", "Ordered 18 Nov"
     private func detail(_ medicine: Medicine, kind: ReminderKind, group: Bucket, now: Date) -> String {
-        if group == .paused { return medicine.urgency == .out ? "Reminders paused · run out" : "Reminders paused · \(medicine.daysLeftLabel) left" }
-        if let ordered = medicine.orderedAt { return "Ordered \(ordered.dayMonth) · waiting for pickup" }
-        if kind == .out { return "Run out · refill now" }
+        if group == .paused { return medicine.urgency == .out ? String(localized: "Reminders paused · run out") : String(localized: "Reminders paused · \(medicine.daysLeftLabel) left") }
+        if let ordered = medicine.orderedAt { return String(localized: "Ordered \(ordered.dayMonth) · waiting for pickup") }
+        if kind == .out { return String(localized: "Run out · refill now") }
         let date = medicine.reminderDate(now: now)
         return date <= now
-            ? "Reminder sent \(date.dayMonth)"
-            : "Reminder \(date.weekdayDayMonth), \(medicine.reminderTime.label)"
+            ? String(localized: "Reminder sent \(date.dayMonth)")
+            : String(localized: "Reminder \(date.weekdayDayMonth), \(medicine.reminderTime.label)")
     }
 }

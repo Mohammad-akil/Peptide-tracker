@@ -92,10 +92,10 @@ struct AdherenceChart: View {
 
     /// "Mon 12 Oct · 80% (4 of 5)", or the hint while nothing's picked.
     private var readout: String {
-        guard let selected else { return "Touch a bar" }
-        let date = report.isWeekly ? "Week of \(selected.start.dayMonth)" : selected.start.weekdayDayMonth
-        guard let rate = selected.rate else { return "\(date) · nothing due" }
-        return "\(date) · \(rate.percentLabel) (\(selected.taken) of \(selected.due))"
+        guard let selected else { return String(localized: "Touch a bar") }
+        let date = report.isWeekly ? String(localized: "Week of \(selected.start.dayMonth)") : selected.start.weekdayDayMonth
+        guard let rate = selected.rate else { return String(localized: "\(date) · nothing due") }
+        return String(localized: "\(date) · \(rate.percentLabel) (\(selected.taken) of \(selected.due))")
     }
 
     // MARK: Axis
@@ -114,7 +114,7 @@ struct AdherenceChart: View {
 
     private var accessibilitySummary: String {
         let rated = report.buckets.compactMap(\.rate)
-        guard let best = rated.max(), let worst = rated.min() else { return "No doses due in this period" }
-        return "Doses taken over the \(report.period.phrase), from \(worst.percentLabel) to \(best.percentLabel) \(report.isWeekly ? "a week" : "a day")"
+        guard let best = rated.max(), let worst = rated.min() else { return String(localized: "No doses due in this period") }
+        return (report.isWeekly ? String(localized: "Doses taken over the \(report.period.phrase), from \(worst.percentLabel) to \(best.percentLabel) a week") : String(localized: "Doses taken over the \(report.period.phrase), from \(worst.percentLabel) to \(best.percentLabel) a day"))
     }
 }

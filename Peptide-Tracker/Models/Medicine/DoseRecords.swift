@@ -139,14 +139,14 @@ struct AppSettings: Codable, Hashable {
     /// What a reminder calls the medicine: its name (with whose it is), or
     /// "A medicine" when names are hidden from the lock screen.
     func notificationName(for medicine: Medicine) -> String {
-        showsMedicineName ? reminderName(for: medicine) : "A medicine"
+        showsMedicineName ? reminderName(for: medicine) : String(localized: "A medicine")
     }
 
     /// The reminder's second line, with `{medicine}` filled in.
     func notificationMessage(for medicine: Medicine) -> String {
         let custom = reminderMessage.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !custom.isEmpty else { return "Tap to refill." }
-        return custom.replacingOccurrences(of: "{medicine}", with: showsMedicineName ? medicine.name : "your medicine")
+        guard !custom.isEmpty else { return String(localized: "Tap to refill.") }
+        return custom.replacingOccurrences(of: "{medicine}", with: showsMedicineName ? medicine.name : String(localized: "your medicine"))
     }
 
     /// "Mum’s Metformin" when tracking for someone else, else "Metformin".
@@ -227,9 +227,9 @@ enum TrackingFor: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .me: "Just me"
-        case .someoneElse: "Someone I care for"
-        case .both: "Me and someone else"
+        case .me: String(localized: "Just me")
+        case .someoneElse: String(localized: "Someone I care for")
+        case .both: String(localized: "Me and someone else")
         }
     }
 }
@@ -259,15 +259,15 @@ enum SnoozeOption: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .oneHour: "1 hour"
-        case .threeHours: "3 hours"
-        case .tomorrow: "Tomorrow"
+        case .oneHour: String(localized: "1 hour")
+        case .threeHours: String(localized: "3 hours")
+        case .tomorrow: String(localized: "Tomorrow")
         }
     }
 
     /// The notification button: "Remind me in 1 hour", "Remind me tomorrow".
     var actionTitle: String {
-        self == .tomorrow ? "Remind me tomorrow" : "Remind me in \(title)"
+        self == .tomorrow ? String(localized: "Remind me tomorrow") : String(localized: "Remind me in \(title)")
     }
 
     /// When the snoozed reminder comes back: later today, or tomorrow at
@@ -286,9 +286,9 @@ enum PharmacyKind: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .one: "One pharmacy"
-        case .delivery: "Delivery"
-        case .varies: "It varies"
+        case .one: String(localized: "One pharmacy")
+        case .delivery: String(localized: "Delivery")
+        case .varies: String(localized: "It varies")
         }
     }
 }

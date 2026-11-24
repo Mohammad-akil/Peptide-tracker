@@ -8,12 +8,12 @@ struct JourneyQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "Are you already taking a GLP-1 medication?",
-                reason: "We’ll customize the app based on where you are in your GLP-1 journey."
+                title: String(localized: "Are you already taking a GLP-1 medication?"),
+                reason: String(localized: "We’ll customize the app based on where you are in your GLP-1 journey.")
             )
             VStack(spacing: 10) {
-                choice(.taking, icon: .check, subtitle: "Track doses, supply and refills").stagger(0)
-                choice(.notStarted, icon: .cal, subtitle: "Get ready for your first dose").stagger(1)
+                choice(.taking, icon: .check, subtitle: String(localized: "Track doses, supply and refills")).stagger(0)
+                choice(.notStarted, icon: .cal, subtitle: String(localized: "Get ready for your first dose")).stagger(1)
             }
         }
     }
@@ -38,14 +38,14 @@ struct RouteQuestion: View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
                 title: answers.journey == .notStarted
-                    ? "How will you take your GLP-1 medication?"
-                    : "How do you take your GLP-1 medication?",
-                reason: "We’ll customize the app based on your treatment type."
+                    ? String(localized: "How will you take your GLP-1 medication?")
+                    : String(localized: "How do you take your GLP-1 medication?"),
+                reason: String(localized: "We’ll customize the app based on your treatment type.")
             )
             VStack(spacing: 10) {
-                choice(.injection, icon: .syringe, subtitle: "A pen or vial, usually once a week").stagger(0)
-                choice(.pill, icon: .pill, subtitle: "A tablet you swallow, usually daily").stagger(1)
-                choice(.notSure, icon: .info, subtitle: "You can change this later").stagger(2)
+                choice(.injection, icon: .syringe, subtitle: String(localized: "A pen or vial, usually once a week")).stagger(0)
+                choice(.pill, icon: .pill, subtitle: String(localized: "A tablet you swallow, usually daily")).stagger(1)
+                choice(.notSure, icon: .info, subtitle: String(localized: "You can change this later")).stagger(2)
             }
         }
     }
@@ -81,9 +81,9 @@ struct MedicationQuestion: View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
                 title: answers.journey == .notStarted
-                    ? "Which GLP-1 medication are you planning to take?"
-                    : "Which GLP-1 medication are you taking?",
-                reason: "If it’s not listed, choose Other."
+                    ? String(localized: "Which GLP-1 medication are you planning to take?")
+                    : String(localized: "Which GLP-1 medication are you taking?"),
+                reason: String(localized: "If it’s not listed, choose Other.")
             )
             VStack(spacing: 10) {
                 ForEach(Array(GLP1Medication.options(for: answers.route).enumerated()), id: \.element) { index, option in
@@ -109,7 +109,7 @@ struct MedicationQuestion: View {
         ) {
             if isSelected && option == .other {
                 ChoiceDivider()
-                OnboardingField(label: "Medication name", placeholder: "e.g. Dulaglutide", text: $answers.otherMedication)
+                OnboardingField(label: String(localized: "Medication name"), placeholder: String(localized: "e.g. Dulaglutide"), text: $answers.otherMedication)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
             }
@@ -140,9 +140,9 @@ struct DoseQuestion: View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
                 title: answers.journey == .notStarted
-                    ? "What dose will you start on?"
-                    : "What’s your current dose?",
-                reason: "If it’s not listed, choose Other."
+                    ? String(localized: "What dose will you start on?")
+                    : String(localized: "What’s your current dose?"),
+                reason: String(localized: "If it’s not listed, choose Other.")
             )
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(Array(doses.enumerated()), id: \.element) { index, dose in
@@ -155,14 +155,14 @@ struct DoseQuestion: View {
             }
             OnboardingChoice(
                 icon: .edit,
-                title: "Other",
-                subtitle: "Type your dose",
+                title: String(localized: "Other"),
+                subtitle: String(localized: "Type your dose"),
                 isSelected: answers.isOtherDose,
                 action: { answers.isOtherDose = true; answers.dose = nil }
             ) {
                 if answers.isOtherDose {
                     ChoiceDivider()
-                    OnboardingField(label: "Your dose", placeholder: answers.medication?.doseUnit == "units" ? "e.g. 24 units" : "e.g. 0.75 mg", text: $answers.otherDose)
+                    OnboardingField(label: String(localized: "Your dose"), placeholder: answers.medication?.doseUnit == "units" ? String(localized: "e.g. 24 units") : String(localized: "e.g. 0.75 mg"), text: $answers.otherDose)
                         .keyboardType(.decimalPad)
                 }
             }
@@ -207,15 +207,15 @@ struct DeviceQuestion: View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
                 title: answers.journey == .notStarted
-                    ? "What will you use to take your GLP-1 shots?"
-                    : "What do you use to take your GLP-1 shots?",
-                reason: "We’ll tailor injection tips and supply tracking to your device."
+                    ? String(localized: "What will you use to take your GLP-1 shots?")
+                    : String(localized: "What do you use to take your GLP-1 shots?"),
+                reason: String(localized: "We’ll tailor injection tips and supply tracking to your device.")
             )
             VStack(spacing: 10) {
-                choice(.singleUsePen, icon: .syringe, subtitle: "A new prefilled pen for each dose").stagger(0)
-                choice(.autoInjector, icon: .zap, subtitle: "Press it on and it injects for you").stagger(1)
-                choice(.syringeAndVial, icon: .drop, subtitle: "Draw up each dose from a vial").stagger(2)
-                choice(.other, icon: .edit, subtitle: "Type what you use").stagger(3)
+                choice(.singleUsePen, icon: .syringe, subtitle: String(localized: "A new prefilled pen for each dose")).stagger(0)
+                choice(.autoInjector, icon: .zap, subtitle: String(localized: "Press it on and it injects for you")).stagger(1)
+                choice(.syringeAndVial, icon: .drop, subtitle: String(localized: "Draw up each dose from a vial")).stagger(2)
+                choice(.other, icon: .edit, subtitle: String(localized: "Type what you use")).stagger(3)
             }
         }
     }
@@ -231,7 +231,7 @@ struct DeviceQuestion: View {
         ) {
             if isSelected && option == .other {
                 ChoiceDivider()
-                OnboardingField(label: "Your device", placeholder: "e.g. Reusable pen", text: $answers.otherDevice)
+                OnboardingField(label: String(localized: "Your device"), placeholder: String(localized: "e.g. Reusable pen"), text: $answers.otherDevice)
                     .textInputAutocapitalization(.sentences)
             }
         }
@@ -247,15 +247,15 @@ struct FrequencyQuestion: View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
                 title: answers.route == .pill
-                    ? "How often do you take your GLP-1?"
-                    : "How often do you take your shots?",
-                reason: "We’ll schedule your dose reminders around it."
+                    ? String(localized: "How often do you take your GLP-1?")
+                    : String(localized: "How often do you take your shots?"),
+                reason: String(localized: "We’ll schedule your dose reminders around it.")
             )
             VStack(spacing: 10) {
-                choice(.daily, icon: .sun, subtitle: "One dose a day").stagger(0)
-                choice(.weekly, icon: .cal, subtitle: "Once a week, on the same day").stagger(1)
-                choice(.everyTwoWeeks, icon: .cal, subtitle: "Once every two weeks").stagger(2)
-                choice(.custom, icon: .sliders, subtitle: "Pick the number of days between doses").stagger(3)
+                choice(.daily, icon: .sun, subtitle: String(localized: "One dose a day")).stagger(0)
+                choice(.weekly, icon: .cal, subtitle: String(localized: "Once a week, on the same day")).stagger(1)
+                choice(.everyTwoWeeks, icon: .cal, subtitle: String(localized: "Once every two weeks")).stagger(2)
+                choice(.custom, icon: .sliders, subtitle: String(localized: "Pick the number of days between doses")).stagger(3)
             }
         }
     }
@@ -277,7 +277,7 @@ struct FrequencyQuestion: View {
                         .foregroundStyle(AppTheme.ColorToken.secondaryText)
                     Picker("Days between doses", selection: $answers.customIntervalDays) {
                         ForEach(1...21, id: \.self) { days in
-                            Text(days == 1 ? "Every day" : "Every \(days) days").tag(days)
+                            Text(days == 1 ? "Every day" : String(localized: "Every \(days) days")).tag(days)
                         }
                     }
                     .pickerStyle(.wheel)

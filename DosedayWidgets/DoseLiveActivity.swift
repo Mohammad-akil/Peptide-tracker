@@ -118,7 +118,7 @@ private struct LockScreenDoseView: View {
                 .background(accent, in: .circle)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(state.medicineID == nil ? state.title : "Next: \(state.title)")
+                Text(state.medicineID == nil ? state.title : String(localized: "Next: \(state.title)"))
                     .font(.system(size: 17, weight: .bold))
                     .lineLimit(1)
                 Text(state.detail)

@@ -25,8 +25,8 @@ struct GoalQuestion: View {
         let bmi = BodyMaths.bmi(weightKg: goalKg, heightCm: heightCm)
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "Now, let’s set your target weight.",
-                reason: "This will help us personalize your goal."
+                title: String(localized: "Now, let’s set your target weight."),
+                reason: String(localized: "This will help us personalize your goal.")
             )
 
             VStack(spacing: 6) {
@@ -74,9 +74,9 @@ struct GoalQuestion: View {
 
     private var differenceText: String {
         let delta = currentKg - goalKg
-        guard abs(delta) >= 0.05 else { return "Same as your current weight" }
+        guard abs(delta) >= 0.05 else { return String(localized: "Same as your current weight") }
         let amount = answers.weightUnit.format(abs(delta))
-        return delta > 0 ? "\(amount) less than now" : "\(amount) more than now"
+        return delta > 0 ? String(localized: "\(amount) less than now") : String(localized: "\(amount) more than now")
     }
 }
 
@@ -117,12 +117,12 @@ private struct GoalBMICard: View {
             }
 
             HStack(alignment: .lastTextBaseline, spacing: 14) {
-                value(currentBMI, label: "Now", size: 30, tint: AppTheme.ColorToken.secondaryText)
-                Image(systemName: "arrow.right")
+                value(currentBMI, label: String(localized: "Now"), size: 30, tint: AppTheme.ColorToken.secondaryText)
+                Image(systemName: "arrow.forward")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(AppTheme.ColorToken.tertiaryText)
                     .padding(.bottom, 26)
-                value(goalBMI, label: "Goal", size: 52, tint: category.tint)
+                value(goalBMI, label: String(localized: "Goal"), size: 52, tint: category.tint)
                 Spacer(minLength: 0)
             }
 
@@ -268,13 +268,13 @@ struct MomentumStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                eyebrow: "Your goal",
+                eyebrow: String(localized: "Your goal"),
                 title: atGoal
-                    ? "You’re already at your goal."
-                    : "You still have \(answers.weightUnit.format(toGo)) to go.",
+                    ? String(localized: "You’re already at your goal.")
+                    : String(localized: "You still have \(answers.weightUnit.format(toGo)) to go."),
                 reason: atGoal
-                    ? "Let’s keep it there together."
-                    : "Let’s keep the momentum going together."
+                    ? String(localized: "Let’s keep it there together.")
+                    : String(localized: "Let’s keep the momentum going together.")
             )
 
             VStack(alignment: .leading, spacing: 14) {
@@ -294,7 +294,7 @@ struct MomentumStep: View {
                     }
                 }
                 .frame(height: 14)
-                Text(done > 0 && !atGoal ? "\(Int((done * 100).rounded()))% of the way there" : "Day one starts now")
+                Text(done > 0 && !atGoal ? String(localized: "\(Int((done * 100).rounded()))% of the way there") : "Day one starts now")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(AppTheme.ColorToken.accentInk)
             }
@@ -358,8 +358,8 @@ struct PaceQuestion: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             OnboardingHeader(
-                title: "How quickly do you want to reach your goal?",
-                reason: "Choose a pace that matches your lifestyle and goals. It’s your call."
+                title: String(localized: "How quickly do you want to reach your goal?"),
+                reason: String(localized: "Choose a pace that matches your lifestyle and goals. It’s your call.")
             )
 
             VStack(spacing: 6) {

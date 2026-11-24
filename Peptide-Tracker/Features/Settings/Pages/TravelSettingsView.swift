@@ -41,12 +41,12 @@ struct TravelSettingsView: View {
 
         return VStack(alignment: .leading, spacing: 22) {
             GroupedSection(
-                title: "Time zone",
+                title: String(localized: "Time zone"),
                 footer: settings.keepsHomeTime
-                    ? "Dose reminders stay on \(home.map(Self.cityName) ?? "home") time wherever you are, so the gap between doses doesn’t change. Turn it off to switch to local time."
-                    : "Off: reminders follow the clock where you are, so an 8:00 dose comes at 8:00 local time."
+                    ? String(localized: "Dose reminders stay on \(home.map(Self.cityName) ?? "home") time wherever you are, so the gap between doses doesn’t change. Turn it off to switch to local time.")
+                    : String(localized: "Off: reminders follow the clock where you are, so an 8:00 dose comes at 8:00 local time.")
             ) {
-                ControlRow(symbol: "globe.europe.africa.fill", tint: Color(hex: 0x0A84FF), title: "Keep home time", showsDivider: settings.keepsHomeTime) {
+                ControlRow(symbol: "globe.europe.africa.fill", tint: Color(hex: 0x0A84FF), title: String(localized: "Keep home time"), showsDivider: settings.keepsHomeTime) {
                     Toggle("Keep home time", isOn: Binding(
                         get: { store.settings.keepsHomeTime },
                         set: { isOn in
@@ -62,7 +62,7 @@ struct TravelSettingsView: View {
                     .tint(AppTheme.ColorToken.accent)
                 }
                 if settings.keepsHomeTime {
-                    ValueRow(title: "Home", value: home.map(Self.cityName) ?? "Not set", showsChevron: false, showsDivider: true)
+                    ValueRow(title: String(localized: "Home"), value: home.map(Self.cityName) ?? String(localized: "Not set"), showsChevron: false, showsDivider: true)
                     Button {
                         HapticFeedback.selection()
                         store.settings.homeTimeZoneID = TimeZone.current.identifier
@@ -80,7 +80,7 @@ struct TravelSettingsView: View {
             }
 
             if isAway, let home {
-                GroupedSection(title: "Your dose times here", footer: "Home time on the left, local time on the right.") {
+                GroupedSection(title: String(localized: "Your dose times here"), footer: String(localized: "Home time on the left, local time on the right.")) {
                     let times = Array(Set(store.medicines.flatMap(\.intakeTimes))).sorted()
                     ForEach(Array(times.enumerated()), id: \.element) { index, time in
                         ValueRow(
@@ -101,7 +101,7 @@ struct TravelSettingsView: View {
         let lines = store.tripSupply(from: start, to: end, spareDays: spareDays)
 
         return VStack(alignment: .leading, spacing: 22) {
-            GroupedSection(title: "Trip planner", footer: "Counts the doses on your schedule for the trip, plus spare days in case of delays.") {
+            GroupedSection(title: String(localized: "Trip planner"), footer: String(localized: "Counts the doses on your schedule for the trip, plus spare days in case of delays.")) {
                 DatePicker("Leaving", selection: $start, in: Date.now.startOfDay..., displayedComponents: .date)
                     .font(.system(size: 17))
                     .padding(.horizontal, 16)
@@ -115,7 +115,7 @@ struct TravelSettingsView: View {
                 HStack {
                     Text("Spare days").font(.system(size: 17))
                     Spacer()
-                    CountStepper(value: $spareDays, range: 0...7, accessibilityName: "Spare days")
+                    CountStepper(value: $spareDays, range: 0...7, accessibilityName: String(localized: "Spare days"))
                 }
                 .padding(.horizontal, 16)
                 .frame(minHeight: 52)
@@ -128,7 +128,7 @@ struct TravelSettingsView: View {
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
                     .padding(.horizontal, 16)
             } else {
-                GroupedSection(title: "Pack", trailing: "\(lines.first?.tripDays ?? 0) days") {
+                GroupedSection(title: String(localized: "Pack"), trailing: String(localized: "\(lines.first?.tripDays ?? 0) days")) {
                     ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
                         packRow(line, showsDivider: index < lines.count - 1)
                     }
@@ -152,15 +152,15 @@ struct TravelSettingsView: View {
                 Text(line.medicine.name)
                     .font(.system(size: 17, weight: .semibold))
                     .lineLimit(1)
-                Text("\(line.doses) \(line.doses == 1 ? "dose" : "doses") · \(line.medicine.unit.format(line.units))")
+                Text(line.doses == 1 ? "1 dose · \(line.medicine.unit.format(line.units))" : "\(line.doses) doses · \(line.medicine.unit.format(line.units))")
                     .font(.system(size: 14))
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
             }
             Spacer(minLength: 8)
             if line.isShort {
-                UrgencyChip(urgency: .critical, text: "Short \(line.shortBy)")
+                UrgencyChip(urgency: .critical, text: String(localized: "Short \(line.shortBy)"))
             } else {
-                UrgencyChip(urgency: .healthy, text: "Covered")
+                UrgencyChip(urgency: .healthy, text: String(localized: "Covered"))
             }
         }
         .padding(.horizontal, 16)

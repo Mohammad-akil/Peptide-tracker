@@ -11,37 +11,37 @@ struct HelpSettingsView: View {
     }
 
     private let topics: [Topic] = [
-        Topic(title: "Reminders", questions: [
-            ("How do refill reminders work?",
-             "We work out when each medicine runs out from what you have and how much you take a day. The heads-up comes a few days before, at your reminder time. Change the default in Settings → Reminders, or one medicine’s from its page."),
-            ("Why am I not getting notifications?",
-             "Check that Notifications is on in Settings → Reminders, and that notifications are allowed for this app in the iPhone’s Settings. Focus modes can hold them back too. If times look wrong after travelling, use Refresh reminder times in Settings → Notifications."),
-            ("How do I stop reminders while a refill is on its way?",
-             "Open the medicine and tap Ordered. Reminders pause until you tap Refilled when you pick it up."),
+        Topic(title: String(localized: "Reminders"), questions: [
+            (String(localized: "How do refill reminders work?"),
+             String(localized: "We work out when each medicine runs out from what you have and how much you take a day. The heads-up comes a few days before, at your reminder time. Change the default in Settings → Reminders, or one medicine’s from its page.")),
+            (String(localized: "Why am I not getting notifications?"),
+             String(localized: "Check that Notifications is on in Settings → Reminders, and that notifications are allowed for this app in the iPhone’s Settings. Focus modes can hold them back too. If times look wrong after travelling, use Refresh reminder times in Settings → Notifications.")),
+            (String(localized: "How do I stop reminders while a refill is on its way?"),
+             String(localized: "Open the medicine and tap Ordered. Reminders pause until you tap Refilled when you pick it up.")),
         ]),
-        Topic(title: "Doses and supply", questions: [
-            ("Why did my count go down when I didn’t tick a dose?",
-             "So your supply stays right even on days you forget to tick. At the end of each day, any dose left unticked is counted as used. Turn off Track doses in Settings → Doses to count down from your schedule alone."),
-            ("How do I fix my pill count?",
-             "Open the medicine, tap ••• and choose Correct count. Enter what you have now; it doesn’t log a refill."),
-            ("How does injection site rotation work?",
-             "When you tick off an injection, pick where it went on the body map. We suggest the next site in turn, alternating sides, and grey out sites used in the last three days so each one rests."),
+        Topic(title: String(localized: "Doses and supply"), questions: [
+            (String(localized: "Why did my count go down when I didn’t tick a dose?"),
+             String(localized: "So your supply stays right even on days you forget to tick. At the end of each day, any dose left unticked is counted as used. Turn off Track doses in Settings → Doses to count down from your schedule alone.")),
+            (String(localized: "How do I fix my pill count?"),
+             String(localized: "Open the medicine, tap ••• and choose Correct count. Enter what you have now; it doesn’t log a refill.")),
+            (String(localized: "How does injection site rotation work?"),
+             String(localized: "When you tick off an injection, pick where it went on the body map. We suggest the next site in turn, alternating sides, and grey out sites used in the last three days so each one rests.")),
         ]),
-        Topic(title: "Your data", questions: [
-            ("Where is my data kept?",
-             "Only on this iPhone. There’s no account and nothing is sent to us. Deleting the app deletes everything it saved, so export your medicine list first if you need it."),
-            ("How do I share my medicines with my doctor?",
-             "Settings → Export medicine list makes a PDF of every medicine and its schedule. Settings → Report shares how you’ve been doing with your doses."),
-            ("Can I track medicines for someone else?",
-             "Yes. In Settings → Tracking for, choose someone you care for and add their name. Reminders then say whose medicine it is."),
+        Topic(title: String(localized: "Your data"), questions: [
+            (String(localized: "Where is my data kept?"),
+             String(localized: "On this iPhone and, with iCloud sync on, in your private iCloud. There’s no account and nothing is sent to us. Deleting the app removes it from this iPhone; your iCloud copy stays until you delete it.")),
+            (String(localized: "How do I share my medicines with my doctor?"),
+             String(localized: "Settings → Export medicine list makes a PDF of every medicine and its schedule. Settings → Report shares how you’ve been doing with your doses.")),
+            (String(localized: "Can I track medicines for someone else?"),
+             String(localized: "Yes. In Settings → Tracking for, choose someone you care for and add their name. Reminders then say whose medicine it is.")),
         ]),
-        Topic(title: "Pro", questions: [
-            ("What does Pro include?",
-             "Doseday is a subscription app. Pro unlocks everything: dose reminders and tracking, injection sites, weight and goal progress, side effects, reports and PDF exports, with as many medicines as you take."),
-            ("How do I restore a purchase?",
-             "On the subscription screen that opens with the app, tap Restore. Use the same Apple Account you subscribed with."),
-            ("How do I cancel?",
-             "In the iPhone’s Settings app, tap your name, then Subscriptions, then Doseday. You keep Pro until the end of the period you paid for."),
+        Topic(title: String(localized: "Pro"), questions: [
+            (String(localized: "What does Pro include?"),
+             String(localized: "Doseday is a subscription app. Pro unlocks everything: dose reminders and tracking, injection sites, weight and goal progress, side effects, reports and PDF exports, with as many medicines as you take.")),
+            (String(localized: "How do I restore a purchase?"),
+             String(localized: "On the subscription screen that opens with the app, tap Restore. Use the same Apple Account you subscribed with.")),
+            (String(localized: "How do I cancel?"),
+             String(localized: "In the iPhone’s Settings app, tap your name, then Subscriptions, then Doseday. You keep Pro until the end of the period you paid for.")),
         ]),
     ]
 
@@ -65,9 +65,9 @@ struct HelpSettingsView: View {
                 }
             }
 
-            GroupedSection(title: "Still need help?") {
+            GroupedSection(title: String(localized: "Still need help?")) {
                 Button { openURL(AppLinks.support) } label: {
-                    SettingsRowLabel(symbol: "lifepreserver.fill", tint: Color(hex: 0xFF375F), title: "Contact support", showsChevron: true)
+                    SettingsRowLabel(symbol: "lifepreserver.fill", tint: Color(hex: 0xFF375F), title: String(localized: "Contact support"), showsChevron: true)
                 }
                 .buttonStyle(RowPressStyle())
             }

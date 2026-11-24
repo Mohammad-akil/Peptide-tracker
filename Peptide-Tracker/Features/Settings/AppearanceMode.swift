@@ -9,6 +9,12 @@ enum AppearanceMode: String, CaseIterable {
 
     static let storageKey = "appearanceMode"
 
+    /// The mode picked in Settings, for windows created after launch (the
+    /// toast and lock windows), which `apply()` ran too early to reach.
+    static var current: AppearanceMode {
+        UserDefaults.standard.string(forKey: storageKey).flatMap(Self.init(rawValue:)) ?? .system
+    }
+
     var interfaceStyle: UIUserInterfaceStyle {
         switch self {
         case .light: .light
@@ -19,9 +25,9 @@ enum AppearanceMode: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .system: "System"
-        case .light: "Light"
-        case .dark: "Dark"
+        case .system: String(localized: "System")
+        case .light: String(localized: "Light")
+        case .dark: String(localized: "Dark")
         }
     }
 

@@ -328,10 +328,10 @@ struct WeekStrip: View {
     private var dayName: String {
         let date = selection.formatted(.dateTime.day().month(.abbreviated))
         switch Calendar.current.days(from: today, to: selection) {
-        case 0: return "Today, \(date)"
-        case -1: return "Yesterday, \(date)"
-        case 1: return "Tomorrow, \(date)"
-        default: return "\(selection.formatted(.dateTime.weekday(.abbreviated))), \(date)"
+        case 0: return String(localized: "Today, \(date)")
+        case -1: return String(localized: "Yesterday, \(date)")
+        case 1: return String(localized: "Tomorrow, \(date)")
+        default: return String(localized: "\(selection.formatted(.dateTime.weekday(.abbreviated))), \(date)")
         }
     }
 
@@ -445,10 +445,10 @@ private struct DayCell: View {
         let date = day.weekdayDayMonth
         switch status {
         case .none: return date
-        case .planned: return "\(date), doses planned"
-        case .partial: return "\(date), some doses taken"
-        case .missed: return "\(date), doses missed"
-        case .complete: return "\(date), all doses taken"
+        case .planned: return String(localized: "\(date), doses planned")
+        case .partial: return String(localized: "\(date), some doses taken")
+        case .missed: return String(localized: "\(date), doses missed")
+        case .complete: return String(localized: "\(date), all doses taken")
         }
     }
 }

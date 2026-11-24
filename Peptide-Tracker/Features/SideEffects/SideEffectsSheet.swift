@@ -34,8 +34,11 @@ struct SideEffectsSheet: View {
             .navigationTitle("Side effects")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    CompatCloseButton { dismiss() }
+                // The toolbar's own close button, like the other sheets; the
+                // standalone glass circle doubled up inside the bar's glass.
+                ToolbarItem(placement: .cancellationAction) {
+                    CompatToolbarRoleButton(role: .close) { dismiss() }
+                        .tint(AppTheme.ColorToken.primaryText)
                 }
             }
         }
@@ -56,7 +59,7 @@ struct SideEffectsSheet: View {
     private var patterns: some View {
         let patterns = store.sideEffectPatterns()
         if store.sideEffects.count >= 3, !patterns.isEmpty {
-            GroupedSection(title: "Patterns", footer: "Based on what you logged and the days you took each dose. Worth showing your doctor.") {
+            GroupedSection(title: String(localized: "Patterns"), footer: String(localized: "Based on what you logged and the days you took each dose. Worth showing your doctor.")) {
                 ForEach(Array(patterns.prefix(5).enumerated()), id: \.element.id) { index, pattern in
                     HStack(alignment: .top, spacing: 12) {
                         SettingsTile(symbol: pattern.kind.symbol, tint: pattern.kind.tint)
@@ -72,7 +75,7 @@ struct SideEffectsSheet: View {
                 }
             }
         } else {
-            GroupedSection(title: "Patterns") {
+            GroupedSection(title: String(localized: "Patterns")) {
                 Text("Log a few side effects and patterns show here — like which day after a dose they tend to come.")
                     .font(.system(size: 15))
                     .foregroundStyle(AppTheme.ColorToken.secondaryText)
@@ -88,7 +91,7 @@ struct SideEffectsSheet: View {
     private var history: some View {
         let entries = Array(store.sideEffects.reversed().prefix(60))
         if !entries.isEmpty {
-            GroupedSection(title: "Logged", trailing: "\(store.sideEffects.count)") {
+            GroupedSection(title: String(localized: "Logged"), trailing: "\(store.sideEffects.count)") {
                 ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                     Button { editing = entry } label: {
                         row(entry, showsDivider: index < entries.count - 1)
@@ -156,7 +159,7 @@ private struct SideEffectEditor: View {
                         }
                     }
 
-                    GroupedSection(title: "How bad") {
+                    GroupedSection(title: String(localized: "How bad")) {
                         Picker("How bad", selection: $entry.severity) {
                             ForEach(SideEffectEntry.Severity.allCases) { Text($0.title).tag($0) }
                         }
@@ -199,7 +202,7 @@ private struct SideEffectEditor: View {
                             .frame(minHeight: 52)
                     }
 
-                    GroupedSection(title: "Note") {
+                    GroupedSection(title: String(localized: "Note")) {
                         TextField("Anything that might help, like what you ate", text: $entry.note, axis: .vertical)
                             .font(.system(size: 17))
                             .lineLimit(2...5)

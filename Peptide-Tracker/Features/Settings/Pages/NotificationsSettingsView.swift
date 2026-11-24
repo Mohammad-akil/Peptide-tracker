@@ -13,13 +13,13 @@ struct NotificationsSettingsView: View {
 
         SettingsPageScaffold(page: .notifications) {
             VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(title: "Preview")
+                SectionLabel(title: String(localized: "Preview"))
                 ReminderBannerPreview(title: previewTitle, message: previewMessage)
             }
 
             GroupedSection(
-                title: "Message",
-                footer: "Write {medicine} where the medicine’s name should go. Leave it empty for “Tap to refill.”"
+                title: String(localized: "Message"),
+                footer: String(localized: "Write {medicine} where the medicine’s name should go. Leave it empty for “Tap to refill.”")
             ) {
                 TextField("Tap to refill.", text: $store.settings.reminderMessage, axis: .vertical)
                     .font(.system(size: 17))
@@ -28,7 +28,7 @@ struct NotificationsSettingsView: View {
                     .padding(.vertical, 14)
                     .rowDivider(true)
                 SuggestionChips(
-                    options: ["Time to order {medicine}.", "Call the pharmacy today.", "Don’t forget your refill!"],
+                    options: [String(localized: "Time to order {medicine}."), String(localized: "Call the pharmacy today."), String(localized: "Don’t forget your refill!")],
                     selection: $store.settings.reminderMessage
                 )
                 .padding(14)
@@ -36,17 +36,17 @@ struct NotificationsSettingsView: View {
             }
 
             GroupedSection(footer: store.settings.showsMedicineName
-                ? "Reminders name the medicine, even on the lock screen."
-                : "Reminders say “A medicine runs out in 3 days”, so nobody glancing at your phone sees what you take."
+                ? String(localized: "Reminders name the medicine, even on the lock screen.")
+                : String(localized: "Reminders say “A medicine runs out in 3 days”, so nobody glancing at your phone sees what you take.")
             ) {
-                ControlRow(symbol: "eye.fill", tint: Color(hex: 0x5E5CE6), title: "Show medicine name", showsDivider: false) {
+                ControlRow(symbol: "eye.fill", tint: Color(hex: 0x5E5CE6), title: String(localized: "Show medicine name"), showsDivider: false) {
                     Toggle("Show medicine name", isOn: $store.settings.showsMedicineName.animation(.snappy))
                         .labelsHidden()
                         .tint(AppTheme.ColorToken.accent)
                 }
             }
 
-            GroupedSection(title: "Snooze", footer: "How long “\(store.settings.snooze.actionTitle)” on a reminder waits.") {
+            GroupedSection(title: String(localized: "Snooze"), footer: String(localized: "How long “\(store.settings.snooze.actionTitle)” on a reminder waits.")) {
                 ForEach(Array(SnoozeOption.allCases.enumerated()), id: \.element) { index, option in
                     CheckRow(
                         title: option.title,
@@ -56,17 +56,17 @@ struct NotificationsSettingsView: View {
                 }
             }
 
-            GroupedSection(footer: "A notification at each dose time, only on the days each medicine is taken.") {
-                ControlRow(symbol: "pills.fill", tint: AppTheme.ColorToken.accent, title: "Dose reminders", showsDivider: false) {
+            GroupedSection(footer: String(localized: "A notification at each dose time, only on the days each medicine is taken.")) {
+                ControlRow(symbol: "pills.fill", tint: AppTheme.ColorToken.accent, title: String(localized: "Dose reminders"), showsDivider: false) {
                     Toggle("Dose reminders", isOn: $store.settings.doseReminders.animation(.snappy))
                         .labelsHidden()
                         .tint(AppTheme.ColorToken.accent)
                 }
             }
 
-            GroupedSection(title: "Daily reminders", footer: "A nudge each day to check your doses, on top of refill reminders.") {
+            GroupedSection(title: String(localized: "Daily reminders"), footer: String(localized: "A nudge each day to check your doses, on top of refill reminders.")) {
                 dailyRow(
-                    title: "Morning",
+                    title: String(localized: "Morning"),
                     symbol: "sun.max.fill",
                     tint: Color(hex: 0xFF9F0A),
                     isOn: $store.settings.morningReminder,
@@ -74,7 +74,7 @@ struct NotificationsSettingsView: View {
                     showsDivider: true
                 )
                 dailyRow(
-                    title: "Before bed",
+                    title: String(localized: "Before bed"),
                     symbol: "moon.fill",
                     tint: Color(hex: 0x5E5CE6),
                     isOn: $store.settings.sleepReminder,
@@ -83,7 +83,7 @@ struct NotificationsSettingsView: View {
                 )
             }
 
-            GroupedSection(footer: "Plans every reminder again from scratch. Handy after travelling or changing the time.") {
+            GroupedSection(footer: String(localized: "Plans every reminder again from scratch. Handy after travelling or changing the time.")) {
                 Button(action: refresh) {
                     HStack(spacing: 14) {
                         SettingsTile(symbol: "arrow.triangle.2.circlepath", tint: Color(hex: 0x30B0C7))
@@ -112,9 +112,9 @@ struct NotificationsSettingsView: View {
                 .tint(AppTheme.ColorToken.accent)
         }
         if isOn.wrappedValue {
-            ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: "Time", showsDivider: showsDivider) {
+            ControlRow(symbol: "clock.fill", tint: Color(hex: 0x30B0C7), title: String(localized: "Time"), showsDivider: showsDivider) {
                 DatePicker(
-                    "\(title) time",
+                    String(localized: "\(title) time"),
                     selection: Binding(get: { time.wrappedValue.on(.now) }, set: { time.wrappedValue = TimeOfDay(date: $0) }),
                     displayedComponents: .hourAndMinute
                 )
@@ -130,7 +130,7 @@ struct NotificationsSettingsView: View {
     /// The medicine running out soonest, or a stand-in before any are added.
     private var previewMedicine: Medicine {
         store.medicinesByUrgency.first ?? Medicine(
-            name: "Metformin", strength: "", type: .tablet, color: .blue,
+            name: String(localized: "Metformin"), strength: "", type: .tablet, color: .blue,
             stock: 15, capacity: 60, perDay: 3, intakeTimes: [.morning],
             reminderDaysBefore: 5, reminderTime: .defaultReminder
         )
@@ -150,7 +150,7 @@ struct NotificationsSettingsView: View {
         Task {
             await store.refreshReminders()
             isRefreshing = false
-            router.showToast("Reminder times refreshed")
+            router.showToast(String(localized: "Reminder times refreshed"))
         }
     }
 }

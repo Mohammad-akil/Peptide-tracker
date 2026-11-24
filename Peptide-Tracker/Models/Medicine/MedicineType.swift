@@ -10,15 +10,15 @@ enum MedicineType: String, Codable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .capsule: "Pill"
-        case .tablet: "Tablet"
-        case .injection: "Injection"
-        case .liquid: "Liquid"
-        case .drops: "Drops"
-        case .inhaler: "Inhaler"
-        case .powder: "Powder"
-        case .cream: "Cream"
-        case .other: "Other"
+        case .capsule: String(localized: "Pill")
+        case .tablet: String(localized: "Tablet")
+        case .injection: String(localized: "Injection")
+        case .liquid: String(localized: "Liquid")
+        case .drops: String(localized: "Drops")
+        case .inhaler: String(localized: "Inhaler")
+        case .powder: String(localized: "Powder")
+        case .cream: String(localized: "Cream")
+        case .other: String(localized: "Other")
         }
     }
 
@@ -65,35 +65,35 @@ enum MedicineType: String, Codable, CaseIterable, Identifiable {
 
     var unit: MedicineUnit {
         switch self {
-        case .capsule: MedicineUnit(singular: "pill", plural: "pills")
-        case .tablet: MedicineUnit(singular: "tablet", plural: "tablets")
-        case .injection: MedicineUnit(singular: "dose", plural: "doses")
-        case .cream: MedicineUnit(singular: "application", plural: "applications")
-        case .liquid: MedicineUnit(singular: "ml", plural: "ml")
-        case .drops: MedicineUnit(singular: "drop", plural: "drops")
-        case .inhaler: MedicineUnit(singular: "puff", plural: "puffs")
-        case .powder: MedicineUnit(singular: "sachet", plural: "sachets")
-        case .other: MedicineUnit(singular: "dose", plural: "doses")
+        case .capsule: MedicineUnit(singular: String(localized: "pill", comment: "Medicine unit, one"), plural: String(localized: "pills", comment: "Medicine unit, many"))
+        case .tablet: MedicineUnit(singular: String(localized: "tablet", comment: "Medicine unit, one"), plural: String(localized: "tablets", comment: "Medicine unit, many"))
+        case .injection: MedicineUnit(singular: String(localized: "dose", comment: "Medicine unit, one"), plural: String(localized: "doses", comment: "Medicine unit, many"))
+        case .cream: MedicineUnit(singular: String(localized: "application", comment: "Medicine unit, one"), plural: String(localized: "applications", comment: "Medicine unit, many"))
+        case .liquid: MedicineUnit(singular: String(localized: "ml", comment: "Medicine unit, one"), plural: String(localized: "ml", comment: "Medicine unit, many"))
+        case .drops: MedicineUnit(singular: String(localized: "drop", comment: "Medicine unit, one"), plural: String(localized: "drops", comment: "Medicine unit, many"))
+        case .inhaler: MedicineUnit(singular: String(localized: "puff", comment: "Medicine unit, one"), plural: String(localized: "puffs", comment: "Medicine unit, many"))
+        case .powder: MedicineUnit(singular: String(localized: "sachet", comment: "Medicine unit, one"), plural: String(localized: "sachets", comment: "Medicine unit, many"))
+        case .other: MedicineUnit(singular: String(localized: "dose", comment: "Medicine unit, one"), plural: String(localized: "doses", comment: "Medicine unit, many"))
         }
     }
 
     /// "Pills in stock", "Doses in stock"…
-    var stockLabel: String { "\(unit.plural.capitalizedFirst) in stock" }
+    var stockLabel: String { String(localized: "\(unit.plural.capitalizedFirst) in stock") }
 
     /// "Pills per day", "Injections per day"…
     var perDayLabel: String {
         switch self {
-        case .injection: "Injections per day"
-        default: "\(unit.plural.capitalizedFirst) per day"
+        case .injection: String(localized: "Injections per day")
+        default: String(localized: "\(unit.plural.capitalizedFirst) per day")
         }
     }
 
     /// Extra guidance under the supply section where counting isn't obvious.
     var supplyHint: String? {
         switch self {
-        case .injection: "Count single doses. A pen with 300 units at 15 units a dose is 20 doses."
-        case .liquid: "Count millilitres. A 150 ml bottle at 5 ml a dose is 150 ml."
-        case .inhaler: "Count puffs. Most inhalers show how many are left on a counter."
+        case .injection: String(localized: "Count single doses. A pen with 300 units at 15 units a dose is 20 doses.")
+        case .liquid: String(localized: "Count millilitres. A 150 ml bottle at 5 ml a dose is 150 ml.")
+        case .inhaler: String(localized: "Count puffs. Most inhalers show how many are left on a counter.")
         default: nil
         }
     }

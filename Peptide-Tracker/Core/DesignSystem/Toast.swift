@@ -32,6 +32,17 @@ extension Toast.Style {
         }
     }
 
+    /// The symbol drawn white inside the coloured circle.
+    var glyph: String {
+        switch self {
+        case .success: "checkmark"
+        case .info: "info"
+        case .warning: "exclamationmark"
+        case .error: "xmark"
+        case .loading: "circle.dotted"
+        }
+    }
+
     var tint: Color {
         switch self {
         case .success: Urgency.healthy.tint
@@ -63,32 +74,43 @@ extension Toast.Style {
     }
 }
 
-/// The toast itself: a solid card in a glass rim, with a spinner or a bouncing icon,
-/// the title and an optional line of detail.
+/// The toast itself: a coloured round icon (white symbol, or a spinner
+/// while loading), the title and an optional line of detail, on a solid
+/// card in a thin glass rim. One line is a pill; with detail it's a
+/// rounded card. Follows the app's Light / Dark choice through its window.
 struct ToastView: View {
     let toast: Toast
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var radius: CGFloat { toast.message == nil ? 30 : 24 }
 
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
+                Circle()
+                    .fill(toast.style == .loading ? toast.style.tint.opacity(0.14) : toast.style.tint)
                 if toast.style == .loading {
                     ProgressView()
+                        .controlSize(.small)
                         .tint(toast.style.tint)
                         .transition(.scale(scale: 0.4).combined(with: .opacity))
                 } else {
-                    Image(systemName: toast.style.symbol)
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(toast.style.tint)
+                    Image(systemName: toast.style.glyph)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
                         .symbolEffect(.bounce, value: toast.style)
                         .transition(.scale(scale: 0.4).combined(with: .opacity))
                 }
             }
-            .frame(width: 28, height: 28)
+            .frame(width: 32, height: 32)
+            .animation(.snappy, value: toast.style)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(toast.title)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(AppTheme.ColorToken.primaryText)
+                    .lineLimit(2)
                     .contentTransition(.opacity)
                 if let message = toast.message {
                     Text(message)
@@ -100,17 +122,20 @@ struct ToastView: View {
             }
             .frame(minWidth: 0, alignment: .leading)
         }
-        .padding(.leading, 14)
-        .padding(.trailing, 20)
-        .padding(.vertical, 12)
+        .padding(.leading, 10)
+        .padding(.trailing, 18)
+        .padding(.vertical, 10)
         .frame(maxWidth: 380)
-        // Solid inside, clear Liquid Glass only around the edge: the solid
-        // body sits inset in a slightly larger glass shape, leaving a rim.
-        // Untinted, so the icon alone carries the colour.
-        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: 23, style: .continuous))
+        .background(AppTheme.ColorToken.cardBackground, in: .rect(cornerRadius: radius, style: .continuous))
+        // A hairline so the card holds its edge on dark backgrounds too.
+        .overlay {
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .strokeBorder(colorScheme == .dark ? Color.white.opacity(0.10) : Color(hex: 0x28185A, opacity: 0.06), lineWidth: 0.75)
+        }
+        // Solid inside, Liquid Glass only round the edge.
         .padding(3)
-        .compatGlass(in: .rect(cornerRadius: 26, style: .continuous))
-        .shadow(color: Color(hex: 0x28185A, opacity: 0.12), radius: 18, y: 10)
+        .compatGlass(in: .rect(cornerRadius: radius + 3, style: .continuous))
+        .shadow(color: colorScheme == .dark ? .black.opacity(0.45) : Color(hex: 0x28185A, opacity: 0.14), radius: 20, y: 10)
         .animation(.spring(response: 0.4, dampingFraction: 0.75), value: toast)
         .accessibilityElement(children: .combine)
     }
@@ -125,4 +150,5 @@ struct ToastView: View {
         ToastView(toast: .info("Reminders paused"))
     }
     .padding()
+    .background(AppTheme.ColorToken.background)
 }

@@ -73,7 +73,7 @@ struct MoodCharacter: View {
         .onChange(of: mood) { _, _ in react() }
         .task { await idle() }
         .accessibilityElement()
-        .accessibilityLabel(mood.map { "Feeling \($0.title.lowercased())" } ?? "No mood logged today")
+        .accessibilityLabel(mood.map { String(localized: "Feeling \($0.title.lowercased())") } ?? "No mood logged today")
         .accessibilityAddTraits(.isImage)
     }
 

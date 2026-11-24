@@ -11,15 +11,15 @@ struct PharmacySettingsView: View {
         let phone = store.settings.pharmacyPhone.filter { $0.isNumber || $0 == "+" }
 
         SettingsPageScaffold(page: .pharmacy) {
-            GroupedSection(footer: "Shown on medicine pages so you can call in one tap.") {
-                FieldRow(title: "Name", placeholder: "Add", text: $store.settings.pharmacyName)
+            GroupedSection(footer: String(localized: "Shown on medicine pages so you can call in one tap.")) {
+                FieldRow(title: String(localized: "Name"), placeholder: String(localized: "Add"), text: $store.settings.pharmacyName)
                     .textContentType(.organizationName)
-                FieldRow(title: "Phone", placeholder: "Add", text: $store.settings.pharmacyPhone, showsDivider: !phone.isEmpty)
+                FieldRow(title: String(localized: "Phone"), placeholder: String(localized: "Add"), text: $store.settings.pharmacyPhone, showsDivider: !phone.isEmpty)
                     .keyboardType(.phonePad)
                     .textContentType(.telephoneNumber)
                 if !phone.isEmpty, let url = URL(string: "tel:\(phone)") {
                     Button { openURL(url) } label: {
-                        SettingsRowLabel(symbol: "phone.fill", tint: Color(hex: 0x30D158), title: "Call pharmacy")
+                        SettingsRowLabel(symbol: "phone.fill", tint: Color(hex: 0x30D158), title: String(localized: "Call pharmacy"))
                     }
                     .buttonStyle(RowPressStyle())
                     .transition(.opacity)
@@ -27,7 +27,7 @@ struct PharmacySettingsView: View {
             }
             .animation(.snappy, value: phone.isEmpty)
 
-            GroupedSection(title: "How refills arrive") {
+            GroupedSection(title: String(localized: "How refills arrive")) {
                 ForEach(Array(PharmacyKind.allCases.enumerated()), id: \.element) { index, kind in
                     CheckRow(
                         title: kind.title,
@@ -42,9 +42,9 @@ struct PharmacySettingsView: View {
 
     private func detail(for kind: PharmacyKind) -> String {
         switch kind {
-        case .one: "You pick up from the same place."
-        case .delivery: "Refills come by post, so allow a few extra days."
-        case .varies: "Different places, depending on the medicine."
+        case .one: String(localized: "You pick up from the same place.")
+        case .delivery: String(localized: "Refills come by post, so allow a few extra days.")
+        case .varies: String(localized: "Different places, depending on the medicine.")
         }
     }
 }

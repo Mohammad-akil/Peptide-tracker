@@ -8,9 +8,9 @@ struct AdherenceReport {
         case week = "7", month = "30", quarter = "90"
 
         var days: Int { Int(rawValue) ?? 7 }
-        var title: String { "\(rawValue) days" }
+        var title: String { String(localized: "\(rawValue) days") }
         /// "last 30 days"
-        var phrase: String { "last \(rawValue) days" }
+        var phrase: String { String(localized: "last \(rawValue) days") }
     }
 
     struct Bucket: Identifiable {
@@ -100,5 +100,5 @@ struct AdherenceReport {
 
 extension Double {
     /// "92%"
-    var percentLabel: String { "\(Int((self * 100).rounded()))%" }
+    var percentLabel: String { String(localized: "\(Int((self * 100).rounded()))%") }
 }

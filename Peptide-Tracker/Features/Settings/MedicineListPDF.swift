@@ -13,12 +13,12 @@ struct MedicineListPDF: Transferable {
         FileRepresentation(exportedContentType: .pdf) { document in
             SentTransferredFile(try await document.render())
         }
-        .suggestedFileName("Medicine list.pdf")
+        .suggestedFileName(String(localized: "Medicine list.pdf"))
     }
 
     @MainActor
     private func render() throws -> URL {
-        try PDFRendering.render(MedicineListPage(document: self), fileName: "Medicine list.pdf")
+        try PDFRendering.render(MedicineListPage(document: self), fileName: String(localized: "Medicine list.pdf"))
     }
 }
 
@@ -38,7 +38,7 @@ private struct MedicineListPage: View {
                     header("Dose")
                     header("Times")
                     header("Left")
-                    header("Runs out")
+                    header(String(localized: "Runs out"))
                 }
                 Divider().gridCellUnsizedAxes(.horizontal)
                 ForEach(document.medicines) { medicine in
@@ -67,7 +67,7 @@ private struct MedicineListPage: View {
     private var subtitle: String {
         let pharmacy = document.pharmacyName.trimmingCharacters(in: .whitespaces)
         let date = document.date.formatted(.dateTime.day().month(.wide).year())
-        return pharmacy.isEmpty ? "As of \(date)" : "As of \(date) · Pharmacy: \(pharmacy)"
+        return pharmacy.isEmpty ? String(localized: "As of \(date)") : String(localized: "As of \(date) · Pharmacy: \(pharmacy)")
     }
 
     private func header(_ text: String) -> some View {

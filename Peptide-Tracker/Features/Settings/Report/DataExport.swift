@@ -12,12 +12,12 @@ struct DataExportFile: Transferable {
 
         var fileName: String {
             switch self {
-            case .doses: "Doseday – dose history.csv"
-            case .medicines: "Doseday – medicines.csv"
-            case .refills: "Doseday – refills.csv"
-            case .health: "Doseday – mood and weight.csv"
-            case .calculators: "Doseday – calculator history.csv"
-            case .sideEffects: "Doseday – side effects.csv"
+            case .doses: String(localized: "Doseday – dose history.csv")
+            case .medicines: String(localized: "Doseday – medicines.csv")
+            case .refills: String(localized: "Doseday – refills.csv")
+            case .health: String(localized: "Doseday – mood and weight.csv")
+            case .calculators: String(localized: "Doseday – calculator history.csv")
+            case .sideEffects: String(localized: "Doseday – side effects.csv")
             }
         }
     }
@@ -82,14 +82,14 @@ struct DataExportFile: Transferable {
                 return [
                     Self.day(log.day),
                     log.time.label,
-                    medicine?.name ?? "Deleted medicine",
+                    medicine?.name ?? String(localized: "Deleted medicine"),
                     medicine.map { $0.unit.format(log.units) } ?? "\(log.units)",
-                    log.isTaken ? "Taken" : "Missed",
+                    log.isTaken ? String(localized: "Taken") : String(localized: "Missed"),
                     log.takenAt.map(Self.dateTime) ?? "",
                     log.site?.title ?? "",
                 ]
             }
-        return Self.table(header: ["Date", "Scheduled time", "Medicine", "Amount", "Status", "Taken at", "Injection site"], rows: rows)
+        return Self.table(header: ["Date", String(localized: "Scheduled time"), "Medicine", "Amount", "Status", String(localized: "Taken at"), String(localized: "Injection site")], rows: rows)
     }
 
     private func medicinesCSV() -> String {
@@ -110,7 +110,7 @@ struct DataExportFile: Transferable {
             ]
         }
         return Self.table(
-            header: ["Medicine", "Brand", "Strength", "Type", "Days", "Times", "Each dose", "In stock", "Days left", "For", "Instructions", "Added"],
+            header: ["Medicine", "Brand", "Strength", "Type", "Days", "Times", String(localized: "Each dose"), String(localized: "In stock"), String(localized: "Days left"), "For", "Instructions", "Added"],
             rows: rows
         )
     }
@@ -119,7 +119,7 @@ struct DataExportFile: Transferable {
         let rows = refills.sorted { $0.date > $1.date }.map { refill -> [String] in
             [Self.day(refill.date), refill.medicineName, "\(refill.amount)", "\(refill.lastsDays)"]
         }
-        return Self.table(header: ["Date", "Medicine", "Amount", "Lasts (days)"], rows: rows)
+        return Self.table(header: ["Date", "Medicine", "Amount", String(localized: "Lasts (days)")], rows: rows)
     }
 
     /// One row per day with a mood or a weigh-in, newest first.
@@ -134,7 +134,7 @@ struct DataExportFile: Transferable {
                 kilos[day].map { weightUnit.value(fromKilograms: $0).formatted(.number.precision(.fractionLength(1)).grouping(.never).locale(Locale(identifier: "en_US_POSIX"))) } ?? "",
             ]
         }
-        return Self.table(header: ["Date", "Mood", "Weight (\(weightUnit.rawValue))"], rows: rows)
+        return Self.table(header: ["Date", "Mood", String(localized: "Weight (\(weightUnit.rawValue))")], rows: rows)
     }
 
     private func calculatorsCSV() -> String {
@@ -145,14 +145,14 @@ struct DataExportFile: Transferable {
                 result.kind == .bmi
                     ? result.value.formatted(.number.precision(.fractionLength(1)).grouping(.never).locale(Locale(identifier: "en_US_POSIX")))
                     : "\(Int(result.value.rounded()))",
-                result.kind == .bmi ? "BMI" : "kcal/day",
+                result.kind == .bmi ? String(localized: "BMI") : "kcal/day",
                 result.weightKg.map { weightUnit.value(fromKilograms: $0).formatted(.number.precision(.fractionLength(1)).grouping(.never).locale(Locale(identifier: "en_US_POSIX"))) } ?? "",
                 result.protein.map(String.init) ?? "",
                 result.carbs.map(String.init) ?? "",
                 result.fat.map(String.init) ?? "",
             ]
         }
-        return Self.table(header: ["Date", "Calculator", "Result", "Unit", "Weight (\(weightUnit.rawValue))", "Protein (g)", "Carbs (g)", "Fat (g)"], rows: rows)
+        return Self.table(header: ["Date", "Calculator", "Result", "Unit", String(localized: "Weight (\(weightUnit.rawValue))"), String(localized: "Protein (g)"), String(localized: "Carbs (g)"), String(localized: "Fat (g)")], rows: rows)
     }
 
     private func sideEffectsCSV() -> String {
@@ -167,7 +167,7 @@ struct DataExportFile: Transferable {
                 entry.note,
             ]
         }
-        return Self.table(header: ["Date", "Side effect", "Severity", "Medicine", "Injection site", "Note"], rows: rows)
+        return Self.table(header: ["Date", String(localized: "Side effect"), "Severity", "Medicine", String(localized: "Injection site"), "Note"], rows: rows)
     }
 
     // MARK: Formatting

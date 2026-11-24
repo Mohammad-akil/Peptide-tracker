@@ -13,7 +13,7 @@ struct HealthContactsSettingsView: View {
             if store.contacts.isEmpty {
                 emptyState
             } else {
-                GroupedSection(footer: "Your pharmacy has its own page in Settings, so medicine pages can call it.") {
+                GroupedSection(footer: String(localized: "Your pharmacy has its own page in Settings, so medicine pages can call it.")) {
                     ForEach(Array(store.contacts.enumerated()), id: \.element.id) { index, contact in
                         row(contact, showsDivider: index < store.contacts.count - 1)
                     }
@@ -79,11 +79,11 @@ struct HealthContactsSettingsView: View {
 
             HStack(spacing: 8) {
                 if !contact.dialablePhone.isEmpty {
-                    quickAction("message.fill", tint: Color(hex: 0x30D158), label: "Message \(contact.name)", url: "sms:\(contact.dialablePhone)")
-                    quickAction("phone.fill", tint: Color(hex: 0x0A84FF), label: "Call \(contact.name)", url: "tel:\(contact.dialablePhone)")
+                    quickAction("message.fill", tint: Color(hex: 0x30D158), label: String(localized: "Message \(contact.name)"), url: "sms:\(contact.dialablePhone)")
+                    quickAction("phone.fill", tint: Color(hex: 0x0A84FF), label: String(localized: "Call \(contact.name)"), url: "tel:\(contact.dialablePhone)")
                 }
                 if !contact.trimmedEmail.isEmpty {
-                    quickAction("envelope.fill", tint: Color(hex: 0xFF9F0A), label: "Email \(contact.name)", url: "mailto:\(contact.trimmedEmail)")
+                    quickAction("envelope.fill", tint: Color(hex: 0xFF9F0A), label: String(localized: "Email \(contact.name)"), url: "mailto:\(contact.trimmedEmail)")
                 }
             }
         }
@@ -128,19 +128,19 @@ private struct HealthContactEditor: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     GroupedSection {
-                        FieldRow(title: "Name", placeholder: "Dr Patel", text: $contact.name)
+                        FieldRow(title: String(localized: "Name"), placeholder: String(localized: "Dr Patel"), text: $contact.name)
                             .textInputAutocapitalization(.words)
                             .textContentType(.name)
-                        FieldRow(title: "Phone", placeholder: "Add", text: $contact.phone)
+                        FieldRow(title: String(localized: "Phone"), placeholder: String(localized: "Add"), text: $contact.phone)
                             .keyboardType(.phonePad)
                             .textContentType(.telephoneNumber)
-                        FieldRow(title: "Email", placeholder: "Add", text: $contact.email, showsDivider: false)
+                        FieldRow(title: String(localized: "Email"), placeholder: String(localized: "Add"), text: $contact.email, showsDivider: false)
                             .keyboardType(.emailAddress)
                             .textContentType(.emailAddress)
                             .textInputAutocapitalization(.never)
                     }
 
-                    GroupedSection(title: "Role") {
+                    GroupedSection(title: String(localized: "Role")) {
                         FlowLayout(spacing: 8) {
                             ForEach(HealthContact.Role.allCases) { role in
                                 roleChip(role)
@@ -150,7 +150,7 @@ private struct HealthContactEditor: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
-                    GroupedSection(title: "Notes") {
+                    GroupedSection(title: String(localized: "Notes")) {
                         TextField("e.g. Practice on Elm Road, sees me every 3 months", text: $contact.notes, axis: .vertical)
                             .font(.system(size: 17))
                             .lineLimit(2...5)

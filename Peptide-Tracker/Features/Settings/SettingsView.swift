@@ -11,6 +11,10 @@ struct SettingsView: View {
     /// Bumped after erasing (Reports & data), so the profile reloads its
     /// (now gone) photo.
     @AppStorage("settings.profileVersion") private var profileVersion = 0
+    @AppStorage(AppLanguage.storageKey) private var languageRaw = ""
+    @State private var isLanguagePickerPresented = false
+
+    private var language: AppLanguage { AppLanguage(rawValue: languageRaw) ?? .deviceDefault }
 
     var body: some View {
         ScrollView {
@@ -21,13 +25,20 @@ struct SettingsView: View {
                 proCard
 
                 GroupedSection {
-                    SettingsLinkRow(page: .remindersGroup, value: store.settings.notificationsEnabled ? nil : "Off")
+                    SettingsLinkRow(page: .remindersGroup, value: store.settings.notificationsEnabled ? nil : String(localized: "Off"))
                     SettingsLinkRow(page: .health, value: store.latestWeight.map { store.settings.weightUnit.format($0.kilograms) })
-                    SettingsLinkRow(page: .privacy, value: store.settings.appLock ? "Locked" : nil)
+                    SettingsLinkRow(page: .privacy, value: store.settings.appLock ? String(localized: "Locked") : nil)
                     SettingsLinkRow(page: .icloud, value: CloudSync.shared.summary)
                     SettingsLinkRow(page: .careTeam, value: store.trackingSummary)
                     SettingsLinkRow(page: .data, value: store.reportSummary)
-                    SettingsLinkRow(page: .appearance, value: AppIconOption.current.title, showsDivider: false)
+                    SettingsLinkRow(page: .appearance, value: AppIconOption.current.title)
+                    Button {
+                        HapticFeedback.selection()
+                        isLanguagePickerPresented = true
+                    } label: {
+                        SettingsRowLabel(symbol: "globe", tint: Color(hex: 0x0A84FF), title: String(localized: "Language"), value: "\(language.flag) \(language.nativeName)", showsChevron: true)
+                    }
+                    .buttonStyle(RowPressStyle())
                 }
 
                 GroupedSection {
@@ -46,9 +57,10 @@ struct SettingsView: View {
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
         .scrollIndicators(.hidden)
+        .sheet(isPresented: $isLanguagePickerPresented) { LanguagePickerSheet() }
         // Pinned, as on the other tabs: the title stays while rows scroll under.
         .safeAreaInset(edge: .top, spacing: 0) {
-            TopPanel(title: "Settings") {
+            TopPanel(title: String(localized: "Settings")) {
                 AppearanceToggleButton()
                 shareButton
             } controls: { EmptyView() }
@@ -78,7 +90,7 @@ struct SettingsView: View {
     private var proCard: some View {
         if let plan = purchases.activePlan {
             GroupedSection {
-                SettingsRowLabel(symbol: "crown.fill", tint: Color(hex: 0xFF9F0A), title: "\(Bundle.main.appName) Pro", value: plan.title)
+                SettingsRowLabel(symbol: "crown.fill", tint: Color(hex: 0xFF9F0A), title: String(localized: "\(Bundle.main.appName) Pro"), value: plan.title)
             }
         }
     }

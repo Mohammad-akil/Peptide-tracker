@@ -30,9 +30,9 @@ struct WelcomeView: View {
                     .staggeredAppear(appears, order: 3)
 
                 VStack(alignment: .leading, spacing: 12) {
-                    point("No account needed", order: 4)
-                    point("Pills, injections, creams, liquids and drops", order: 5)
-                    point("Your data stays on your phone", order: 6)
+                    point(String(localized: "No account needed"), order: 4)
+                    point(String(localized: "Pills, injections, creams, liquids and drops"), order: 5)
+                    point(String(localized: "Your data stays private"), order: 6)
                 }
                 .padding(.top, 24)
             }
@@ -70,10 +70,10 @@ private struct WelcomeIllustration: View {
     let appears: Bool
 
     private let medicines = [
-        Medicine(name: "Vitamin D3", strength: "1000 IU", type: .capsule, color: .pink,
+        Medicine(name: String(localized: "Vitamin D3"), strength: String(localized: "1000 IU"), type: .capsule, color: .pink,
                  stock: 14, capacity: 60, perDay: 2, intakeTimes: [.morning],
                  reminderDaysBefore: 5, reminderTime: .defaultReminder),
-        Medicine(name: "Metformin", strength: "500 mg", type: .capsule, color: .blue,
+        Medicine(name: String(localized: "Metformin"), strength: String(localized: "500 mg"), type: .capsule, color: .blue,
                  stock: 26, capacity: 60, perDay: 2, intakeTimes: [.morning],
                  reminderDaysBefore: 5, reminderTime: .defaultReminder),
     ]
@@ -91,7 +91,7 @@ private struct WelcomeIllustration: View {
             .padding(.top, 20)
             .staggeredAppear(appears, order: 0)
 
-            NotificationPreview(title: "Metformin runs out in 5 days", time: "9:00")
+            NotificationPreview(title: String(localized: "Metformin runs out in 5 days"), time: "9:00")
                 .rotationEffect(.degrees(-1.5))
                 .padding(.horizontal, 6)
                 .padding(.top, 170)

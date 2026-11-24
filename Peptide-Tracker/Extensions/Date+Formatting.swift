@@ -36,7 +36,7 @@ extension Date {
         switch days {
         case ...0: return "today"
         case 1: return "yesterday"
-        default: return "\(days) days ago"
+        default: return String(localized: "\(days) days ago")
         }
     }
 }

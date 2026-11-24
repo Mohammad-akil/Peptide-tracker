@@ -13,7 +13,7 @@ struct MedicinesView: View {
     enum Pane: String, CaseIterable {
         case medicines, stock
 
-        var title: String { self == .medicines ? "Medicines" : "Stock" }
+        var title: String { self == .medicines ? String(localized: "Medicines") : String(localized: "Stock") }
     }
 
     @Environment(MedicineStore.self) private var store
@@ -74,7 +74,7 @@ struct MedicinesView: View {
     }
 
     private func topPanel(now: Date) -> some View {
-        TopPanel(title: "Medicines") {
+        TopPanel(title: String(localized: "Medicines")) {
             if showsStock {
                 shareButton(now: now)
             } else if !store.medicines.isEmpty {
@@ -127,7 +127,7 @@ struct MedicinesView: View {
     private var proShareMedicinesButton: some View {
         ShareLink(
             item: MedicineListPDF(medicines: store.medicinesByUrgency, pharmacyName: store.settings.pharmacyName, date: .now),
-            preview: SharePreview("Medicine list", image: Image(systemName: "doc.text"))
+            preview: SharePreview(String(localized: "Medicine list"), image: Image(systemName: "doc.text"))
         ) {
             Icon(.share, size: 20)
                 .foregroundStyle(AppTheme.ColorToken.primaryText)
@@ -172,8 +172,8 @@ struct MedicinesView: View {
     private var noResults: some View {
         EmptyStateView(
             illustration: .noSearchResults,
-            title: "No match for “\(trimmedQuery)”",
-            message: "Check the spelling, or add it as a new medicine."
+            title: String(localized: "No match for “\(trimmedQuery)”"),
+            message: String(localized: "Check the spelling, or add it as a new medicine.")
         ) {
             Button("Add “\(trimmedQuery)”") {
                 addMedicine(named: trimmedQuery)
@@ -192,11 +192,11 @@ struct MedicinesView: View {
             let sorted = store.medicinesByUrgency.filter { medicine in matches.contains { $0.id == medicine.id } }
             let soon = sorted.filter { $0.urgency.isRunningLow }
             let stocked = sorted.filter { !$0.urgency.isRunningLow }
-            if !soon.isEmpty { section("Refill soon", soon, now: now) }
+            if !soon.isEmpty { section(String(localized: "Refill soon"), soon, now: now) }
             if !stocked.isEmpty { section("Stocked", stocked, now: now) }
         case .name:
             let sorted = matches.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-            section("All medicines", sorted, now: now)
+            section(String(localized: "All medicines"), sorted, now: now)
         }
     }
 
@@ -331,7 +331,7 @@ struct MedicineRow: View {
 
     /// "13 days", "Run out", "On order"
     private var value: String {
-        medicine.isOrdered ? "On order" : medicine.daysLeftLabel
+        medicine.isOrdered ? String(localized: "On order") : medicine.daysLeftLabel
     }
 
     private var valueColor: Color {
@@ -374,8 +374,8 @@ struct MedicineTile: View {
 
     /// "13 days left", "Run out", "On order"
     private var value: String {
-        if medicine.isOrdered { return "On order" }
-        return medicine.urgency == .out ? "Run out" : "\(medicine.daysLeftLabel) left"
+        if medicine.isOrdered { return String(localized: "On order") }
+        return medicine.urgency == .out ? String(localized: "Run out") : String(localized: "\(medicine.daysLeftLabel) left")
     }
 
     private var valueColor: Color {
@@ -406,8 +406,8 @@ struct LayoutToggle: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            option(isList: true, symbol: "list.bullet", name: "List")
-            option(isList: false, symbol: "square.grid.2x2", name: "Grid")
+            option(isList: true, symbol: "list.bullet", name: String(localized: "List"))
+            option(isList: false, symbol: "square.grid.2x2", name: String(localized: "Grid"))
         }
         .padding(3)
         .compatGlass(interactive: true, in: .capsule)
@@ -428,7 +428,7 @@ struct LayoutToggle: View {
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(isActive ? "\(name) view, selected" : "Show \(name.lowercased()) view")
+        .accessibilityLabel(isActive ? String(localized: "\(name) view, selected") : String(localized: "Show \(name.lowercased()) view"))
     }
 }
 
@@ -478,7 +478,7 @@ private struct DeleteMedicineAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content.alert(
-            "Delete \(medicine?.name ?? "medicine")?",
+            String(localized: "Delete \(medicine?.name ?? "medicine")?"),
             isPresented: Binding(get: { medicine != nil }, set: { if !$0 { medicine = nil } }),
             presenting: medicine
         ) { medicine in

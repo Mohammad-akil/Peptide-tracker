@@ -18,13 +18,13 @@ struct HealthContact: Identifiable, Codable, Hashable {
 
         var title: String {
             switch self {
-            case .doctor: "Doctor"
-            case .specialist: "Specialist"
-            case .nurse: "Nurse"
-            case .pharmacist: "Pharmacist"
-            case .caregiver: "Carer"
-            case .clinic: "Clinic"
-            case .other: "Other"
+            case .doctor: String(localized: "Doctor")
+            case .specialist: String(localized: "Specialist")
+            case .nurse: String(localized: "Nurse")
+            case .pharmacist: String(localized: "Pharmacist")
+            case .caregiver: String(localized: "Carer")
+            case .clinic: String(localized: "Clinic")
+            case .other: String(localized: "Other")
             }
         }
 

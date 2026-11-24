@@ -78,7 +78,7 @@ struct CalendarView: View {
     // MARK: Top panel
 
     private var topPanel: some View {
-        TopPanel(title: openMonth.map { $0.formatted(.dateTime.month(.wide)) } ?? "Calendar",
+        TopPanel(title: openMonth.map { $0.formatted(.dateTime.month(.wide)) } ?? String(localized: "Calendar"),
                  titleValue: openMonth.map { Double(calendar.component(.month, from: $0)) },
                  contentWidth: AppTheme.Layout.wide) {
             Button { showsShare = true } label: {
@@ -131,13 +131,13 @@ struct CalendarView: View {
     private var yearSwitcher: some View {
         let thisYear = calendar.component(.year, from: .now)
         return HStack(spacing: 4) {
-            stepButton("chevron.backward", label: "Previous year") { changeYear(by: -1) }
+            stepButton("chevron.backward", label: String(localized: "Previous year")) { changeYear(by: -1) }
             Text(verbatim: String(year))
                 .font(.system(size: 20, weight: .bold))
                 .monospacedDigit()
                 .contentTransition(.numericText(value: Double(year)))
                 .frame(minWidth: 56)
-            stepButton("chevron.forward", label: "Next year") { changeYear(by: 1) }
+            stepButton("chevron.forward", label: String(localized: "Next year")) { changeYear(by: 1) }
                 .disabled(year >= thisYear)
                 .opacity(year >= thisYear ? 0.3 : 1)
         }

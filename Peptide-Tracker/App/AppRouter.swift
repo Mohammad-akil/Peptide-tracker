@@ -12,9 +12,9 @@ final class AppRouter {
 
         var title: String {
             switch self {
-            case .today: "Today"
-            case .medicines: "Medicines"
-            case .settings: "Settings"
+            case .today: String(localized: "Today")
+            case .medicines: String(localized: "Medicines")
+            case .settings: String(localized: "Settings")
             }
         }
 

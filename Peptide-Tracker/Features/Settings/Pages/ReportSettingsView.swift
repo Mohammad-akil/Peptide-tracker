@@ -49,7 +49,7 @@ struct ReportSettingsView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(
                         item: AdherenceReportPDF(report: report, personName: personName, health: VisitHealthSummary(store: store, days: period.days)),
-                        preview: SharePreview("Doctor visit report", image: Image(systemName: "chart.bar.doc.horizontal"))
+                        preview: SharePreview(String(localized: "Doctor visit report"), image: Image(systemName: "chart.bar.doc.horizontal"))
                     ) {
                         Image(systemName: "square.and.arrow.up")
                     }
@@ -157,9 +157,9 @@ struct ReportSettingsView: View {
     /// carries the meaning alone; the numbers stay in text ink.
     private func stats(_ report: AdherenceReport) -> some View {
         HStack(spacing: 10) {
-            StatTile(value: report.taken, label: "Taken", symbol: "checkmark.circle.fill", tint: Urgency.healthy.tint)
-            StatTile(value: report.missed, label: "Missed", symbol: "exclamationmark.circle.fill", tint: Urgency.low.tint)
-            StatTile(value: report.streak, label: report.streak == 1 ? "Day streak" : "Days streak", symbol: "flame.fill", tint: AppTheme.ColorToken.accent)
+            StatTile(value: report.taken, label: String(localized: "Taken"), symbol: "checkmark.circle.fill", tint: Urgency.healthy.tint)
+            StatTile(value: report.missed, label: String(localized: "Missed"), symbol: "exclamationmark.circle.fill", tint: Urgency.low.tint)
+            StatTile(value: report.streak, label: report.streak == 1 ? String(localized: "Day streak") : String(localized: "Days streak"), symbol: "flame.fill", tint: AppTheme.ColorToken.accent)
         }
     }
 

@@ -67,16 +67,16 @@ struct JourneyPaywallView: View {
 
     /// What Pro unlocks, in the order people care about.
     private static let benefits: [(symbol: String, title: String, detail: String)] = [
-        ("syringe.fill", "Stay on top of every dose", "Reminders for shots and pills, right on time."),
-        ("figure.arms.open", "Rotate injection sites", "See where you injected last and where to go next."),
-        ("target", "Hit your goal weight", "Log weigh-ins and watch your progress toward your goal."),
-        ("shippingbox.fill", "Never run out", "Supply countdowns and refill alerts before you’re low."),
-        ("face.smiling.inverse", "Daily check-ins", "Track mood, energy and side effects day by day."),
-        ("chart.bar.xaxis", "Insights and calendar", "See your adherence and trends over 7, 30 and 90 days."),
-        ("doc.text.fill", "Doctor-ready reports", "Share clean PDF reports and export your data anytime."),
-        ("function", "Dose and BMI calculators", "Work out doses, units and BMI in seconds."),
-        ("square.grid.2x2.fill", "Home Screen widgets", "Your next dose and supply at a glance."),
-        ("lock.shield.fill", "Private by design", "Privacy mode hides medicine names on your screen."),
+        ("syringe.fill", String(localized: "Stay on top of every dose"), String(localized: "Reminders for shots and pills, right on time.")),
+        ("figure.arms.open", String(localized: "Rotate injection sites"), String(localized: "See where you injected last and where to go next.")),
+        ("target", String(localized: "Hit your goal weight"), String(localized: "Log weigh-ins and watch your progress toward your goal.")),
+        ("shippingbox.fill", String(localized: "Never run out"), String(localized: "Supply countdowns and refill alerts before you’re low.")),
+        ("face.smiling.inverse", String(localized: "Daily check-ins"), String(localized: "Track mood, energy and side effects day by day.")),
+        ("chart.bar.xaxis", String(localized: "Insights and calendar"), String(localized: "See your adherence and trends over 7, 30 and 90 days.")),
+        ("doc.text.fill", String(localized: "Doctor-ready reports"), String(localized: "Share clean PDF reports and export your data anytime.")),
+        ("function", String(localized: "Dose and BMI calculators"), String(localized: "Work out doses, units and BMI in seconds.")),
+        ("square.grid.2x2.fill", String(localized: "Home Screen widgets"), String(localized: "Your next dose and supply at a glance.")),
+        ("lock.shield.fill", String(localized: "Private by design"), String(localized: "Privacy mode hides medicine names on your screen.")),
     ]
 
     private func benefit(_ symbol: String, _ title: String, _ detail: String) -> some View {
@@ -148,8 +148,8 @@ struct JourneyPaywallView: View {
     }
 
     private var callToAction: String {
-        if let days = purchases.trialDays(for: plan) { return "Start my \(days)-day free trial" }
-        return "Start My Journey"
+        if let days = purchases.trialDays(for: plan) { return String(localized: "Start my \(days)-day free trial") }
+        return String(localized: "Start My Journey")
     }
 
     private func select(_ newPlan: PurchaseStore.Plan) {
@@ -189,12 +189,12 @@ private struct JourneyPlanTile: View {
         switch plan {
         case .yearly:
             let parts = [
-                purchases.yearlySavingsPercent.map { "SAVE \($0)%" },
-                purchases.trialDays(for: plan).map { "\($0) DAYS FREE" },
+                purchases.yearlySavingsPercent.map { String(localized: "SAVE \($0)%") },
+                purchases.trialDays(for: plan).map { String(localized: "\($0) DAYS FREE") },
             ].compactMap { $0 }
-            return parts.isEmpty ? "MOST POPULAR" : parts.joined(separator: " · ")
+            return parts.isEmpty ? String(localized: "MOST POPULAR") : parts.joined(separator: " · ")
         case .monthly:
-            return purchases.trialDays(for: plan).map { "\($0) DAYS FREE" }
+            return purchases.trialDays(for: plan).map { String(localized: "\($0) DAYS FREE") }
         }
     }
 
@@ -208,9 +208,9 @@ private struct JourneyPlanTile: View {
     private var detail: String {
         switch plan {
         case .yearly:
-            if let perMonth = purchases.yearlyPerMonth { return "Just \(perMonth)/mo, billed yearly" }
-            return "Billed yearly · Cancel anytime"
-        case .monthly: return "Billed monthly"
+            if let perMonth = purchases.yearlyPerMonth { return String(localized: "Just \(perMonth)/mo, billed yearly") }
+            return String(localized: "Billed yearly · Cancel anytime")
+        case .monthly: return String(localized: "Billed monthly")
         }
     }
 

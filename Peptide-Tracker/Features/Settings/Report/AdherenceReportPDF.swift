@@ -14,12 +14,12 @@ struct AdherenceReportPDF: Transferable {
         FileRepresentation(exportedContentType: .pdf) { document in
             SentTransferredFile(try await document.render())
         }
-        .suggestedFileName("Doctor visit report.pdf")
+        .suggestedFileName(String(localized: "Doctor visit report.pdf"))
     }
 
     @MainActor
     private func render() throws -> URL {
-        try PDFRendering.render(AdherenceReportPage(document: self), fileName: "Doctor visit report.pdf")
+        try PDFRendering.render(AdherenceReportPage(document: self), fileName: String(localized: "Doctor visit report.pdf"))
     }
 }
 
@@ -35,10 +35,10 @@ private struct AdherenceReportPage: View {
             }
 
             HStack(spacing: 28) {
-                figure((report.rate ?? 0).percentLabel, "of doses taken")
+                figure((report.rate ?? 0).percentLabel, String(localized: "of doses taken"))
                 figure("\(report.taken)", "taken")
                 figure("\(report.missed)", "missed")
-                figure("\(report.streak)", report.streak == 1 ? "day streak" : "days streak")
+                figure("\(report.streak)", report.streak == 1 ? String(localized: "day streak") : String(localized: "days streak"))
             }
 
             Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 10) {
@@ -78,7 +78,7 @@ private struct AdherenceReportPage: View {
 
     /// "Mohammad Akil · Last 30 days, to 19 October 2026"
     private var subtitle: String {
-        let range = "Last \(report.period.days) days, to \(report.now.formatted(.dateTime.day().month(.wide).year()))"
+        let range = String(localized: "Last \(report.period.days) days, to \(report.now.formatted(.dateTime.day().month(.wide).year()))")
         return [document.personName, range].compactMap { $0 }.joined(separator: " · ")
     }
 
@@ -95,21 +95,21 @@ private struct AdherenceReportPage: View {
             sectionTitle("Health")
             HStack(spacing: 28) {
                 if let start = health.weightStart, let end = health.weightEnd {
-                    figure(health.weightUnit.format(end), "weight now")
+                    figure(health.weightUnit.format(end), String(localized: "weight now"))
                     let change = health.weightUnit.value(fromKilograms: end - start)
-                    figure("\(change >= 0 ? "+" : "")\(change.formatted(.number.precision(.fractionLength(1)))) \(health.weightUnit.rawValue)", "change")
+                    figure(String(localized: "\(change >= 0 ? "+" : "")\(change.formatted(.number.precision(.fractionLength(1)))) \(health.weightUnit.rawValue)"), "change")
                 }
                 if let mood = health.moodAverage {
-                    figure(mood.formatted(.number.precision(.fractionLength(1))) + " / 5", "average mood")
+                    figure(mood.formatted(.number.precision(.fractionLength(1))) + " / 5", String(localized: "average mood"))
                 }
             }
         }
 
         if !health.sideEffects.isEmpty {
-            sectionTitle("Side effects logged")
+            sectionTitle(String(localized: "Side effects logged"))
             Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 8) {
                 GridRow {
-                    header("Side effect")
+                    header(String(localized: "Side effect"))
                     header("Times")
                     header("Worst")
                     header("Pattern")
@@ -128,8 +128,8 @@ private struct AdherenceReportPage: View {
         }
 
         if !health.sites.isEmpty {
-            sectionTitle("Injection sites used")
-            Text(health.sites.map { "\($0.site.title) \($0.count)×\($0.reactions > 0 ? " (\($0.reactions) reaction\($0.reactions == 1 ? "" : "s"))" : "")" }.joined(separator: " · "))
+            sectionTitle(String(localized: "Injection sites used"))
+            Text(health.sites.map { "\($0.site.title) \($0.count)×" + ($0.reactions == 0 ? "" : $0.reactions == 1 ? String(localized: " (1 reaction)") : String(localized: " (\($0.reactions) reactions)")) }.joined(separator: " · "))
                 .font(.system(size: 11))
         }
     }

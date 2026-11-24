@@ -5,7 +5,7 @@ import SwiftUI
 
 extension DailyCheckIn.Mood {
     /// The drawn face in Assets → Moods ("mood-great" …).
-    var illustration: Image { Image("mood-\(String(describing: self))") }
+    var illustration: Image { Image(String(localized: "mood-\(String(describing: self))")) }
 
     var tint: Color {
         switch self {
@@ -54,7 +54,7 @@ struct MoodCard: View {
             MoodCharacter(mood: today, size: 132)
                 .padding(.top, 4)
 
-            Text(today?.title ?? "How are you feeling?")
+            Text(today?.title ?? String(localized: "How are you feeling?"))
                 .font(.system(size: today == nil ? 22 : 28, weight: .heavy))
                 .kerning(-0.5)
                 .foregroundStyle(today?.tint ?? AppTheme.ColorToken.primaryText)
@@ -286,7 +286,7 @@ struct WeightCard: View {
         let reached = total > 0 ? current <= goal : current >= goal
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(reached ? "Goal reached" : "\(unit.format(left)) to go")
+                Text(reached ? "Goal reached" : String(localized: "\(unit.format(left)) to go"))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(reached ? Urgency.healthy.ink : AppTheme.ColorToken.primaryText)
                 Spacer(minLength: 8)

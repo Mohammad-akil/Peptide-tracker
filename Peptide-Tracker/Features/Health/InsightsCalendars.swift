@@ -115,13 +115,13 @@ struct MonthCalendar: View {
     var body: some View {
         VStack(spacing: isLarge ? 20 : 12) {
             HStack {
-                arrow("chevron.backward", label: "Previous month") { onStep(-1) }
+                arrow("chevron.backward", label: String(localized: "Previous month")) { onStep(-1) }
                 Spacer()
                 Text(month.formatted(.dateTime.month(.wide).year()))
                     .font(.system(size: isLarge ? 24 : 17, weight: .bold))
                     .contentTransition(.opacity)
                 Spacer()
-                arrow("chevron.forward", label: "Next month") { onStep(1) }
+                arrow("chevron.forward", label: String(localized: "Next month")) { onStep(1) }
                     .disabled(isCurrentOrLater)
                     .opacity(isCurrentOrLater ? 0.3 : 1)
             }
@@ -203,10 +203,10 @@ struct MonthCalendar: View {
 
     private func accessibilityLabel(_ day: Date, summary: DaySummary?) -> String {
         let date = day.formatted(.dateTime.weekday(.wide).day().month(.wide))
-        guard let summary else { return "\(date), no doses" }
+        guard let summary else { return String(localized: "\(date), no doses") }
         switch summary.status {
-        case .upcoming: return "\(date), \(summary.scheduled) doses to come"
-        default: return "\(date), \(summary.taken) of \(summary.due) doses taken"
+        case .upcoming: return String(localized: "\(date), \(summary.scheduled) doses to come")
+        default: return String(localized: "\(date), \(summary.taken) of \(summary.due) doses taken")
         }
     }
 }
@@ -219,8 +219,8 @@ struct InsightsLegend: View {
     var body: some View {
         let isLarge = sizeClass == .regular
         HStack(spacing: isLarge ? 28 : 16) {
-            item("All taken", fill: InsightsPalette.all)
-            item("Some taken", fill: InsightsPalette.partial)
+            item(String(localized: "All taken"), fill: InsightsPalette.all)
+            item(String(localized: "Some taken"), fill: InsightsPalette.partial)
             item("Missed", fill: InsightsPalette.missed)
         }
         .font(.system(size: isLarge ? 16 : 13, weight: .medium))
@@ -356,11 +356,11 @@ struct DayDetailCard: View {
     @ViewBuilder
     private func statusPill(_ dose: ScheduledDose, now: Date) -> some View {
         if let takenAt = dose.takenAt {
-            pill("Taken \(takenAt.formatted(date: .omitted, time: .shortened))", symbol: "checkmark", fill: AppTheme.ColorToken.accentSoft, ink: AppTheme.ColorToken.accentInk)
+            pill(String(localized: "Taken \(takenAt.formatted(date: .omitted, time: .shortened))"), symbol: "checkmark", fill: AppTheme.ColorToken.accentSoft, ink: AppTheme.ColorToken.accentInk)
         } else if dose.scheduledAt <= now {
             pill("Missed", symbol: "xmark", fill: InsightsPalette.missed, ink: InsightsPalette.missedInk)
         } else {
-            pill("To come", symbol: "clock", fill: AppTheme.ColorToken.controlFill, ink: AppTheme.ColorToken.secondaryText)
+            pill(String(localized: "To come"), symbol: "clock", fill: AppTheme.ColorToken.controlFill, ink: AppTheme.ColorToken.secondaryText)
         }
     }
 
