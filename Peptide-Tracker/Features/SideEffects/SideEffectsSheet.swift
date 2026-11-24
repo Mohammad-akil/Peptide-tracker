@@ -33,6 +33,7 @@ struct SideEffectsSheet: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle("Side effects")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 // The toolbar's own close button, like the other sheets; the
                 // standalone glass circle doubled up inside the bar's glass.
@@ -229,6 +230,7 @@ private struct SideEffectEditor: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle(isNew ? "Log side effect" : "Side effect")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

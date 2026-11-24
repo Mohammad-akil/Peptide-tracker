@@ -84,6 +84,7 @@ struct AppIconPicker: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle("App icon")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .close) { dismiss() }

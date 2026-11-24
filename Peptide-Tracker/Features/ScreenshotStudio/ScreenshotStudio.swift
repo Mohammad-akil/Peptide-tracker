@@ -205,6 +205,7 @@ struct ScreenshotStudioView: View {
             }
             .navigationTitle("Screenshot Studio")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Done") { dismiss() }

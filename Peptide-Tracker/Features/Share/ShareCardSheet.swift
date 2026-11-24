@@ -57,6 +57,7 @@ struct ShareCardSheet: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .close) { dismiss() }

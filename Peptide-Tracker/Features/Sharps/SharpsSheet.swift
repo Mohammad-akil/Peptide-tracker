@@ -91,6 +91,7 @@ struct SharpsSheet: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle("Sharps container")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .close) { dismiss() }

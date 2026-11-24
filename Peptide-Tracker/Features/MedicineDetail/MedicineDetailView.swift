@@ -58,6 +58,7 @@ struct MedicineDetailView: View {
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) { bottomBar(medicine) }
         .navigationBarTitleDisplayMode(.inline)
+        .compatNavigationBarBlur()
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 // Black in light mode, white in dark — not the accent purple.

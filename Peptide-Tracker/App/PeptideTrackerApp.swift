@@ -30,7 +30,10 @@ struct PeptideTrackerApp: App {
         WindowGroup {
             ZStack {
                 if let startsWithOnboarding {
-                    RootView(startsWithOnboarding: startsWithOnboarding)
+                    // Re-checked on every build of the tree: a language switch rebuilds
+                    // it, and someone who finished setup this session must not
+                    // land back on it.
+                    RootView(startsWithOnboarding: startsWithOnboarding && RootView.needsOnboarding(store: appDelegate.store))
                         // A language switch rebuilds the tree so every string
                         // is read again from the new language.
                         .id(appLanguageRaw)
@@ -71,6 +74,9 @@ struct PeptideTrackerApp: App {
                     // Doses and moods logged from a widget while away.
                     appDelegate.store.reloadFromDisk()
                     appDelegate.store.runDailyCountdown()
+                    // Keep a pinned Lock Screen card current: new day, swiped
+                    // away, or close to iOS's 8-hour limit.
+                    DoseActivityController.refresh(store: appDelegate.store)
                 }
             }
         }

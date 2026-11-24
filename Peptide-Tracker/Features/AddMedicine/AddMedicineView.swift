@@ -55,6 +55,7 @@ struct AddMedicineView: View {
             .background(AppTheme.ColorToken.background)
             .navigationTitle(draft.isEditing ? "Edit Medicine" : "Add Medicine")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .cancel) { dismiss() }

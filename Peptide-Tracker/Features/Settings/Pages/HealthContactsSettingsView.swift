@@ -173,6 +173,7 @@ private struct HealthContactEditor: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle(isNew ? "New contact" : "Edit contact")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

@@ -219,9 +219,10 @@ struct TodayView: View {
                     DoseActivityController.end()
                     isPinned = false
                 } else {
-                    DoseActivityController.start(store: store)
-                    isPinned = true
-                    router.showToast(String(localized: "Next dose pinned to Lock Screen"))
+                    isPinned = DoseActivityController.start(store: store)
+                    router.showToast(isPinned
+                        ? String(localized: "Next dose pinned to Lock Screen")
+                        : String(localized: "Couldn’t pin. Check Live Activities in Settings."))
                 }
             } label: {
                 Label(isPinned ? "Unpin from Lock Screen" : "Pin next dose to Lock Screen", systemImage: isPinned ? "pin.slash" : "pin.fill")

@@ -70,6 +70,7 @@ struct AllRemindersView: View {
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
         .navigationTitle("Reminders")
         .navigationBarTitleDisplayMode(.inline)
+        .compatNavigationBarBlur()
     }
 
     private func group(for medicine: Medicine) -> Bucket {

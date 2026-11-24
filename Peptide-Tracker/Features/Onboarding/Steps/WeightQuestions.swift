@@ -172,6 +172,7 @@ struct StartQuestion: View {
             .padding(.horizontal, 20)
             .navigationTitle(item == .weight ? "Start weight" : "Start date")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { editing = nil }

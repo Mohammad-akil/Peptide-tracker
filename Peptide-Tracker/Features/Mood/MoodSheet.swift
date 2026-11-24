@@ -43,6 +43,7 @@ struct MoodSheet: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle("Mood")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .close) { dismiss() }
@@ -118,6 +119,7 @@ struct MoodHistoryView: View {
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
         .navigationTitle("Mood history")
         .navigationBarTitleDisplayMode(.inline)
+        .compatNavigationBarBlur()
     }
 
     // MARK: Stats

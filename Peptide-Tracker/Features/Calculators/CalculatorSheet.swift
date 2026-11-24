@@ -50,6 +50,7 @@ struct CalculatorSheet: View {
             .background(AppTheme.ColorToken.background)
             .navigationTitle(kind.title)
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .close) { dismiss() }

@@ -437,6 +437,7 @@ struct WeightLogSheet: View {
             .background(AppTheme.ColorToken.background)
             .navigationTitle("Log weight")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .cancel) { dismiss() }
@@ -484,6 +485,7 @@ struct WeightSheet: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle("Weight")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CompatToolbarRoleButton(role: .close) { dismiss() }

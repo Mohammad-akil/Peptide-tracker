@@ -21,48 +21,124 @@ nonisolated struct DoseActivityAttributes: ActivityAttributes {
 
 /// Starts, updates and ends the next-dose Live Activity. The store calls
 /// `refresh` after every change, so ticking a dose anywhere moves it on.
+///
+/// "Pinned" is remembered, so the card sticks: it comes back each new day,
+/// after the person swipes it away, and before iOS retires it (the system
+/// ends a Live Activity after 8 hours and clears it 4 hours later).
 @MainActor
 enum DoseActivityController {
-    static var isAvailable: Bool { ActivityAuthorizationInfo().areActivitiesEnabled }
-    static var isRunning: Bool { !Activity<DoseActivityAttributes>.activities.isEmpty }
+    private static let pinnedKey = "liveActivity.pinned"
+    private static let startedKey = "liveActivity.startedAt"
+    /// Restart a little before iOS's 8-hour cut-off so it never goes stale.
+    private static let maxAge: TimeInterval = 7 * 3600
 
-    /// "Pin to Lock Screen" on Today.
-    static func start(store: MedicineStore) {
-        guard isAvailable, let state = makeState(store: store) else { return }
+    static var isAvailable: Bool { ActivityAuthorizationInfo().areActivitiesEnabled }
+
+    /// Whether the person asked for the card, independent of whether one is
+    /// on screen right now.
+    static var isPinned: Bool {
+        get { UserDefaults.standard.bool(forKey: pinnedKey) }
+        set { UserDefaults.standard.set(newValue, forKey: pinnedKey) }
+    }
+
+    /// Activities still showing. `activities` also lists ones that have
+    /// ended or been swiped away, which must not count as pinned.
+    private static var liveActivities: [Activity<DoseActivityAttributes>] {
+        Activity<DoseActivityAttributes>.activities.filter {
+            $0.activityState == .active || $0.activityState == .stale
+        }
+    }
+
+    static var isRunning: Bool { !liveActivities.isEmpty }
+
+    /// "Pin to Lock Screen" on Today. Returns whether the card is up.
+    @discardableResult
+    static func start(store: MedicineStore) -> Bool {
+        guard isAvailable else { return false }
+        isPinned = true
         if isRunning {
             refresh(store: store)
+            return true
+        }
+        guard let state = makeState(store: store), state.medicineID != nil, request(state) else {
+            isPinned = false
+            return false
+        }
+        return true
+    }
+
+    /// Moves the card on to the next dose, ends it once the day is done, and
+    /// while pinned, brings it back when it's missing or about to expire.
+    static func refresh(store: MedicineStore) {
+        let activities = liveActivities
+        guard !activities.isEmpty || isPinned else { return }
+        let state = makeState(store: store)
+
+        // Day done (or no doses today): end it, but stay pinned for tomorrow.
+        guard let state, state.medicineID != nil else {
+            guard !activities.isEmpty else { return }
+            Task {
+                for activity in activities {
+                    await activity.end(state.map { ActivityContent(state: $0, staleDate: nil) }, dismissalPolicy: .after(.now.addingTimeInterval(15 * 60)))
+                }
+            }
             return
         }
-        _ = try? Activity.request(
-            attributes: DoseActivityAttributes(),
-            content: ActivityContent(state: state, staleDate: state.dueAt.addingTimeInterval(3 * 3600)),
-            pushType: nil
-        )
-    }
 
-    /// Moves the card on to the next dose, or ends it once the day is done.
-    static func refresh(store: MedicineStore) {
-        guard isRunning else { return }
-        let activities = Activity<DoseActivityAttributes>.activities
-        Task {
-            guard let state = makeState(store: store), state.medicineID != nil else {
-                let final = makeState(store: store)
-                for activity in activities {
-                    await activity.end(final.map { ActivityContent(state: $0, staleDate: nil) }, dismissalPolicy: .after(.now.addingTimeInterval(15 * 60)))
-                }
+        let started = UserDefaults.standard.object(forKey: startedKey) as? Date ?? .distantPast
+        let isOld = Date.now.timeIntervalSince(started) > maxAge
+        if activities.isEmpty || isOld {
+            // Missing (new day, swiped away, ended by iOS) or near its limit:
+            // put up a fresh one, then retire any old one.
+            guard isPinned, isAvailable, request(state) else {
+                update(activities, to: state)
                 return
             }
-            for activity in activities {
-                await activity.update(ActivityContent(state: state, staleDate: state.dueAt.addingTimeInterval(3 * 3600)))
+            Task {
+                for activity in activities { await activity.end(nil, dismissalPolicy: .immediate) }
             }
+            return
         }
+        update(activities, to: state)
     }
 
+    /// "Unpin": takes it off and stops bringing it back.
     static func end() {
+        isPinned = false
+        UserDefaults.standard.removeObject(forKey: startedKey)
         let activities = Activity<DoseActivityAttributes>.activities
         Task {
             for activity in activities { await activity.end(nil, dismissalPolicy: .immediate) }
         }
+    }
+
+    private static func request(_ state: DoseActivityAttributes.ContentState) -> Bool {
+        do {
+            _ = try Activity.request(
+                attributes: DoseActivityAttributes(),
+                content: content(for: state),
+                pushType: nil
+            )
+            UserDefaults.standard.set(Date.now, forKey: startedKey)
+            return true
+        } catch {
+            print("[DoseActivity] request failed: \(error)")
+            return false
+        }
+    }
+
+    private static func update(_ activities: [Activity<DoseActivityAttributes>], to state: DoseActivityAttributes.ContentState) {
+        guard !activities.isEmpty else { return }
+        Task {
+            for activity in activities { await activity.update(content(for: state)) }
+        }
+    }
+
+    private static func content(for state: DoseActivityAttributes.ContentState) -> ActivityContent<DoseActivityAttributes.ContentState> {
+        // High relevance keeps it at the top if other apps have cards too.
+        // Overdue doses (common with sample data) would give a stale date
+        // already in the past, so count from now at the earliest.
+        ActivityContent(state: state, staleDate: max(state.dueAt, .now).addingTimeInterval(3 * 3600), relevanceScore: 100)
     }
 
     /// Today's next untaken dose, or an "all done" state; nil with no doses

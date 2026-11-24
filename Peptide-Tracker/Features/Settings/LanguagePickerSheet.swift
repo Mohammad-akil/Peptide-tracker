@@ -58,6 +58,7 @@ struct LanguagePickerSheet: View {
             .background(AppTheme.ColorToken.background.ignoresSafeArea())
             .navigationTitle("Language")
             .navigationBarTitleDisplayMode(.inline)
+            .compatNavigationBarBlur()
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close", systemImage: "xmark") { dismiss() }

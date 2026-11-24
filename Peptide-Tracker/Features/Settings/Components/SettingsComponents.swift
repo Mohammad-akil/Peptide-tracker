@@ -187,6 +187,7 @@ struct SettingsPageScaffold<Content: View>: View {
         .background(AppTheme.ColorToken.background.ignoresSafeArea())
         .navigationTitle(page.title)
         .navigationBarTitleDisplayMode(.inline)
+        .compatNavigationBarBlur()
     }
 }
 

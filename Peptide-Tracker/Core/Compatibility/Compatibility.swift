@@ -16,6 +16,26 @@ enum LegacyStyle {
 }
 
 extension View {
+    /// A soft blur under the navigation bar instead of the hard translucent
+    /// one: the iOS 26 soft scroll edge effect, and on iOS 18–25 a frosted
+    /// strip that fades out just below the bar (as in Plates).
+    @ViewBuilder
+    func compatNavigationBarBlur(background: Color = AppTheme.ColorToken.background) -> some View {
+        if #available(iOS 26, *) {
+            scrollEdgeEffectStyle(.soft, for: .top)
+        } else {
+            toolbarBackground(.hidden, for: .navigationBar)
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    // Zero height, so the layout doesn't move; the blur
+                    // reaches up through the bar and fades below it.
+                    Color.clear
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 0)
+                        .background { ScrollEdgeBlur(edge: .top, tint: background) }
+                }
+        }
+    }
+
     /// `.glassEffect(.regular…)` (or `.clear…` with `clear: true`) on iOS 26.
     /// Before that, a hand-drawn glass look (`GlassLikeSurface`) stands in
     /// for it, tinted with `fallbackTint` when given, otherwise with `tint`.
@@ -159,5 +179,36 @@ extension View {
         } else {
             self
         }
+    }
+}
+
+
+/// The blur behind a pinned bar on iOS 18–25, standing in for the iOS 26
+/// soft scroll edge effect: a material that fades out over `fadeLength`
+/// past the bar's edge instead of ending on a hard line.
+struct ScrollEdgeBlur: View {
+    let edge: VerticalEdge
+    var tint: Color = AppTheme.ColorToken.background
+    var fadeLength: CGFloat = 24
+
+    var body: some View {
+        ZStack {
+            Rectangle().fill(.ultraThinMaterial)
+            if edge == .bottom { tint.opacity(0.55) }
+        }
+        .mask {
+            LinearGradient(
+                stops: [
+                    .init(color: .black, location: 0),
+                    .init(color: .black, location: 0.6),
+                    .init(color: .clear, location: 1),
+                ],
+                startPoint: edge == .top ? .top : .bottom,
+                endPoint: edge == .top ? .bottom : .top
+            )
+        }
+        .padding(edge == .top ? .bottom : .top, -fadeLength)
+        .ignoresSafeArea(edges: edge == .top ? .top : .bottom)
+        .allowsHitTesting(false)
     }
 }

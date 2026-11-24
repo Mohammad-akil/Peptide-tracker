@@ -1,666 +1,690 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "Log my dose in ${applicationName}": {
-      "localizations": {
-        "de": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Dosis in ${applicationName} erfassen"
-            ]
-          }
-        },
-        "ja": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}で服用を記録"
-            ]
-          }
-        },
-        "fr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Noter ma dose dans ${applicationName}"
-            ]
-          }
-        },
-        "es": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registrar mi dosis en ${applicationName}"
-            ]
-          }
-        },
-        "pt-BR": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registrar minha dose no ${applicationName}"
-            ]
-          }
-        },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registra la mia dose in ${applicationName}"
-            ]
-          }
-        },
-        "ko": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}에서 복용 기록"
-            ]
-          }
-        },
-        "ar": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "سجّل جرعتي في ${applicationName}"
-            ]
-          }
-        },
-        "tr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} uygulamasında dozumu kaydet"
-            ]
-          }
-        },
-        "id": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Catat dosisku di ${applicationName}"
-            ]
-          }
-        },
-        "hi": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} में मेरी खुराक दर्ज करो"
-            ]
-          }
-        },
-        "ru": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Отметь дозу в ${applicationName}"
-            ]
-          }
-        },
-        "zh-Hans": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "在${applicationName}中记录我的剂量"
-            ]
-          }
-        },
-        "zh-Hant": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "在${applicationName}中記錄我的劑量"
-            ]
-          }
-        },
-        "fr-CA": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Noter ma dose dans ${applicationName}"
-            ]
-          }
-        },
-        "es-MX": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registrar mi dosis en ${applicationName}"
-            ]
-          }
-        }
-      }
-    },
-    "Log next dose in ${applicationName}": {
-      "localizations": {
-        "de": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Nächste Dosis in ${applicationName} erfassen"
-            ]
-          }
-        },
-        "ja": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}で次の服用を記録"
-            ]
-          }
-        },
-        "fr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Noter la prochaine dose dans ${applicationName}"
-            ]
-          }
-        },
-        "es": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registrar la siguiente dosis en ${applicationName}"
-            ]
-          }
-        },
-        "pt-BR": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registrar a próxima dose no ${applicationName}"
-            ]
-          }
-        },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registra la prossima dose in ${applicationName}"
-            ]
-          }
-        },
-        "ko": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}에서 다음 복용 기록"
-            ]
-          }
-        },
-        "ar": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "سجّل الجرعة التالية في ${applicationName}"
-            ]
-          }
-        },
-        "tr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} uygulamasında sonraki dozu kaydet"
-            ]
-          }
-        },
-        "id": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Catat dosis berikutnya di ${applicationName}"
-            ]
-          }
-        },
-        "hi": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} में अगली खुराक दर्ज करो"
-            ]
-          }
-        },
-        "ru": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Отметь следующую дозу в ${applicationName}"
-            ]
-          }
-        },
-        "zh-Hans": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "在${applicationName}中记录下一剂"
-            ]
-          }
-        },
-        "zh-Hant": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "在${applicationName}中記錄下一劑"
-            ]
-          }
-        },
-        "fr-CA": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Noter la prochaine dose dans ${applicationName}"
-            ]
-          }
-        },
-        "es-MX": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Registrar la siguiente dosis en ${applicationName}"
-            ]
-          }
-        }
-      }
-    },
-    "I took my dose in ${applicationName}": {
-      "localizations": {
-        "de": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Ich habe meine Dosis in ${applicationName} genommen"
-            ]
-          }
-        },
-        "ja": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}で服用したと記録"
-            ]
-          }
-        },
-        "fr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "J’ai pris ma dose dans ${applicationName}"
-            ]
-          }
-        },
-        "es": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "He tomado mi dosis en ${applicationName}"
-            ]
-          }
-        },
-        "pt-BR": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Tomei minha dose no ${applicationName}"
-            ]
-          }
-        },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Ho preso la mia dose in ${applicationName}"
-            ]
-          }
-        },
-        "ko": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}에서 복용했어"
-            ]
-          }
-        },
-        "ar": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+  "sourceLanguage" : "en",
+  "strings" : {
+    "I took my dose in ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "تناولت جرعتي في ${applicationName}"
             ]
           }
         },
-        "tr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} uygulamasında dozumu aldım"
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ich habe meine Dosis in ${applicationName} genommen"
             ]
           }
         },
-        "id": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Saya sudah minum dosis di ${applicationName}"
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "He tomado mi dosis en ${applicationName}"
             ]
           }
         },
-        "hi": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "मैंने ${applicationName} में खुराक ले ली"
+        "es-MX" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "He tomado mi dosis en ${applicationName}"
             ]
           }
         },
-        "ru": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Я принял дозу в ${applicationName}"
-            ]
-          }
-        },
-        "zh-Hans": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "我在${applicationName}中服过药了"
-            ]
-          }
-        },
-        "zh-Hant": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "我在${applicationName}中服過藥了"
-            ]
-          }
-        },
-        "fr-CA": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "J’ai pris ma dose dans ${applicationName}"
             ]
           }
         },
-        "es-MX": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "He tomado mi dosis en ${applicationName}"
+        "fr-CA" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "J’ai pris ma dose dans ${applicationName}"
+            ]
+          }
+        },
+        "hi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "मैंने ${applicationName} में खुराक ले ली"
+            ]
+          }
+        },
+        "id" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Saya sudah minum dosis di ${applicationName}"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ho preso la mia dose in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で服用したと記録"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 복용했어"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Tomei minha dose no ${applicationName}"
+            ]
+          }
+        },
+        "ru" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Я принял дозу в ${applicationName}"
+            ]
+          }
+        },
+        "tr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName} uygulamasında dozumu aldım"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "我在${applicationName}中服过药了"
+            ]
+          }
+        },
+        "zh-Hant" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "我在${applicationName}中服過藥了"
             ]
           }
         }
       }
     },
-    "What doses are left in ${applicationName}": {
-      "localizations": {
-        "de": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Welche Dosen sind in ${applicationName} noch offen"
+    "Log my dose in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "سجّل جرعتي في ${applicationName}"
             ]
           }
         },
-        "ja": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}で残りの服用は"
+        "de" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Dosis in ${applicationName} erfassen"
             ]
           }
         },
-        "fr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Quelles doses restent dans ${applicationName}"
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Log my dose in ${applicationName}",
+              "Log next dose in ${applicationName}",
+              "I took my dose in ${applicationName}"
             ]
           }
         },
-        "es": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Qué dosis quedan en ${applicationName}"
+        "es" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Registrar mi dosis en ${applicationName}"
             ]
           }
         },
-        "pt-BR": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Quais doses faltam no ${applicationName}"
+        "es-MX" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Registrar mi dosis en ${applicationName}"
             ]
           }
         },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Quali dosi mancano in ${applicationName}"
+        "fr" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Noter ma dose dans ${applicationName}"
             ]
           }
         },
-        "ko": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}에서 남은 복용 알려줘"
+        "fr-CA" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Noter ma dose dans ${applicationName}"
             ]
           }
         },
-        "ar": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+        "hi" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName} में मेरी खुराक दर्ज करो"
+            ]
+          }
+        },
+        "id" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Catat dosisku di ${applicationName}"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Registra la mia dose in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName}で服用を記録"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName}에서 복용 기록"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Registrar minha dose no ${applicationName}"
+            ]
+          }
+        },
+        "ru" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Отметь дозу в ${applicationName}"
+            ]
+          }
+        },
+        "tr" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName} uygulamasında dozumu kaydet"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "在${applicationName}中记录我的剂量"
+            ]
+          }
+        },
+        "zh-Hant" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "在${applicationName}中記錄我的劑量"
+            ]
+          }
+        }
+      }
+    },
+    "Log next dose in ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "سجّل الجرعة التالية في ${applicationName}"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Nächste Dosis in ${applicationName} erfassen"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registrar la siguiente dosis en ${applicationName}"
+            ]
+          }
+        },
+        "es-MX" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registrar la siguiente dosis en ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Noter la prochaine dose dans ${applicationName}"
+            ]
+          }
+        },
+        "fr-CA" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Noter la prochaine dose dans ${applicationName}"
+            ]
+          }
+        },
+        "hi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName} में अगली खुराक दर्ज करो"
+            ]
+          }
+        },
+        "id" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Catat dosis berikutnya di ${applicationName}"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registra la prossima dose in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で次の服用を記録"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 다음 복용 기록"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registrar a próxima dose no ${applicationName}"
+            ]
+          }
+        },
+        "ru" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Отметь следующую дозу в ${applicationName}"
+            ]
+          }
+        },
+        "tr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName} uygulamasında sonraki dozu kaydet"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中记录下一剂"
+            ]
+          }
+        },
+        "zh-Hant" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中記錄下一劑"
+            ]
+          }
+        }
+      }
+    },
+    "What doses are left in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
               "ما الجرعات المتبقية في ${applicationName}"
             ]
           }
         },
-        "tr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} uygulamasında hangi dozlar kaldı"
+        "de" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Welche Dosen sind in ${applicationName} noch offen"
             ]
           }
         },
-        "id": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Dosis apa yang tersisa di ${applicationName}"
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "What doses are left in ${applicationName}",
+              "What's left to take in ${applicationName}"
             ]
           }
         },
-        "hi": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} में कौन-सी खुराकें बाकी हैं"
+        "es" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Qué dosis quedan en ${applicationName}"
             ]
           }
         },
-        "ru": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Какие дозы остались в ${applicationName}"
+        "es-MX" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Qué dosis quedan en ${applicationName}"
             ]
           }
         },
-        "zh-Hans": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}里还剩哪些剂量"
-            ]
-          }
-        },
-        "zh-Hant": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}裡還剩哪些劑量"
-            ]
-          }
-        },
-        "fr-CA": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+        "fr" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
               "Quelles doses restent dans ${applicationName}"
             ]
           }
         },
-        "es-MX": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Qué dosis quedan en ${applicationName}"
+        "fr-CA" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Quelles doses restent dans ${applicationName}"
+            ]
+          }
+        },
+        "hi" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName} में कौन-सी खुराकें बाकी हैं"
+            ]
+          }
+        },
+        "id" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Dosis apa yang tersisa di ${applicationName}"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Quali dosi mancano in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName}で残りの服用は"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName}에서 남은 복용 알려줘"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Quais doses faltam no ${applicationName}"
+            ]
+          }
+        },
+        "ru" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Какие дозы остались в ${applicationName}"
+            ]
+          }
+        },
+        "tr" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName} uygulamasında hangi dozlar kaldı"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName}里还剩哪些剂量"
+            ]
+          }
+        },
+        "zh-Hant" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "${applicationName}裡還剩哪些劑量"
             ]
           }
         }
       }
     },
-    "What's left to take in ${applicationName}": {
-      "localizations": {
-        "de": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Was muss ich in ${applicationName} noch nehmen"
-            ]
-          }
-        },
-        "ja": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}で飲むものは何が残ってる"
-            ]
-          }
-        },
-        "fr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Que me reste-t-il à prendre dans ${applicationName}"
-            ]
-          }
-        },
-        "es": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Qué me queda por tomar en ${applicationName}"
-            ]
-          }
-        },
-        "pt-BR": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "O que falta tomar no ${applicationName}"
-            ]
-          }
-        },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Cosa devo ancora prendere in ${applicationName}"
-            ]
-          }
-        },
-        "ko": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}에서 아직 먹을 약 알려줘"
-            ]
-          }
-        },
-        "ar": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+    "What's left to take in ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "ماذا بقي لأتناوله في ${applicationName}"
             ]
           }
         },
-        "tr": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} uygulamasında almam gereken ne kaldı"
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Was muss ich in ${applicationName} noch nehmen"
             ]
           }
         },
-        "id": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Apa yang belum diminum di ${applicationName}"
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Qué me queda por tomar en ${applicationName}"
             ]
           }
         },
-        "hi": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName} में अभी क्या लेना बाकी है"
+        "es-MX" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Qué me queda por tomar en ${applicationName}"
             ]
           }
         },
-        "ru": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Что ещё принять в ${applicationName}"
-            ]
-          }
-        },
-        "zh-Hans": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}里还有什么要服用"
-            ]
-          }
-        },
-        "zh-Hant": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "${applicationName}裡還有什麼要服用"
-            ]
-          }
-        },
-        "fr-CA": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "Que me reste-t-il à prendre dans ${applicationName}"
             ]
           }
         },
-        "es-MX": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
-              "Qué me queda por tomar en ${applicationName}"
+        "fr-CA" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Que me reste-t-il à prendre dans ${applicationName}"
+            ]
+          }
+        },
+        "hi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName} में अभी क्या लेना बाकी है"
+            ]
+          }
+        },
+        "id" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Apa yang belum diminum di ${applicationName}"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cosa devo ancora prendere in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で飲むものは何が残ってる"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 아직 먹을 약 알려줘"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "O que falta tomar no ${applicationName}"
+            ]
+          }
+        },
+        "ru" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Что ещё принять в ${applicationName}"
+            ]
+          }
+        },
+        "tr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName} uygulamasında almam gereken ne kaldı"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}里还有什么要服用"
+            ]
+          }
+        },
+        "zh-Hant" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}裡還有什麼要服用"
             ]
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }
