@@ -96721,6 +96721,7 @@
       }
     },
     "Start My Journey" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
