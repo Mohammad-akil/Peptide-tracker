@@ -90,7 +90,6 @@ struct OnboardingFlow: View {
         case .dose: DoseQuestion(answers: $answers)
         case .device: DeviceQuestion(answers: $answers)
         case .frequency: FrequencyQuestion(answers: $answers)
-        case .education: EducationStep()
         case .height: HeightQuestion(answers: $answers)
         case .weight: WeightQuestion(answers: $answers)
         case .start: StartQuestion(answers: $answers)

@@ -23,6 +23,7 @@ struct SettingsView: View {
                     .id(profileVersion)
                 DailyCheckInCard()
                 proCard
+                ICloudBackupBanner()
 
                 GroupedSection {
                     SettingsLinkRow(page: .remindersGroup, value: store.settings.notificationsEnabled ? nil : String(localized: "Off"))

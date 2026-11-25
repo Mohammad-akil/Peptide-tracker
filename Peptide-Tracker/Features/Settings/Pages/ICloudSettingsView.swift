@@ -1,9 +1,12 @@
 import SwiftUI
 
 /// Settings → iCloud sync: backup and sync through the user's own iCloud,
-/// on by default. Shows when it last synced, and syncs on demand.
+/// off until they agree in the iCloud popup. Shows when it last synced,
+/// and syncs on demand.
 struct ICloudSettingsView: View {
     private var sync: CloudSync { .shared }
+    /// Switching it on asks first, with the same popup as after setup.
+    @State private var asksForConsent = false
 
     var body: some View {
         SettingsPageScaffold(page: .icloud) {
@@ -11,7 +14,13 @@ struct ICloudSettingsView: View {
                 ControlRow(symbol: "icloud.fill", tint: Color(hex: 0x32ADE6), title: String(localized: "iCloud sync"), showsDivider: false) {
                     Toggle("iCloud sync", isOn: Binding(
                         get: { sync.isEnabled },
-                        set: { enabled in withAnimation(.snappy) { sync.isEnabled = enabled } }
+                        set: { enabled in
+                            if enabled {
+                                asksForConsent = true
+                            } else {
+                                withAnimation(.snappy) { sync.isEnabled = false }
+                            }
+                        }
                     ))
                     .labelsHidden()
                     .tint(AppTheme.ColorToken.accent)
@@ -36,6 +45,8 @@ struct ICloudSettingsView: View {
             }
         }
         .animation(.snappy, value: sync.status)
+        .animation(.snappy, value: sync.isEnabled)
+        .iCloudConsentPopup(isPresented: $asksForConsent)
     }
 
     private var statusSymbol: String {

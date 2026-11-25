@@ -157,11 +157,18 @@ final class PurchaseStore {
     func disclosure(for plan: Plan) -> String {
         guard isLoaded(plan) else { return String(localized: "Loading prices from the App Store…") }
         let price = price(for: plan)
-        let period = plan == .yearly ? "year" : "month"
-        if let days = trialDays[plan] {
-            return String(localized: "Free for \(days) days, then \(price) per \(period). Cancel anytime in Settings.")
+        // One whole sentence per plan, so every language words the billing
+        // terms properly (Guideline 3.1.2), not "… per year" in English.
+        switch (plan, trialDays[plan]) {
+        case (.yearly, let days?):
+            return String(localized: "Free for \(days) days, then \(price) per year. Cancel anytime in Settings.")
+        case (.monthly, let days?):
+            return String(localized: "Free for \(days) days, then \(price) per month. Cancel anytime in Settings.")
+        case (.yearly, nil):
+            return String(localized: "\(price) per year. Cancel anytime in Settings.")
+        case (.monthly, nil):
+            return String(localized: "\(price) per month. Cancel anytime in Settings.")
         }
-        return String(localized: "\(price) per \(period). Renews until cancelled in Settings.")
     }
 
     // MARK: Store

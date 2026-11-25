@@ -74,7 +74,7 @@ struct JourneyPaywallView: View {
         ("face.smiling.inverse", String(localized: "Daily check-ins"), String(localized: "Track mood, energy and side effects day by day.")),
         ("chart.bar.xaxis", String(localized: "Insights and calendar"), String(localized: "See your adherence and trends over 7, 30 and 90 days.")),
         ("doc.text.fill", String(localized: "Doctor-ready reports"), String(localized: "Share clean PDF reports and export your data anytime.")),
-        ("function", String(localized: "Dose and BMI calculators"), String(localized: "Work out doses, units and BMI in seconds.")),
+        ("function", String(localized: "Health calculators"), String(localized: "BMI, daily calories and macros in seconds.")),
         ("square.grid.2x2.fill", String(localized: "Home Screen widgets"), String(localized: "Your next dose and supply at a glance.")),
         ("lock.shield.fill", String(localized: "Private by design"), String(localized: "Privacy mode hides medicine names on your screen.")),
     ]

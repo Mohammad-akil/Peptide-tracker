@@ -11,23 +11,7 @@
   },
   "identifier": "6B1F2C3A",
   "nonRenewingSubscriptions": [],
-  "products": [
-    {
-      "displayPrice": "59.99",
-      "familyShareable": false,
-      "internalID": "6739000002",
-      "localizations": [
-        {
-          "description": "Unlock Pro forever with one purchase.",
-          "displayName": "Pro Lifetime",
-          "locale": "en_US"
-        }
-      ],
-      "productID": "com.doseday.ios.pro.lifetime",
-      "referenceName": "Pro Lifetime",
-      "type": "NonConsumable"
-    }
-  ],
+  "products": [],
   "settings": {
     "_applicationInternalID": "6739000000",
     "_developerTeamID": "C52Z2BQ842",

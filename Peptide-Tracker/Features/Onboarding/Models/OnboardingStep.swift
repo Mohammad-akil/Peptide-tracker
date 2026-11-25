@@ -5,7 +5,7 @@ import Foundation
 enum OnboardingStep: Int, CaseIterable, Comparable {
     // Raw names double as `-onboarding <step>` debug launch arguments.
     case getStarted, tour, welcome
-    case journey, route, medication, dose, device, frequency, education
+    case journey, route, medication, dose, device, frequency
     case height, weight, start, goal, momentum, pace, comparison
     case sideEffects, reason, settingUp
 
@@ -23,7 +23,7 @@ enum OnboardingStep: Int, CaseIterable, Comparable {
         case .medication: 3
         case .dose: 4
         case .device: 5
-        case .frequency, .education: 6
+        case .frequency: 6
         case .height: 7
         case .weight: 8
         case .start: 9

@@ -15,6 +15,11 @@ import Observation
 /// become one sync), once at launch to bring in other devices' changes,
 /// when the iCloud account changes, and from "Sync now". Not on every
 /// return to the app.
+///
+/// Off until the person agrees: the iCloud popup (`ICloudConsentPopup`)
+/// explains what's stored and asks first, and `needsConsent` stays true
+/// until they answer it once (Guideline 5.1.3(ii): health data goes to
+/// iCloud only with their say-so).
 @MainActor
 @Observable
 final class CloudSync {
@@ -32,10 +37,14 @@ final class CloudSync {
     private(set) var status: Status
     private(set) var lastSynced: Date?
 
+    /// True until they've answered the iCloud popup (or flipped the switch).
+    private(set) var needsConsent: Bool
+
     var isEnabled: Bool {
         didSet {
+            UserDefaults.standard.set(isEnabled, forKey: Self.consentKey)
+            needsConsent = false
             guard isEnabled != oldValue else { return }
-            UserDefaults.standard.set(!isEnabled, forKey: Self.disabledKey)
             if isEnabled {
                 status = .idle
                 requestSync()
@@ -49,7 +58,10 @@ final class CloudSync {
     static let containerID = "iCloud.com.doseday.ios"
     private static let recordID = CKRecord.ID(recordName: "snapshot")
     private static let recordType = "Snapshot"
-    private static let disabledKey = "icloud.syncDisabled"
+    /// Whether they agreed to iCloud backup; missing until they answer.
+    private static let consentKey = "icloud.consent"
+    /// The old opt-out switch: someone who turned sync off keeps it off.
+    private static let legacyDisabledKey = "icloud.syncDisabled"
     private static let lastSyncedKey = "icloud.lastSynced"
 
     /// Created on first use (a static `let` is lazy), once syncing starts.
@@ -65,7 +77,13 @@ final class CloudSync {
     @ObservationIgnored private var accountObserver: NSObjectProtocol?
 
     private init() {
-        let enabled = !UserDefaults.standard.bool(forKey: Self.disabledKey)
+        let defaults = UserDefaults.standard
+        if defaults.object(forKey: Self.consentKey) == nil, defaults.bool(forKey: Self.legacyDisabledKey) {
+            defaults.set(false, forKey: Self.consentKey)
+        }
+        let consent = defaults.object(forKey: Self.consentKey) as? Bool
+        let enabled = consent ?? false
+        needsConsent = consent == nil
         isEnabled = enabled
         status = enabled ? .idle : .off
         lastSynced = UserDefaults.standard.object(forKey: Self.lastSyncedKey) as? Date
