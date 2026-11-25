@@ -149,7 +149,7 @@ struct JourneyPaywallView: View {
 
     private var callToAction: String {
         if let days = purchases.trialDays(for: plan) { return String(localized: "Start my \(days)-day free trial") }
-        return String(localized: "Start My Journey")
+        return String(localized: "Continue")
     }
 
     private func select(_ newPlan: PurchaseStore.Plan) {

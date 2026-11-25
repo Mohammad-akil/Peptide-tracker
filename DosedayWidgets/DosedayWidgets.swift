@@ -8,6 +8,7 @@ import WidgetKit
 struct DosedayWidgets: WidgetBundle {
     var body: some Widget {
         TodayWidget()
+        NextDoseWidget()
         MoodWidget()
         SupplyWidget()
         DoseLiveActivity()
